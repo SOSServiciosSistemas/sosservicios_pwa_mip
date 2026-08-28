@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SOS Servicios</title>
+    <!-- El manifest se queda así porque ambos están en la raíz -->
+    <link rel="manifest" href="manifest.json">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Centra la tarjeta en medio de la pantalla para celulares */
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <!-- Logotipo, titulo de la Empresa -->
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold text-primary">SOS Servicios</h2>
+                    <p class="text-muted">Manejo Integral de Plagas</p>
+                </div>
+
+                <!-- Formulario de Acceso -->
+                <form id="formulario-login">
+                    <div class="mb-3">
+                        <label for="usuario" class="form-label fw-semibold">Usuario</label>
+                        <input type="text" class="form-control" id="usuario" placeholder="Ej. Usuario123" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="password" placeholder="••••••••" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <!-- Mensaje de error (Oculto por defecto) -->
+                <div id="mensaje-error" class="alert alert-danger mt-3 d-none text-center" role="alert">
+                    Credenciales incorrectas.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('formulario-login').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Evita que la página recargue en blanco
+            
+            const usuarioInput = document.getElementById('usuario').value;
+            const passwordInput = document.getElementById('password').value;
+            const mensajeError = document.getElementById('mensaje-error');
+            
+            try {
+                // Hace la petición POST al servidor Node.js
+                const respuesta = await fetch('http://localhost:3000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuario: usuarioInput,
+                        password: passwordInput
+                    })
+                });
+
+                const datos = await respuesta.json();
+
+                if (datos.exito) {
+                    // Si el servidor le da acceso, revisa qué rol tiene
+                    const rol = datos.usuario.rol;
+                    
+                    // Guardamos los datos y el ROL del usuario en el navegador
+                    localStorage.setItem('nombreUsuario', datos.usuario.nombre_completo);
+                    localStorage.setItem('idUsuario', datos.usuario.id_usuario);
+                    localStorage.setItem('rolUsuario', rol);
+
+                    // Redirije a cada rol a su carpeta independiente (4 Vistas)
+                    if (rol === 'Tecnico') {
+                        window.location.href = "viewtecnico/tecnico.html";
+                    } else if (rol === 'Mesa_Control') {
+                        window.location.href = "viewmesacontrol/panel.html";
+                    } else if (rol === 'Admin') {
+                        window.location.href = "viewadmin/panel.html";
+                    } else if (rol === 'Direccion') {
+                        window.location.href = "viewdireccion/panel.html";
+                    }
+                    
+                } else {
+                    // Muestra la alerta roja si se equivoca
+                    mensajeError.innerText = datos.error;
+                    mensajeError.classList.remove('d-none');
+                }
+            } catch (error) {
+                mensajeError.innerText = "Error al conectar con el servidor.";
+                mensajeError.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

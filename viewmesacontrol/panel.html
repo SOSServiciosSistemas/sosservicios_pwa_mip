@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Mesa de Control</title>
+    <link rel="manifest" href="../manifest.json">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="panel.css">
+</head>
+<body class="bg-light">
+
+    <!-- Barra de navegación (Header) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Mesa de Control | SOS Servicios</span>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuNavegacion">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="menuNavegacion">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" onclick="cambiarVista('agenda', event)">Agenda General</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="cambiarVista('clientes', event)">Directorio de Clientes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="cambiarVista('historial', event)">Historial de Servicios</a>
+                    </li>
+                    <!-- NUEVA PESTAÑA PARA PLANEADORES -->
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="#" onclick="cambiarVista('planeadores', event)">Planeadores Diarios</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <span class="navbar-text text-white me-3" id="nombre-usuario-nav">Cargando...</span>
+                    <button onclick="cerrarSesion()" class="btn btn-outline-danger btn-sm">Salir</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="container mt-4 mb-5">
+        
+        <!-- ================= AGENDA GENERAL ================= -->
+        <div id="seccion-agenda">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-secondary">Agenda General Operativa</h2>
+                <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevaOrden">+ Agendar Servicio</button>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-5">
+                <div class="card-body">
+                    <div id="calendario"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= DIRECTORIO DE CLIENTES ================= -->
+        <div id="seccion-clientes" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-secondary">Directorio de Clientes</h2>
+                <button class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoCliente">+ Nuevo Cliente</button>
+            </div>
+            
+            <div class="input-group mb-3 shadow-sm">
+                <span class="input-group-text bg-white text-muted">🔍</span>
+                <input type="text" class="form-control border-start-0" id="buscador-clientes" placeholder="Buscar cliente por nombre o teléfono..." onkeyup="filtrarClientes()">
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nombre del Cliente</th>
+                                    <th>Teléfono</th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-clientes">
+                                <tr><td colspan="4" class="text-center text-muted py-4">Cargando clientes...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= HISTORIAL DE SERVICIOS ================= -->
+        <div id="seccion-historial" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-secondary">Historial de Servicios</h2>
+                <button class="btn btn-outline-secondary fw-bold" onclick="cargarHistorial()">🔄 Actualizar Tabla</button>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-5 mb-2 mb-md-0">
+                    <div class="input-group shadow-sm">
+                        <span class="input-group-text bg-white text-muted">🔍</span>
+                        <input type="text" class="form-control border-start-0" id="buscador-historial" placeholder="Buscar nombre, domicilio..." onkeyup="filtrarHistorial()">
+                    </div>
+                </div>
+                <div class="col-md-4 mb-2 mb-md-0">
+                    <input type="month" class="form-control shadow-sm text-secondary fw-bold" id="filtro-mes" onchange="filtrarHistorial()">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select shadow-sm text-secondary fw-bold" id="filtro-estatus" onchange="filtrarHistorial()">
+                        <option value="">Todos los estatus</option>
+                        <option value="Pendiente">Solo Pendientes</option>
+                        <option value="Confirmado">Solo Confirmados</option>
+                        <option value="Completado">Solo Completados</option>
+                        <option value="Cancelado">Solo Cancelados</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0 align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha del Servicio</th>
+                                    <th>Cliente</th>
+                                    <th>Técnico Asignado</th>
+                                    <th>Servicio</th>
+                                    <th>Estatus</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-historial">
+                                <tr><td colspan="5" class="text-center text-muted py-4">Cargando historial...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PLANEADORES DE ACTIVIDADES ================= -->
+        <div id="seccion-planeadores" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-primary"><i class="fas fa-clipboard-list"></i> Historial de Planeadores</h2>
+                <button class="btn btn-outline-primary fw-bold" onclick="cargarPlaneadores()">🔄 Actualizar Tabla</button>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body bg-light rounded">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary small">Buscar Técnico o Folio</label>
+                            <input type="text" id="filtro-texto-planeador" class="form-control" placeholder="Ej. Diego Bedoya, o Folio 4...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-secondary small">Estatus</label>
+                            <select id="filtro-estatus-planeador" class="form-select">
+                                <option value="TODOS">Todos los estatus</option>
+                                <option value="En_Ruta"> En Ruta</option>
+                                <option value="Cerrada_Ruta"> Ruta Cerrada (Por Liquidar)</option>
+                                <option value="Entregada"> Liquidada / Entregada</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Folio</th>
+                                <th>Fecha</th>
+                                <th>Técnico</th>
+                                <th>KMs Recorridos</th>
+                                <th>Efectivo Entregado</th>
+                                <th>Estatus</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-planeadores-body">
+                            <!-- Javascript inyectará las filas aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= MODALES (CLIENTES, ORDENES Y REAGENDAR SE MANTIENEN EXACTAMENTE IGUAL) ================= -->
+
+    <!-- Modal para Nuevo Cliente -->
+    <div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold">Registrar Nuevo Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nuevo-cliente">
+                        <h6 class="text-success border-bottom pb-1 mb-3">Datos Generales</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Nombre Completo / Empresa *</label>
+                                <input type="text" class="form-control" id="nc-nombre" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Persona de Contacto *</label>
+                                <input type="text" class="form-control" id="nc-contacto" required placeholder="Ej. Ing. Roberto">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Teléfono *</label>
+                                <input type="tel" class="form-control" id="nc-telefono" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Clase *</label>
+                                <select class="form-select" id="nc-clase">
+                                    <option value="No prioritario">No prioritario</option>
+                                    <option value="Prioritario">Prioritario</option>
+                                    <option value="VIP">VIP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Frecuencia *</label>
+                                <select class="form-select" id="nc-frecuencia">
+                                    <option value="Única vez">Única vez</option>
+                                    <option value="Ocasional">Ocasional</option>
+                                    <option value="Mensual">Mensual</option>
+                                    <option value="Bimestral">Bimestral</option>
+                                    <option value="Trimestral">Trimestral</option>
+                                    <option value="Semestral">Semestral</option>
+                                    <option value="Anual">Anual</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Giro *</label>
+                                <input type="text" class="form-control" id="nc-giro" required placeholder="Ej. Restaurante, Casa habitación...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="nc-correo">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFiscales">
+                                + Añadir Datos de Facturación (Opcional)
+                            </button>
+                        </div>
+                        <div class="collapse" id="collapseFiscales">
+                            <div class="card card-body bg-light border-0 mb-4 shadow-sm">
+                                <h6 class="text-secondary border-bottom pb-1 mb-3">Información Fiscal</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-secondary">Razón Social</label>
+                                        <input type="text" class="form-control" id="nc-razonsocial" placeholder="Ej. Empresa SA de CV">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold text-secondary">RFC</label>
+                                        <input type="text" class="form-control" id="nc-rfc" placeholder="Ej. EMP123456789">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold text-secondary">Domicilio Fiscal</label>
+                                    <textarea class="form-control" id="nc-domiciliofiscal" rows="2" placeholder="Calle, Número, C.P., Ciudad..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="text-success border-bottom pb-1 mt-2 mb-3">Dirección del Servicio (Matriz)</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Calle y Número *</label>
+                            <input type="text" class="form-control" id="nc-domicilio" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Colonia *</label>
+                                <input type="text" class="form-control" id="nc-colonia" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Ciudad *</label>
+                                <input type="text" class="form-control" id="nc-ciudad" required value="León">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold mt-2 py-2" id="btn-guardar-cliente">Guardar Cliente y Dirección</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para VER / EDITAR Cliente -->
+    <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">Perfil del Cliente</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-cliente">
+                        <input type="hidden" id="ec-id">
+
+                        <h6 class="text-primary border-bottom pb-1 mb-3">Datos Generales</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Nombre Completo / Empresa</label>
+                                <input type="text" class="form-control bg-light text-muted" id="ec-nombre" readonly disabled>
+                                <small class="text-danger" style="font-size: 0.75rem;">* Por seguridad, el nombre no se puede modificar.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Persona de Contacto *</label>
+                                <input type="text" class="form-control" id="ec-contacto" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Teléfono *</label>
+                                <input type="tel" class="form-control" id="ec-telefono" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Clase *</label>
+                                <select class="form-select" id="ec-clase">
+                                    <option value="No prioritario">No prioritario</option>
+                                    <option value="Prioritario">Prioritario</option>
+                                    <option value="VIP">VIP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Frecuencia *</label>
+                                <select class="form-select" id="ec-frecuencia">
+                                    <option value="Única vez">Única vez</option>
+                                    <option value="Mensual">Mensual</option>
+                                    <option value="Bimestral">Bimestral</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Giro *</label>
+                                <input type="text" class="form-control" id="ec-giro" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="ec-correo">
+                            </div>
+                        </div>
+
+                        <h6 class="text-secondary border-bottom pb-1 mb-3 mt-4">Información Fiscal</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Razón Social</label>
+                                <input type="text" class="form-control" id="ec-razonsocial">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">RFC</label>
+                                <input type="text" class="form-control" id="ec-rfc">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">Domicilio Fiscal</label>
+                            <textarea class="form-control" id="ec-domiciliofiscal" rows="2"></textarea>
+                        </div>
+
+                        <!-- ================= NUEVA SECCIÓN: UBICACIONES ================= -->
+                        <h6 class="text-success border-bottom pb-1 mb-3 mt-4">📍 Ubicaciones / Sucursales Registradas</h6>
+                        <div id="lista-ubicaciones-cliente" class="mb-3">
+                            <p class="text-muted small">Cargando ubicaciones...</p>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-success fw-bold w-100 mb-4" onclick="abrirModalNuevaUbicacion()">+ Añadir Nueva Ubicación</button>
+                        <!-- ================================================================ -->
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2" id="btn-actualizar-cliente">Actualizar Datos Generales</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para AÑADIR NUEVA UBICACIÓN -->
+    <div class="modal fade" id="modalNuevaUbicacion" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold">📍 Añadir Nueva Ubicación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="form-nueva-ubicacion">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Nombre de la Ubicación *</label>
+                            <input type="text" class="form-control shadow-sm" id="nu-nombre" required placeholder="Ej. Matriz, Sucursal Centro, Casa 2...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Calle y Número *</label>
+                            <input type="text" class="form-control shadow-sm" id="nu-domicilio" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Colonia *</label>
+                                <input type="text" class="form-control shadow-sm" id="nu-colonia" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Ciudad *</label>
+                                <input type="text" class="form-control shadow-sm" id="nu-ciudad" required value="León">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btn-guardar-ubicacion">Guardar Ubicación</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para NUEVA ORDEN DE SERVICIO -->
+    <div class="modal fade" id="modalNuevaOrden" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📅 Agendar Nuevo Servicio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nueva-orden">
+                        <h6 class="text-primary border-bottom pb-1 mb-3">Datos del Cliente y Ubicación</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Cliente *</label>
+                                <select class="form-select" id="no-cliente" required>
+                                    <option value="">Cargando clientes...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Ubicación / Sucursal *</label>
+                                <select class="form-select" id="no-ubicacion" required disabled>
+                                    <option value="">Primero seleccione un cliente...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary border-bottom pb-1 mb-3 mt-3">Detalles Operativos</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Fecha y Hora *</label>
+                                <input type="datetime-local" class="form-control" id="no-fecha" max="2099-12-31T23:59" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Técnico Asignado *</label>
+                                <select class="form-select" id="no-tecnico" required>
+                                    <option value="">Cargando técnicos...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold text-secondary">Tipo de Servicio *</label>
+                                <select class="form-select" id="no-tipo-servicio" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Aplicación">Aplicación</option>
+                                    <option value="Diagnóstico">Diagnóstico</option>
+                                    <option value="Inspección">Inspección</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold text-secondary">Costo ($)</label>
+                                <input type="number" class="form-control" id="no-costo" placeholder="Ej. 1200" min="0" step="0.50">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold text-secondary">Tratamiento Actual</label>
+                                <input type="number" class="form-control" id="no-num-tratamiento" value="1" min="0" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold text-secondary">Total Tratamientos</label>
+                                <input type="number" class="form-control" id="no-total-tratamientos" value="1" min="0" required>
+                            </div>
+                            <div class="col-md-3 mb-3" id="contenedor-frecuencia" style="display: none;">
+                                <label class="form-label fw-bold text-secondary">Frecuencia *</label>
+                                <select class="form-select" id="no-frecuencia">
+                                    <option value="Mensual">Mensual</option>
+                                    <option value="Quincenal">Quincenal</option>
+                                    <option value="Bimestral">Bimestral</option>
+                                    <option value="Semanal">Semanal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sección de Plagas (Se muestra sola si es el Tratamiento 1) -->
+                        <div id="seccion-plagas" class="mb-3 p-3 bg-light border rounded">
+                            <label class="form-label fw-bold text-primary mb-2">Plagas a Tratar (Selección Múltiple)</label>
+                            <div class="row" style="font-size: 0.85rem;">
+                                <div class="col-md-4">
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Cucarachas" id="p-cucarachas"><label class="form-check-label" for="p-cucarachas">Cucarachas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Hormigas" id="p-hormigas"><label class="form-check-label" for="p-hormigas">Hormigas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Grillos" id="p-grillos"><label class="form-check-label" for="p-grillos">Grillos</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Garrapatas" id="p-garrapatas"><label class="form-check-label" for="p-garrapatas">Garrapatas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Murciélago" id="p-murcielago"><label class="form-check-label" for="p-murcielago">Murciélago</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Alacranes" id="p-alacranes"><label class="form-check-label" for="p-alacranes">Alacranes</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Arañas" id="p-aranas"><label class="form-check-label" for="p-aranas">Arañas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Tijerillas" id="p-tijerillas"><label class="form-check-label" for="p-tijerillas">Tijerillas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Ratones" id="p-ratones"><label class="form-check-label" for="p-ratones">Ratones</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Aves" id="p-aves"><label class="form-check-label" for="p-aves">Aves</label></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Chinches" id="p-chinches"><label class="form-check-label" for="p-chinches">Chinches</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Termitas" id="p-termitas"><label class="form-check-label" for="p-termitas">Termitas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Pulgas" id="p-pulgas"><label class="form-check-label" for="p-pulgas">Pulgas</label></div>
+                                    <div class="form-check"><input class="form-check-input chk-plaga" type="checkbox" value="Roedores" id="p-roedores"><label class="form-check-label" for="p-roedores">Roedores</label></div>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input chk-plaga" type="checkbox" value="Otros" id="p-otros">
+                                            <label class="form-check-label text-danger fw-bold" for="p-otros">Otros</label>
+                                        </div>
+                                        <input type="text" class="form-control form-control-sm w-50" id="p-otros-texto" maxlength="20" placeholder="Especifique (Máx 20 letras)" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">Instrucciones / Observaciones para el Técnico</label>
+                            <textarea class="form-control" id="no-observaciones" rows="2" placeholder="Ej. Tocar el timbre de servicio..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2" id="btn-guardar-orden">Agendar Servicio</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para DETALLES DE LA ORDEN (Confirmar / Cancelar) -->
+    <div class="modal fade" id="modalDetalleOrden" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold">📋 Detalles del Servicio</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <!-- Guardamos el ID de forma oculta -->
+                    <input type="hidden" id="do-id-orden">
+                    
+                    <h4 id="do-cliente" class="text-primary fw-bold mb-2">Cargando...</h4>
+                    <p class="text-muted fs-5 mb-2">📅 <span id="do-fecha"></span></p>
+                    
+                    <div class="mb-4 d-flex justify-content-center align-items-center">
+                        <span class="badge fs-6 px-3 py-2 me-2" id="do-estatus">Estatus</span>
+                        <button type="button" id="btn-editar-datos" class="btn btn-sm btn-outline-secondary" onclick="abrirModalEditarOrden()">✏️ Editar Datos</button>
+                    </div>
+
+                    <!-- CAJA DE ACCIONES -->
+                    <div id="caja-acciones-servicio">
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-primary fw-bold w-100 me-2" onclick="reagendarOrden()">📅 Reagendar</button>
+                            <button type="button" id="btn-accion-confirmar" class="btn btn-success fw-bold w-100 ms-2">✔ Marcar Confirmado</button>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button type="button" id="btn-cancelar-orden" class="btn btn-link text-danger text-decoration-none p-0" style="font-size: 0.85rem;" onclick="cambiarEstatusOrden('Cancelado')">Cancelar servicio definitivamente</button>
+                        </div>
+                    </div>
+
+                    <!-- MENSAJE DE BLOQUEO -->
+                    <div id="caja-bloqueo-completado" class="mt-4" style="display: none;">
+                        <div class="alert alert-info text-center fw-bold border-0 shadow-sm p-3">
+                            🔒 Servicio Completado<br>
+                            <small class="fw-normal">Las acciones han sido bloqueadas para proteger la integridad del reporte.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para REAGENDAR ORDEN -->
+    <div class="modal fade" id="modalReagendarOrden" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📅 Elegir Nueva Fecha</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-reagendar-orden">
+                        <input type="hidden" id="ro-id-orden">
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">Nueva Fecha y Hora *</label>
+                            <input type="datetime-local" class="form-control" id="ro-nueva-fecha" max="2099-12-31T23:59" oninput="if(this.value && this.value.split('-')[0].length > 4) { alert('Año inválido. Usa solo 4 dígitos.'); this.value = ''; }" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2" id="btn-guardar-reagendo">Confirmar Cambio</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para EDITAR ORDEN -->
+    <div class="modal fade" id="modalEditarOrden" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold">✏️ Editar Detalles del Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="form-editar-orden">
+                        <input type="hidden" id="eo-id-orden">
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold text-secondary">Ubicación del Servicio *</label>
+                                <select class="form-select shadow-sm" id="eo-ubicacion" required>
+                                    <option value="">Cargando ubicaciones...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Fecha y Hora *</label>
+                                <input type="datetime-local" class="form-control shadow-sm" id="eo-fecha" max="2035-12-31T23:59" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Técnico Asignado *</label>
+                                <select class="form-select shadow-sm" id="eo-tecnico" required>
+                                    <option value="">Cargando técnicos...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Tipo de Servicio *</label>
+                                <select class="form-select shadow-sm" id="eo-tipo-servicio" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Aplicación">Aplicación</option>
+                                    <option value="Diagnóstico">Diagnóstico</option>
+                                    <option value="Inspección">Inspección</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Costo ($)</label>
+                                <input type="number" class="form-control shadow-sm" id="eo-costo" min="0" step="0.50">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary">Instrucciones / Observaciones para el Técnico</label>
+                            <textarea class="form-control shadow-sm" id="eo-observaciones" rows="3"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning w-100 fw-bold py-2 shadow-sm text-dark" id="btn-guardar-edicion-orden">Guardar Cambios y Actualizar Consecutivos</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para VISOR DE REPORTE MIP -->
+    <div class="modal fade" id="modalVisorReporte" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-info text-dark">
+                    <h5 class="modal-title fw-bold">📄 Reporte de Servicio MIP</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <div id="vr-contenido" class="card card-body border-0 shadow-sm">
+                        <p class="text-center text-muted my-4">Cargando datos del reporte...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar Visor</button>
+                    <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Imprimir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para CONFIRMAR HORA EN DRAG & DROP -->
+    <div class="modal fade" id="modalConfirmarDragDrop" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">🕒 Asignar Horario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="text-secondary mb-3">Vas a mover el <strong>Folio #<span id="dd-texto-folio"></span></strong><br>al día <strong id="dd-texto-dia" class="text-primary"></strong>.</p>
+                    
+                    <div class="mb-2 text-start">
+                        <label class="form-label fw-bold text-secondary">Selecciona la nueva HORA *</label>
+                        <input type="time" class="form-control form-control-lg text-center fw-bold" id="dd-nueva-hora" value="09:00" required>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between border-0 bg-light">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" id="btn-cancelar-dd" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" id="btn-aceptar-dd">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Librerías Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+    
+    <!-- Enlace a tu nuevo archivo de Lógica (JS) -->
+    <script src="panel.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+/* =======================================================
+   ESTILOS GENERALES DEL PANEL DE MESA DE CONTROL
+   ======================================================= */
+
+/* Ajustes para hacer más estéticos los recuadros del calendario FullCalendar */
+.fc-event {
+    font-size: 0.55rem !important; /* Reduce el tamaño de letra */
+    /*white-space: normal !important;  Permite que el texto pase al siguiente renglón si es muy largo */
+    cursor: pointer; /* Cambia el cursor a una manita para indicar que se puede hacer clic */
+    padding: 2px 4px !important; /* Le da un poco de espacio al texto por dentro */
+}
+
+/* ================= REGLAS PARA LA IMPRESORA ================= */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #modalVisorReporte, #modalVisorReporte * {
+        visibility: visible;
+    }
+    
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100% !important; 
+        overflow: hidden !important; 
+    }
+
+    #modalVisorReporte {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .modal-dialog, .modal-content, .modal-body {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .modal-backdrop, .modal-header, .modal-footer {
+        display: none !important;
+    }
+}
+
+/* LAS REGLAS DE LA PÁGINA DEBE IR AQUÍ, AFUERA DEL MEDIA PRINT */
+@page {
+    size: letter;
+    margin: 0mm; 
+}

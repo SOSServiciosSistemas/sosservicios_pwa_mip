@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Impresión de Planeador</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Reglas estrictas para la hoja de impresión */
+        @page { size: letter portrait; margin: 10mm; }
+        body { font-family: 'Arial', sans-serif; background: white; color: black; font-size: 11px; }
+        
+        /* Ocultar elementos innecesarios al imprimir */
+        @media print {
+            .no-print { display: none !important; }
+            .hoja-impresion { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; }
+        }
+
+        /* Diseño del formato físico */
+        .hoja-impresion { max-width: 800px; margin: 20px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border: 1px solid #ccc; }
+        .borde-negro { border: 2px solid black !important; }
+        .borde-delgado { border: 1px solid black !important; }
+        
+        table { border-collapse: collapse; width: 100%; margin-bottom: 10px; }
+        th, td { border: 1px solid black; padding: 4px; text-align: left; vertical-align: middle; }
+        .celda-centrada { text-align: center; }
+        .celda-monto { text-align: right; }
+        
+        /* Control de alturas para igualar el papel */
+        .fila-alta { height: 25px; }
+        .caja-firma { height: 80px; position: relative; border-bottom: 1px solid black; width: 80%; margin: 0 auto; display: flex; justify-content: center; align-items: flex-end; }
+        .img-firma { max-height: 70px; max-width: 100%; position: absolute; bottom: 0; }
+    </style>
+</head>
+<body>
+    <div class="text-center mb-3 no-print">
+        <button class="btn btn-primary btn-lg mt-3 shadow" onclick="window.print()">🖨️ Imprimir Formato</button>
+        <button class="btn btn-secondary btn-lg mt-3 ms-2 shadow" onclick="window.history.back()">Regresar</button>
+    </div>
+
+    <div class="hoja-impresion">
+        <!-- ENCABEZADO -->
+        <div class="row mb-2 align-items-center">
+            <div class="col-8">
+                <h4 class="fw-bold mb-0">PLANEADOR DE ACTIVIDADES DIARIAS</h4>
+                <h5 class="fw-bold">MANEJO INTEGRAL DE PLAGAS</h5>
+            </div>
+            <div class="col-4 text-end">
+                <img src="../../img/logo-SOS-Plagas.webp" alt="SOS Servicios" style="max-height: 55px;">
+            </div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-8">
+                <div class="borde-negro p-1 fw-bold rounded-pill ps-3">
+                    TÉCNICO: <span id="lbl-tecnico" class="text-decoration-underline ms-2">Cargando...</span>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="borde-negro p-1 fw-bold text-center rounded-pill">
+                    FECHA: <span id="lbl-fecha" class="text-decoration-underline ms-2">--/--/----</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA PRINCIPAL (SERVICIOS Y GASTOS) -->
+        <div class="borde-negro">
+            <table>
+                <thead class="text-center fw-bold bg-light">
+                    <tr>
+                        <th style="width: 12%;">ORDEN</th>
+                        <th style="width: 53%;">ACTIVIDADES/ CLIENTE/ COMENTARIOS/ GASTOS</th>
+                        <th style="width: 11%;">COSTO</th>
+                        <th style="width: 12%;">INGRESO</th>
+                        <th style="width: 12%;">GASTOS</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-cuerpo">
+                    <!-- Javascript inyectará las filas aquí -->
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold bg-light">
+                        <td colspan="2" class="text-end">TOTALES:</td>
+                        <td id="lbl-tot-costo" class="celda-monto">$0.00</td>
+                        <td id="lbl-tot-ingreso" class="celda-monto">$0.00</td>
+                        <td id="lbl-tot-gasto" class="celda-monto">$0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- TABLA DE PRODUCTOS / QUÍMICOS -->
+        <table class="mt-2 mb-2 borde-negro" style="font-size: 10px;">
+            <thead class="text-center bg-light border-bottom border-dark">
+                <tr>
+                    <th class="border-end border-dark" style="width: 15%;">PRODUCTO</th>
+                    <th class="border-end border-dark" style="width: 15%;">EN LA UNIDAD</th>
+                    <th class="border-end border-dark" style="width: 15%;">PRODUCTO USADO</th>
+                    <th class="border-end border-dark" style="width: 15%;">LITROS PREPARADOS</th>
+                    <th class="border-end border-dark" style="width: 15%;">PRODUCTO APLICADO</th>
+                    <th style="width: 25%;">Observaciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-productos" class="text-center">
+                <!-- Javascript inyectará las filas de productos aquí -->
+            </tbody>
+        </table>
+
+        <!-- SECCIÓN INFERIOR: REVISIÓN, OBSERVACIONES Y FIRMAS -->
+        <div class="row g-0 borde-negro">
+            <!-- Columna Izquierda: Revisión y KMs -->
+            <div class="col-3 border-end border-dark">
+                <table class="w-100 mb-0 text-center" style="border: none;">
+                    <thead class="bg-light">
+                        <tr><th style="border:none; border-bottom:1px solid black; font-size:10px;">REVISIÓN DE UNIDAD</th><th style="border:none; border-bottom:1px solid black;">B</th><th style="border:none; border-bottom:1px solid black;">M</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="text-end fw-bold pe-2 border-0">Batería</td><td class="border-start border-bottom border-dark fw-bold" id="chk-bat-b"></td><td class="border-start border-bottom border-dark fw-bold" id="chk-bat-m"></td></tr>
+                        <tr><td class="text-end fw-bold pe-2 border-0">Aceite</td><td class="border-start border-bottom border-dark fw-bold" id="chk-ace-b"></td><td class="border-start border-bottom border-dark fw-bold" id="chk-ace-m"></td></tr>
+                        <tr><td class="text-end fw-bold pe-2 border-0">Fugas</td><td class="border-start border-bottom border-dark fw-bold" id="chk-fug-b"></td><td class="border-start border-bottom border-dark fw-bold" id="chk-fug-m"></td></tr>
+                        <tr><td class="text-end fw-bold pe-2 border-0">Fusibles</td><td class="border-start border-dark fw-bold" id="chk-fus-b"></td><td class="border-start border-dark fw-bold" id="chk-fus-m"></td></tr>
+                    </tbody>
+                </table>
+                <div class="mt-2 border-top border-dark p-1">
+                    <div class="fw-bold" style="font-size: 10px;">KM INICIAL</div>
+                    <div class="borde-delgado text-center fw-bold" id="lbl-km-inicial">--</div>
+                    <div class="fw-bold mt-1" style="font-size: 10px;">KM FINAL</div>
+                    <div class="borde-delgado text-center fw-bold" id="lbl-km-final">--</div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Observaciones y Firmas -->
+            <div class="col-9 p-1">
+                <div class="fw-bold" style="font-size: 11px;">Observaciones</div>
+                <div style="height: 40px; border-bottom: 1px solid black; padding-left: 5px;" id="lbl-observaciones"></div>
+                
+                <div class="row align-items-end mt-2">
+                    <div class="col-5">
+                        <div class="fw-bold text-center" style="font-size: 10px;">TOTAL RECIBIDO AL FINALIZAR LA JORNADA</div>
+                        <div class="text-center fs-5 fw-bold" id="lbl-total-recibido">$--</div>
+                    </div>
+                    <div class="col-3 text-center">
+                        <div class="caja-firma">
+                            <img id="img-firma-mesa1" class="img-firma" src="" alt="">
+                        </div>
+                        <div style="font-size: 9px;" class="fw-bold">FIRMA DE RESPONSABLE</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="caja-firma">
+                            <img id="img-firma-tecnico" class="img-firma" src="" alt="">
+                        </div>
+                        <div style="font-size: 9px;" class="fw-bold">NOMBRE Y FIRMA DE TÉCNICO</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="imprimir.js"></script>
+</body>
+</html>

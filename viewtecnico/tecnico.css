@@ -1,0 +1,22 @@
+/* Configuraciones adicionales para la vista del técnico */
+
+body {
+    /* Evita que en celulares haya un scroll horizontal accidental */
+    overflow-x: hidden;
+}
+
+.card {
+    /* Redondea un poco más las tarjetas de la agenda para que se vean modernas */
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.card:active {
+    /* Efecto visual cuando el técnico presiona una tarjeta con el dedo */
+    transform: scale(0.98);
+}
+
+textarea {
+    /* Evita que puedan deformar las cajas de texto */
+    resize: none; 
+}

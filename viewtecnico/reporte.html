@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Servicio</title>
+    <!-- Salimos de la carpeta para buscar el manifest -->
+    <link rel="manifest" href="../manifest.json">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <!-- Header -->
+    <nav class="navbar navbar-dark bg-success shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1" id="titulo-folio">Reporte de Folio...</span>
+            <button id="btn-volver" class="btn btn-sm btn-outline-light">Volver</button>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <form id="formulario-reporte">
+            <!-- Bloque de textos -->
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-primary">ACCIONES E INDICACIONES CORRECTIVAS:</label>
+                        <textarea class="form-control" id="acciones" rows="3" placeholder="Ej. Se aplicó gel en cocina..." required></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold text-primary">INDICACIONES PRÓX. SERVICIO:</label>
+                        <textarea class="form-control" id="indicaciones" rows="2" placeholder="Ej. Traer escalera para techo..." required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Químicos -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white fw-bold text-primary d-flex justify-content-between align-items-center">
+                    <span>TABLA DE PRODUCTOS</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarFila()">+ Agregar Químico</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-0 text-center" style="font-size: 0.85rem;" id="tabla-quimicos">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Nombre Comercial</th>
+                                    <th>Dosis (ml/Lt)</th>
+                                    <th>Gasto Real</th>
+                                    <th>Quitar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Las filas se inyectan aquí desde el JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 fw-bold py-3 shadow-sm" id="btn-guardar">
+                Guardar Reporte y Finalizar
+            </button>
+        </form>
+
+        <div id="mensaje-exito" class="alert alert-success d-none text-center mt-3 fw-bold shadow-sm">
+            ¡Servicio registrado exitosamente!
+        </div>
+    </div>
+
+    <script>
+        // Logica de la tabla dinámica
+        function agregarFila() {
+            const tbody = document.querySelector('#tabla-quimicos tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm campo-tipo" placeholder="Ej. A"></td>
+                <td><input type="text" class="form-control form-control-sm campo-nombre" placeholder="Producto"></td>
+                <td><input type="text" class="form-control form-control-sm campo-dosis" placeholder="0"></td>
+                <td><input type="text" class="form-control form-control-sm campo-gasto" placeholder="0 ml"></td>
+                <td><button type="button" class="btn btn-sm btn-danger py-0" onclick="this.closest('tr').remove()">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const parametros = new URLSearchParams(window.location.search);
+            const folio = parametros.get('folio');
+            
+            if(!folio) {
+                window.location.href = "tecnico.html";
+                return;
+            }
+
+            document.getElementById('titulo-folio').innerText = `Reporte: ${folio}`;
+
+            // Botón volver
+            document.getElementById('btn-volver').onclick = () => {
+                window.location.href = `orden.html?folio=${folio}`;
+            };
+
+            // Agrega una fila vacía por defecto para que el técnico empiece a llenar
+            agregarFila();
+
+            // Al presionar Guardar
+            document.getElementById('formulario-reporte').addEventListener('submit', async (e) => {
+                e.preventDefault();
+        
+                // Recopilar los químicos de la tabla
+                const productos = [];
+                const filas = document.querySelectorAll('#tabla-quimicos tbody tr');
+                filas.forEach(fila => {
+                    const tipo = fila.querySelector('.campo-tipo').value;
+                    const nombre = fila.querySelector('.campo-nombre').value;
+                    if(nombre.trim() !== "") { // Solo guardamos si le pusieron nombre
+                        productos.push({
+                            tipo: tipo,
+                            nombre_comercial: nombre,
+                            dosis: fila.querySelector('.campo-dosis').value,
+                            gasto_real: fila.querySelector('.campo-gasto').value
+                        });
+                    }
+                });
+
+                // Arma el JSON para PostgreSQL
+                const detallesJSON = {
+                    acciones_correctivas: document.getElementById('acciones').value,
+                    indicaciones_proximas: document.getElementById('indicaciones').value,
+                    tabla_productos: productos
+                };
+
+                // Cambia el botón para mostrar que está procesando
+                const btnGuardar = document.getElementById('btn-guardar');
+                btnGuardar.innerText = "Guardando...";
+                btnGuardar.disabled = true;
+
+                try {
+                    // Recupera la hora en que empezó (o usa la actual si por alguna razón no se guardó)
+                    const horaInicio = localStorage.getItem('hora_inicio_' + folio) || new Date().toISOString();
+                    const horaFin = new Date().toISOString(); // Hora exacta en la que presionó Guardar
+
+                    // Enviar al servidor Node.js
+                    const respuesta = await fetch('http://localhost:3000/api/reportes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id_orden: folio,
+                            letra: 'A', 
+                            hora_inicio: horaInicio, 
+                            hora_fin: horaFin,       
+                            detalles: detallesJSON
+                        })
+                    });
+
+                    const datos = await respuesta.json();
+                    
+                    if(datos.exito) {
+                        document.getElementById('formulario-reporte').classList.add('d-none');
+                        document.getElementById('mensaje-exito').classList.remove('d-none');
+                        
+                        // Limpia la memoria del celular para esta orden
+                        localStorage.removeItem('hora_inicio_' + folio);
+                        
+                        // Lo regresa a su agenda principal después de 2 segundos
+                        setTimeout(() => window.location.href = "tecnico.html", 2000); 
+                    } else {
+                        alert("Error del servidor: " + datos.error);
+                        btnGuardar.innerText = "Reintentar";
+                        btnGuardar.disabled = false;
+                    }
+                } catch (error) {
+                    alert("Error al conectar con el servidor backend.");
+                    btnGuardar.innerText = "Reintentar";
+                    btnGuardar.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

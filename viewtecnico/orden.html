@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Servicio</title>
+    <!-- Los dos puntos "../" le dicen que salga de viewtecnico y busque en la raíz -->
+    <link rel="manifest" href="../manifest.json">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .campo-resaltado {
+            background-color: #fff3cd; /* Amarillo simulando el marcador de antecedentes */
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Header -->
+    <nav class="navbar navbar-dark bg-primary shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1" id="titulo-folio">Cargando...</span>
+            <!-- Regresa a la agenda que está en su misma carpeta -->
+            <a href="tecnico.html" class="text-white text-decoration-none">Volver</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-body" id="contenedor-datos">
+                <!-- Aquí se inyectarán los datos desde PostgreSQL -->
+                <p class="text-center text-muted">Cargando información de la orden...</p>
+            </div>
+        </div>
+
+        <!-- El botón que lo lleva a llenar los químicos al finalizar -->
+        <button id="btn-servicio-realizado" class="btn btn-success w-100 fw-bold py-3 mt-4 shadow-sm">
+            ✓ Servicio Realizado (Llenar Reporte)
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Extraemos el número de orden de la URL
+            const parametros = new URLSearchParams(window.location.search);
+            const folio = parametros.get('folio');
+            
+            // Si alguien entra sin un folio, lo regresamos a su agenda
+            if(!folio) {
+                window.location.href = "tecnico.html";
+                return;
+            }
+
+            // Configuramos el botón final para que lo mande al formulario de químicos
+            document.getElementById('btn-servicio-realizado').onclick = () => {
+                window.location.href = `reporte.html?folio=${folio}`;
+            };
+
+            try {
+                // Hacemos la consulta a tu servidor Node.js
+                const respuesta = await fetch(`http://localhost:3000/api/orden/${folio}`);
+                const datos = await respuesta.json();
+
+                if(datos.exito) {
+                    const orden = datos.orden;
+                    const fecha = new Date(orden.fecha_programada).toLocaleDateString();
+                    const hora = new Date(orden.fecha_programada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const telefono = orden.telefono && orden.telefono.length > 0 ? orden.telefono[0] : 'No registrado';
+                    
+                    // Validaciones de fecha anterior y folio compuesto
+                    const fechaAnterior = orden.fecha_servicio_anterior ? new Date(orden.fecha_servicio_anterior).toLocaleDateString() : 'Primer servicio';
+                    const folioCompleto = orden.letra_orden ? `${orden.id_orden}-${orden.letra_orden}` : orden.id_orden;
+                    
+                    // Lista de plagas comunes para generar los checkboxes visuales
+                    const listaPlagas = ["Cucarachas", "Hormigas", "Grillos", "Garrapatas", "Murciélagos", "Alacranes", "Arañas", "Tijerillas", "Ratones", "Aves", "Chinches", "Termitas", "Pulgas", "Roedores"];
+                    let plagasHTML = '';
+                    const plagasSeleccionadas = orden.plagas_a_tratar || [];
+                    
+                    listaPlagas.forEach(plaga => {
+                        const estaMarcada = plagasSeleccionadas.includes(plaga) ? '☑' : '☐';
+                        const colorMarcada = plagasSeleccionadas.includes(plaga) ? 'text-danger fw-bold' : 'text-muted';
+                        plagasHTML += `<div class="col-6 col-md-4 mb-1 ${colorMarcada}">${estaMarcada} ${plaga}</div>`;
+                    });
+
+                    document.getElementById('titulo-folio').innerText = `FOLIO: ${folioCompleto}`;
+
+                    // Dibujamos el formato emulando la hoja impresa
+                    document.getElementById('contenedor-datos').innerHTML = `
+                        <div class="row mb-3 border-bottom pb-2">
+                            <div class="col-6"><strong>TIPO DE SERVICIO:</strong> <br><span class="text-primary">${orden.tipo_servicio || 'N/A'}</span></div>
+                            <div class="col-6 text-end"><strong>FOLIO:</strong> <br><span class="text-danger fw-bold h5">${folioCompleto}</span></div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6"><strong>Fecha:</strong> <br>${fecha}</div>
+                            <div class="col-6"><strong>Horario:</strong> <br>${hora}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12"><strong>Nombre:</strong> ${orden.nombre_cliente}</div>
+                            <div class="col-12 mt-2"><strong>Dirección:</strong> ${orden.domicilio}</div>
+                            <div class="col-12 mt-2"><strong>Colonia:</strong> ${orden.colonia}</div>
+                            <div class="col-6 mt-2"><strong>Ciudad:</strong> ${orden.ciudad}</div>
+                            <div class="col-6 mt-2 text-primary fw-bold"><strong>Tel:</strong> <a href="tel:${telefono}">${telefono}</a></div>
+                        </div>
+                        
+                        <h6 class="mt-4 fw-bold text-center bg-light p-2 border">PLAGAS A TRATAR</h6>
+                        <div class="row small mb-4">
+                            ${plagasHTML}
+                        </div>
+
+                        <div class="row small mb-3 border-bottom pb-3">
+                            <div class="col-6"><strong>Fecha servicio anterior:</strong> <br>${fechaAnterior}</div>
+                            <div class="col-6 text-end"><strong>Tratamiento:</strong> <br>${orden.num_tratamiento} de ${orden.total_tratamientos}</div>
+                        </div>
+
+                        <h6 class="mt-4 fw-bold text-center border-bottom pb-2">ANTECEDENTES E INDICACIONES</h6>
+                        <div class="campo-resaltado text-dark small mb-4">
+                            ${orden.observaciones_mesa || 'Sin indicaciones previas.'}
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-light p-3 border rounded">
+                            <h5 class="mb-0 fw-bold">COSTO:</h5>
+                            <h4 class="mb-0 text-success fw-bold">$${orden.ingresos_cobrados || '0.00'}</h4>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('contenedor-datos').innerHTML = `<div class="alert alert-warning">No se encontró la información de la orden.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('contenedor-datos').innerHTML = `<div class="alert alert-danger">Error al cargar la orden desde el servidor.</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
