@@ -1,5 +1,4 @@
 // ================= CONFIGURACIÓN DE ENTORNO =================
-const BASE_URL = 'http://localhost:3000';
 let todasLasBitacoras = []; // Variable global para guardar los planeadores
 
 // ================= CONFIGURACIÓN INICIAL =================

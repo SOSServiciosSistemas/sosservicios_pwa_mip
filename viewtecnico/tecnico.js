@@ -1,4 +1,3 @@
-const BASE_URL = 'http://localhost:3000';
 let idBitacoraDiaria = null;
 let kmInicialDia = 0;
 let totalEfectivoCalculado = 0;

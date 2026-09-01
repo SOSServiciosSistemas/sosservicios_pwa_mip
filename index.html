@@ -70,7 +70,7 @@
             
             try {
                 // Hace la petición POST al servidor Node.js
-                const respuesta = await fetch('http://localhost:3000/api/login', {
+                const respuesta = await fetch(BASE_URL + '/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
