@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = '[https://api.sosservicios.com.mx](https://api.sosservicios.com.mx)';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Extrae el ID de la bitácora desde la URL (Ejemplo: imprimir_planeador.html?id=15)

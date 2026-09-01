@@ -7,7 +7,7 @@
     <!-- Salimos de viewtecnico y buscamos el manifest en la raíz -->
     <link rel="manifest" href="../manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Enlazamos nuestra nueva hoja de estilos CSS -->
+    <!-- Enlaza la hoja de estilos CSS -->
     <link rel="stylesheet" href="tecnico.css">
 </head>
 <body class="bg-light">
@@ -39,15 +39,12 @@
             </div>
         </div>
         <!-- =============================================================================== -->
-
         <!-- Aquí inyectaremos los datos desde PostgreSQL -->
         <div id="contenedor-agenda">
             <div class="alert alert-info" role="alert">
                 Cargando servicios de hoy...
             </div>
         </div>
-
-    
 
     <!-- ========================================================================= -->
     <!-- VISTA DEL PLANEADOR DE ACTIVIDADES (Reemplaza a la agenda al cerrar) -->
@@ -110,7 +107,7 @@
             </form>
         </div>
 
-        <!-- SECCIÓN 2: FIRMA DE MESA DE CONTROL (Para liquidar al día siguiente) -->
+        <!-- FIRMA DE MESA DE CONTROL (Para liquidar al día siguiente) -->
         <div id="seccion-firma-mesa" class="card shadow-sm border-0 mb-4 p-3 border-start border-primary border-4" style="display: none;">
             <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">2. Liquidación (Mesa de Control)</h5>
             
@@ -208,8 +205,6 @@
         </div>
     </div>
 
-    
-
     <!-- ========================================================================= -->
     <!-- MODAL ESTÁTICO: APERTURA DE JORNADA (No se puede cerrar sin llenar) -->
     <!-- ========================================================================= -->
@@ -218,7 +213,7 @@
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white d-flex justify-content-center">
                     <h5 class="modal-title fw-bold">☀️ Iniciar Jornada</h5>
-                    <!-- OJO: No hay botón de "X" para cerrar -->
+                    <!-- No hay botón de "X" para cerrar -->
                 </div>
                 <div class="modal-body bg-light">
                     <form id="form-apertura-jornada">
@@ -283,7 +278,8 @@
     <!-- Librería de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Enlazamos nuestra lógica de Javascript -->
+
+    <script src="../config.js"></script>
     <script src="tecnico.js"></script>
 </body>
 </html>
