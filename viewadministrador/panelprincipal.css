@@ -1,0 +1,35 @@
+/* panelprincipal.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link.active {
+    color: #212529;
+    font-weight: bold;
+    border-top: 3px solid #0d6efd; /* Un sutil indicador visual en la pestaña activa */
+}
+
+/* Mejora la responsividad en móviles */
+@media (max-width: 768px) {
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+    }
+}
