@@ -40,6 +40,8 @@
         </button>
     </div>
 
+    <script src="../config.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // Extraemos el número de orden de la URL
@@ -59,7 +61,8 @@
 
             try {
                 // Hacemos la consulta a tu servidor Node.js
-                const respuesta = await fetch(`http://localhost:3000/api/orden/${folio}`);
+
+                const respuesta = await fetch(`${BASE_URL}/api/orden/${folio}`);
                 const datos = await respuesta.json();
 
                 if(datos.exito) {
