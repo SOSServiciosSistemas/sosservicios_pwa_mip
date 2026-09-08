@@ -196,10 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
 window.cambiarVista = function(vista, evento) {
     if(evento) evento.preventDefault();
     
-    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active', 'text-warning', 'fw-bold'));
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active', 'text-warning', 'text-info', 'fw-bold'));
     if(evento) {
         evento.target.classList.add('active');
         if (vista === 'planeadores') evento.target.classList.add('text-warning', 'fw-bold');
+        if (vista === 'inventarios') evento.target.classList.add('text-info', 'fw-bold');
     }
 
     // Ocultar todas las vistas
@@ -207,6 +208,7 @@ window.cambiarVista = function(vista, evento) {
     document.getElementById('seccion-agenda').style.display = 'none';
     document.getElementById('seccion-historial').style.display = 'none';
     document.getElementById('seccion-planeadores').style.display = 'none';
+    document.getElementById('seccion-inventarios').style.display = 'none'; 
     
     // Mostrar la vista elegida
     if(vista === 'clientes') {
@@ -221,6 +223,10 @@ window.cambiarVista = function(vista, evento) {
     } else if(vista === 'planeadores') {
         document.getElementById('seccion-planeadores').style.display = 'block';
         cargarPlaneadores();
+    } else if(vista === 'inventarios') { 
+        document.getElementById('seccion-inventarios').style.display = 'block';
+        cargarInventarioOficina();
+        cargarCatalogoParaCompras(); 
     }
 };
 
@@ -1203,4 +1209,95 @@ window.filtrarPlaneadores = function() {
     });
 
     tbody.innerHTML = htmlFilas;
+};
+
+// =====================================================================
+// MÓDULO DE INVENTARIOS Y ALMACENES
+// =====================================================================
+
+window.cargarCatalogoParaCompras = async function() {
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/admin/productos');
+        const datos = await respuesta.json();
+        
+        const selectProducto = document.getElementById('ingreso-producto');
+        selectProducto.innerHTML = '<option value="">Seleccione un producto...</option>';
+
+        if(datos.exito) {
+            const productosActivos = datos.productos.filter(p => p.activo);
+            productosActivos.forEach(prod => {
+                const opcion = `<option value="${prod.id_producto}" data-categoria="${prod.categoria}">
+                                    ${prod.clave_producto} - ${prod.nombre_comercial}
+                                </option>`;
+                selectProducto.innerHTML += opcion;
+            });
+        }
+    } catch (error) {
+        console.error("Error al cargar catálogo:", error);
+    }
+};
+
+document.getElementById('ingreso-producto')?.addEventListener('change', function() {
+    const opcionSeleccionada = this.options[this.selectedIndex];
+    const categoria = opcionSeleccionada.getAttribute('data-categoria');
+    
+    const seccionCaducidad = document.getElementById('seccion-caducidad-ingreso');
+    const inputCaducidad = document.getElementById('ingreso-caducidad');
+
+    if (categoria === 'Quimico') {
+        seccionCaducidad.style.display = 'flex'; 
+        inputCaducidad.required = true;
+    } else {
+        seccionCaducidad.style.display = 'none'; 
+        inputCaducidad.required = false;
+        inputCaducidad.value = ''; 
+    }
+});
+
+document.getElementById('form-ingreso-stock')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btnGuardar = document.getElementById('btn-guardar-ingreso');
+    btnGuardar.innerText = "Registrando..."; btnGuardar.disabled = true;
+
+    const datosIngreso = {
+        id_producto: document.getElementById('ingreso-producto').value,
+        cantidad_comprada: document.getElementById('ingreso-cantidad').value,
+        proveedor: document.getElementById('ingreso-proveedor').value,
+        costo_unitario: document.getElementById('ingreso-costo').value,
+        fecha_caducidad: document.getElementById('ingreso-caducidad').value || null,
+        id_usuario_registra: localStorage.getItem('idUsuario') 
+    };
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/inventario/entrada', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosIngreso)
+        });
+        
+        const datos = await respuesta.json();
+        
+        if (datos.exito) {
+            const modalEl = document.getElementById('modalIngresoStock');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            this.reset();
+            cargarInventarioOficina(); 
+            alert("¡Entrada de stock registrada correctamente!");
+        } else {
+            alert("Error al registrar: " + datos.error);
+        }
+    } catch (error) {
+        alert("Hubo un problema de conexión al guardar la entrada.");
+    } finally {
+        btnGuardar.innerText = "Confirmar Ingreso a Oficina"; btnGuardar.disabled = false;
+    }
+});
+
+window.cargarInventarioOficina = async function() {
+    const tbody = document.getElementById('tabla-almacen-general');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Sincronizando inventario con la base de datos...</td></tr>';
+    // Esta función se completará cuando tengamos la ruta GET en Node.js
 };

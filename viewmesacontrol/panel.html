@@ -34,6 +34,10 @@
                     <li class="nav-item">
                         <a class="nav-link text-warning fw-bold" href="#" onclick="cambiarVista('planeadores', event)">Planeadores Diarios</a>
                     </li>
+                    <!-- NUEVA PESTAÑA: INVENTARIOS -->
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="#" onclick="cambiarVista('inventarios', event)">Inventarios</a>
+                    </li>
                 </ul>
                 <div class="d-flex align-items-center">
                     <span class="navbar-text text-white me-3" id="nombre-usuario-nav">Cargando...</span>
@@ -193,6 +197,85 @@
         </div>
 
     </div>
+
+    <!-- ================= GESTIÓN DE INVENTARIOS ================= -->
+        <div id="seccion-inventarios" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="fw-bold text-info"><i class="fas fa-boxes"></i> Control de Inventarios</h2>
+            </div>
+
+            <!-- Sub-pestañas internas (Almacén vs Técnicos) -->
+            <ul class="nav nav-tabs mb-4" id="inventarioTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold" id="almacen-tab" data-bs-toggle="tab" data-bs-target="#almacen" type="button" role="tab">🏢 Almacén General</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-secondary" id="tecnicos-tab" data-bs-toggle="tab" data-bs-target="#tecnicos-inv" type="button" role="tab">🚐 Inventario Técnicos</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="inventarioTabsContent">
+                
+                <!-- PESTAÑA INTERNA: ALMACÉN GENERAL -->
+                <div class="tab-pane fade show active" id="almacen" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-muted mb-0">Existencias en Oficina</h5>
+                        <button class="btn btn-success fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalIngresoStock">📥 Ingresar Compra</button>
+                    </div>
+                    <div class="card shadow-sm border-0">
+                        <div class="table-responsive bg-white rounded">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Clave</th>
+                                        <th>Producto</th>
+                                        <th>Stock Disponible</th>
+                                        <th>Costo Promedio</th>
+                                        <th>Caducidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-almacen-general">
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Cargando inventario...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA INTERNA: INVENTARIO TÉCNICOS -->
+                <div class="tab-pane fade" id="tecnicos-inv" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-muted mb-0">Material asignado a Camionetas</h5>
+                        <button class="btn btn-primary fw-bold shadow-sm" id="btn-traspasar-stock">📤 Entregar a Técnico</button>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select shadow-sm" id="filtro-tecnico-inv">
+                                <option value="todos">Ver todos los técnicos</option>
+                                <!-- Llenado por JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card shadow-sm border-0">
+                        <div class="table-responsive bg-white rounded">
+                            <table class="table table-hover mb-0 align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Técnico (Camioneta)</th>
+                                        <th>Producto</th>
+                                        <th>Stock a Bordo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-almacen-tecnicos">
+                                    <tr><td colspan="3" class="text-center text-muted py-4">Cargando datos...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
 
     <!-- ================= MODALES (CLIENTES, ORDENES Y REAGENDAR SE MANTIENEN EXACTAMENTE IGUAL) ================= -->
 
@@ -720,6 +803,58 @@
                 <div class="modal-footer justify-content-between border-0 bg-light">
                     <button type="button" class="btn btn-outline-secondary fw-bold" id="btn-cancelar-dd" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary fw-bold px-4" id="btn-aceptar-dd">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: INGRESAR COMPRA (ENTRADA STOCK) ================= -->
+    <div class="modal fade" id="modalIngresoStock" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold">📥 Registrar Entrada de Compra</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="form-ingreso-stock">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold text-secondary">Producto del Catálogo *</label>
+                                <select class="form-select shadow-sm" id="ingreso-producto" required>
+                                    <option value="">Cargando productos...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold text-secondary">Cantidad Comprada *</label>
+                                <input type="number" step="0.01" class="form-control shadow-sm" id="ingreso-cantidad" placeholder="Ej. 5 envases" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Proveedor *</label>
+                                <input type="text" class="form-control shadow-sm" id="ingreso-proveedor" placeholder="Ej. Distribuidora Bajío" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Costo Unitario (Por envase/pz) *</label>
+                                <div class="input-group shadow-sm">
+                                    <span class="input-group-text bg-white">$</span>
+                                    <input type="number" step="0.01" class="form-control" id="ingreso-costo" placeholder="0.00" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3" id="seccion-caducidad-ingreso">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Fecha de Caducidad</label>
+                                <input type="date" class="form-control shadow-sm text-danger fw-bold" id="ingreso-caducidad">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm mt-3" id="btn-guardar-ingreso">Confirmar Ingreso a Oficina</button>
+                    </form>
                 </div>
             </div>
         </div>

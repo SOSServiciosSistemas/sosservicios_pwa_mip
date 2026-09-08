@@ -196,3 +196,76 @@ async function cambiarEstatusProducto(id, nuevoEstatus) {
         console.error("Error al cambiar estatus del producto:", error);
     }
 }
+
+// ==========================================
+// INTERFAZ: MODAL DE NUEVO PRODUCTO
+// ==========================================
+
+// Mostrar la ventana al hacer clic en el botón
+document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
+    const modal = new bootstrap.Modal(document.getElementById('modalNuevoProducto'));
+    document.getElementById('form-nuevo-producto').reset(); // Limpia el formulario
+    document.getElementById('seccion-quimicos').classList.add('d-none'); // Oculta sección química por defecto
+    modal.show();
+});
+
+// Mostrar campos químicos solo si se elige "Quimico"
+document.getElementById('prod-categoria').addEventListener('change', function() {
+    const seccionQuimicos = document.getElementById('seccion-quimicos');
+    
+    if (this.value === 'Quimico') {
+        seccionQuimicos.classList.remove('d-none'); // Muestra el cuadro gris
+    } else {
+        seccionQuimicos.classList.add('d-none'); // Lo oculta
+        // Limpiamos los campos por si el usuario se equivocó y los había llenado
+        document.getElementById('prod-subcategoria').value = '';
+        document.getElementById('prod-ingrediente').value = '';
+        document.getElementById('prod-registro').value = '';
+    }
+});
+
+// Guardar el nuevo producto en la base de datos
+document.getElementById('form-nuevo-producto').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Evita que la página se recargue
+
+    // Recopilamos los datos del formulario
+    const nuevoProducto = {
+        nombre_comercial: document.getElementById('prod-nombre').value,
+        clave_producto: document.getElementById('prod-clave').value,
+        categoria: document.getElementById('prod-categoria').value,
+        unidad_medida: document.getElementById('prod-unidad').value,
+        capacidad_presentacion: document.getElementById('prod-presentacion').value,
+        stock_minimo: document.getElementById('prod-stock-min').value,
+        
+        // Estos campos solo tendrán valor si es Químico, si no, se enviarán vacíos
+        subcategoria: document.getElementById('prod-subcategoria').value || null,
+        ingrediente_activo: document.getElementById('prod-ingrediente').value || null,
+        registro_sanitario: document.getElementById('prod-registro').value || null
+    };
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/admin/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoProducto)
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            // Cerramos la ventana modal usando bootstrap
+            const modalEl = document.getElementById('modalNuevoProducto');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            // Recargamos la tabla para que aparezca el nuevo registro
+            cargarProductos();
+            alert("¡Producto registrado con éxito!");
+        } else {
+            alert("Error al registrar: " + datos.error);
+        }
+    } catch (error) {
+        console.error("Error en la petición:", error);
+        alert("Hubo un problema de conexión al guardar el producto.");
+    }
+});

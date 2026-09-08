@@ -114,6 +114,102 @@
     </div> <!-- Fin de container -->
 
     <!-- ========================================== -->
+    <!-- MODAL: NUEVO PRODUCTO                      -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-labelledby="modalNuevoProductoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalNuevoProductoLabel">Registrar Nuevo Producto al Catálogo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nuevo-producto">
+                        
+                        <!-- Fila 1: Nombre y Clave -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="prod-nombre" class="form-label fw-bold">Nombre Comercial *</label>
+                                <input type="text" class="form-control" id="prod-nombre" placeholder="Ej. Cipermetrina 20%" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prod-clave" class="form-label fw-bold">Clave del Producto *</label>
+                                <input type="text" class="form-control" id="prod-clave" placeholder="Ej. CRP1000" required>
+                            </div>
+                        </div>
+                        
+                        <!-- Fila 2: Categoría y Medidas -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="prod-categoria" class="form-label fw-bold">Categoría *</label>
+                                <select class="form-select" id="prod-categoria" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Quimico">Químico</option>
+                                    <option value="Herramienta">Herramienta</option>
+                                    <option value="Equipo">Equipo / EPP</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="prod-unidad" class="form-label fw-bold">Unidad Base *</label>
+                                <select class="form-select" id="prod-unidad" required>
+                                    <option value="ml">Mililitros (ml)</option>
+                                    <option value="g">Gramos (g)</option>
+                                    <option value="pz">Piezas (pz)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="prod-presentacion" class="form-label fw-bold">Capacidad Presentación *</label>
+                                <input type="number" class="form-control" id="prod-presentacion" placeholder="Ej. 1000" required>
+                                <div class="form-text" style="font-size: 0.75rem;">Ej: Si el envase es de 1 Litro, escribe 1000.</div>
+                            </div>
+                        </div>
+
+                        <!-- SECCIÓN DINÁMICA: Solo visible para Químicos -->
+                        <div id="seccion-quimicos" class="p-3 mb-3 bg-light border rounded d-none">
+                            <h6 class="text-primary mb-3">Datos exclusivos para Químicos</h6>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="prod-subcategoria" class="form-label">Subcategoría (Banda)</label>
+                                    <select class="form-select" id="prod-subcategoria">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Verde">Banda Verde</option>
+                                        <option value="Azul">Banda Azul</option>
+                                        <option value="Amarilla">Banda Amarilla</option>
+                                        <option value="Roja">Banda Roja</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="prod-ingrediente" class="form-label">Ingrediente Activo</label>
+                                    <input type="text" class="form-control" id="prod-ingrediente">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label for="prod-registro" class="form-label">Registro Sanitario</label>
+                                    <input type="text" class="form-control" id="prod-registro">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila 3: Stock de Alerta -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="prod-stock-min" class="form-label fw-bold">Stock Mínimo (Alerta) *</label>
+                                <input type="number" step="0.01" class="form-control" id="prod-stock-min" required>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="form-nuevo-producto" class="btn btn-primary">Guardar Producto</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- SCRIPTS                                    -->
     <!-- ========================================== -->
     <!-- 1. Funcionalidad de las pestañas de Bootstrap -->
