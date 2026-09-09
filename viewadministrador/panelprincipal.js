@@ -269,3 +269,123 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
         alert("Hubo un problema de conexión al guardar el producto.");
     }
 });
+
+// =====================================================================
+// HISTORIAL Y AUDITORÍA DE INVENTARIO (ADMINISTRADOR)
+// =====================================================================
+
+window.cargarHistorialInventario = async function(forzarFechas = false) {
+    const tbody = document.getElementById('tabla-historial-inventario');
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Consultando a la base de datos...</td></tr>';
+
+    try {
+        let url = BASE_URL + '/api/inventario/historial';
+        
+        // Si se activó la búsqueda por fechas, agregamos los datos a la URL
+        if (forzarFechas) {
+            const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
+            const fechaFin = document.getElementById('filtro-fecha-fin').value;
+            
+            if (!fechaInicio || !fechaFin) {
+                alert("Por favor, selecciona tanto la fecha de inicio como la fecha fin.");
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Esperando selección de fechas...</td></tr>';
+                return;
+            }
+            url += `?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`;
+        }
+
+        const respuesta = await fetch(url);
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            if (datos.historial.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron movimientos en ese periodo.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            datos.historial.forEach(mov => {
+                const fecha = new Date(mov.fecha_movimiento).toLocaleString('es-MX', { 
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                });
+
+                let colorBadge = 'bg-secondary';
+                if (mov.tipo_movimiento === 'Entrada por Compra') colorBadge = 'bg-success';
+                if (mov.tipo_movimiento === 'Traspaso a Técnico') colorBadge = 'bg-primary';
+                if (mov.tipo_movimiento === 'Consumo') colorBadge = 'bg-warning text-dark';
+
+                const fila = `
+                    <tr class="fila-historial" data-tipo="${mov.tipo_movimiento}">
+                        <td class="text-muted small">${fecha}</td>
+                        <td class="fw-bold text-dark">${mov.nombre_comercial}</td>
+                        <td><span class="badge ${colorBadge}">${mov.tipo_movimiento}</span></td>
+                        <td class="fw-bold">${parseFloat(mov.cantidad).toFixed(2)} ${mov.unidad_medida}</td>
+                        <td class="small">
+                            <span class="text-danger">${mov.origen}</span> ➡️ <span class="text-success">${mov.destino}</span>
+                        </td>
+                        <td class="text-secondary small">👤 ${mov.usuario_registra}</td>
+                        <td class="text-muted small fst-italic">${mov.notas || '-'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+            
+            // Volvemos a aplicar los filtros rápidos de texto por si quedaron escritos
+            aplicarFiltrosHistorial();
+        } else {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error: ${datos.error}</td></tr>`;
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error de conexión al cargar historial.</td></tr>`;
+    }
+};
+
+// Eventos de los botones de fechas
+document.getElementById('btn-buscar-fechas')?.addEventListener('click', () => {
+    cargarHistorialInventario(true); // Ejecuta forzando la lectura de fechas
+});
+
+document.getElementById('btn-limpiar-fechas')?.addEventListener('click', () => {
+    document.getElementById('filtro-fecha-inicio').value = '';
+    document.getElementById('filtro-fecha-fin').value = '';
+    document.getElementById('filtro-texto-historial').value = '';
+    document.getElementById('filtro-tipo-historial').value = 'todos';
+    cargarHistorialInventario(false); // Vuelve a cargar los últimos 200 por defecto
+});
+
+// Disparador: Cargar historial al abrir la pestaña correspondiente
+document.getElementById('historial-tab')?.addEventListener('shown.bs.tab', function () {
+    cargarHistorialInventario();
+});
+
+// =====================================================================
+// FILTROS EN TIEMPO REAL PARA EL HISTORIAL
+// =====================================================================
+
+function aplicarFiltrosHistorial() {
+    const textoBuscar = document.getElementById('filtro-texto-historial').value.toLowerCase();
+    const tipoBuscar = document.getElementById('filtro-tipo-historial').value;
+    
+    // Tomamos todas las filas que creamos
+    const filas = document.querySelectorAll('.fila-historial');
+
+    filas.forEach(fila => {
+        const textoFila = fila.innerText.toLowerCase(); // Todo el texto visible de la fila
+        const tipoFila = fila.getAttribute('data-tipo'); // El tipo de movimiento oculto en la fila
+
+        // Verificamos si cumple ambas condiciones
+        const coincideTexto = textoFila.includes(textoBuscar);
+        const coincideTipo = (tipoBuscar === 'todos' || tipoFila === tipoBuscar);
+
+        if (coincideTexto && coincideTipo) {
+            fila.style.display = ''; // Lo mostramos
+        } else {
+            fila.style.display = 'none'; // Lo ocultamos
+        }
+    });
+}
+
+// Escuchamos cuando el usuario escriba o cambie el selector
+document.getElementById('filtro-texto-historial')?.addEventListener('input', aplicarFiltrosHistorial);
+document.getElementById('filtro-tipo-historial')?.addEventListener('change', aplicarFiltrosHistorial);

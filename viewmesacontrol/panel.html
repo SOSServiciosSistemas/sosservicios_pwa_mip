@@ -860,6 +860,58 @@
         </div>
     </div>
 
+    <!-- ================= MODAL: TRASPASAR A TÉCNICO ================= -->
+    <div class="modal fade" id="modalTraspasoStock" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📤 Entregar Material a Técnico</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="form-traspaso-stock">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold text-secondary">Producto a entregar *</label>
+                                <!-- Se llenará solo con lo que hay disponible en oficina -->
+                                <select class="form-select shadow-sm" id="traspaso-producto" required>
+                                    <option value="">Cargando inventario disponible...</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold text-secondary">Técnico que recibe *</label>
+                                <select class="form-select shadow-sm" id="traspaso-tecnico" required>
+                                    <option value="">Cargando técnicos...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Cantidad a Entregar *</label>
+                                <div class="input-group shadow-sm">
+                                    <input type="number" step="0.01" class="form-control" id="traspaso-cantidad" placeholder="Ej. 2" required>
+                                    <select class="form-select bg-light text-secondary fw-bold" id="traspaso-tipo-unidad" style="max-width: 140px;">
+                                        <option value="envase">Envases</option>
+                                        <option value="base" id="opt-unidad-base">ml / g</option>
+                                    </select>
+                                </div>
+                                <small id="ayuda-stock-maximo" class="text-primary fw-bold mt-1 d-block"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-secondary">Notas / Observaciones</label>
+                                <input type="text" class="form-control shadow-sm" id="traspaso-notas" placeholder="Ej. Reposición semanal">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm mt-3" id="btn-guardar-traspaso">Confirmar Entrega</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Librerías Externas -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>

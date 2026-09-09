@@ -30,6 +30,10 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos" type="button" role="tab">📦 Productos (Químicos)</button>
             </li>
+            <!-- NUEVA PESTAÑA: Historial -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button" role="tab">📑 Historial Inventario</button>
+            </li>
         </ul>
 
         <!-- Contenedor del contenido de las pestañas -->
@@ -55,7 +59,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-usuarios">
-                            <!-- Este espacio se llenará automáticamente con Javascript -->
+                            <!-- Javascript -->
                         </tbody>
                     </table>
                 </div>
@@ -79,7 +83,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-clientes">
-                            <!-- Este espacio se llenará automáticamente con Javascript -->
+                            <!-- Javascript -->
                         </tbody>
                     </table>
                 </div>
@@ -104,15 +108,88 @@
                             </tr>
                         </thead>
                         <tbody id="tabla-productos">
-                            <!-- Este espacio se llenará automáticamente con Javascript -->
+                            <!-- Javascript -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-        </div> <!-- Fin de tab-content -->
-    </div> <!-- Fin de container -->
+            <!-- ========================================== -->
+            <!-- PESTAÑA 4: HISTORIAL DE INVENTARIO         -->
+            <!-- ========================================== -->
+            <div class="tab-pane fade" id="historial" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Auditoría de Movimientos</h4>
+                    <button class="btn btn-outline-primary btn-sm" onclick="cargarHistorialInventario()">🔄 Actualizar</button>
+                </div>
+                
+                <!-- Barra de Filtros Avanzados -->
+                <div class="row mb-3 bg-white p-3 rounded shadow-sm mx-0 border">
+                    <h6 class="text-secondary fw-bold mb-3">Filtros de Búsqueda en Base de Datos</h6>
+                    
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small fw-bold">Fecha Inicio</label>
+                        <input type="date" id="filtro-fecha-inicio" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label small fw-bold">Fecha Fin</label>
+                        <input type="date" id="filtro-fecha-fin" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-4 mb-2 d-flex align-items-end">
+                        <button class="btn btn-primary btn-sm w-100" id="btn-buscar-fechas">
+                            🔍 Buscar en Historial
+                        </button>
+                    </div>
+                    <div class="col-md-2 mb-2 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary btn-sm w-100" id="btn-limpiar-fechas">
+                            Limpiar
+                        </button>
+                    </div>
 
+                    <div class="col-12 border-top my-3"></div>
+                    
+                    <!-- Filtros rápidos locales -->
+                    <div class="col-md-7 mb-2">
+                        <label class="form-label small fw-bold text-primary">Búsqueda Rápida (sobre los resultados mostrados)</label>
+                        <input type="text" id="filtro-texto-historial" class="form-control form-control-sm border-primary" placeholder="Escribe un químico, técnico o nota para filtrar al instante...">
+                    </div>
+                    <div class="col-md-5 mb-2">
+                        <label class="form-label small fw-bold text-primary">Filtrar por Tipo</label>
+                        <select id="filtro-tipo-historial" class="form-select form-control-sm border-primary">
+                            <option value="todos">Todos los movimientos</option>
+                            <option value="Entrada por Compra">Entrada por Compra</option>
+                            <option value="Traspaso a Técnico">Traspaso a Técnico</option>
+                            <option value="Consumo">Consumos (Técnicos)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tabla de Resultados -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 text-sm">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Fecha y Hora</th>
+                                        <th>Producto</th>
+                                        <th>Movimiento</th>
+                                        <th>Cantidad</th>
+                                        <th>Ruta (Origen ➡️ Destino)</th>
+                                        <th>Registrado por</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-historial-inventario">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">Cargando auditoría de inventario...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
     <!-- ========================================== -->
     <!-- MODAL: NUEVO PRODUCTO                      -->
     <!-- ========================================== -->
@@ -212,13 +289,8 @@
     <!-- ========================================== -->
     <!-- SCRIPTS                                    -->
     <!-- ========================================== -->
-    <!-- 1. Funcionalidad de las pestañas de Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- 2. Variable global de conexión (BASE_URL) -->
     <script src="../config.js"></script> 
-    
-    <!-- 3. Lógica principal del administrador -->
     <script src="panelprincipal.js"></script>
 
 </body>

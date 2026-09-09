@@ -227,6 +227,7 @@ window.cambiarVista = function(vista, evento) {
         document.getElementById('seccion-inventarios').style.display = 'block';
         cargarInventarioOficina();
         cargarCatalogoParaCompras(); 
+        cargarInventarioTecnicos();
     }
 };
 
@@ -1296,8 +1297,302 @@ document.getElementById('form-ingreso-stock')?.addEventListener('submit', async 
     }
 });
 
+// =====================================================================
+// INVENTARIO DE ALMACEN (Oficina)
+// =====================================================================
+
+
 window.cargarInventarioOficina = async function() {
     const tbody = document.getElementById('tabla-almacen-general');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Sincronizando inventario con la base de datos...</td></tr>';
-    // Esta función se completará cuando tengamos la ruta GET en Node.js
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/inventario/general');
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            if (datos.inventario.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">El almacén está vacío. Registra una compra para comenzar.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = ''; // Limpiamos el mensaje de carga
+            
+            datos.inventario.forEach(item => {
+                // Lógica inteligente para mostrar Stock
+                let stockTexto = '';
+                if(item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
+                    // Si es líquido/polvo, calculamos cuántos "envases" representa eso
+                    const envases = (parseFloat(item.cantidad_disponible) / parseFloat(item.capacidad_presentacion)).toFixed(1);
+                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida} <br><small class="text-muted">(${envases} envases)</small>`;
+                } else {
+                    // Si son piezas (ej. desarmadores), se muestra directo
+                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida}`;
+                }
+
+                // Damos formato a la fecha de caducidad
+                const caducidad = item.fecha_caducidad ? new Date(item.fecha_caducidad).toLocaleDateString('es-MX') : '<span class="text-muted">N/A</span>';
+                
+                // Formato de moneda
+                const costo = parseFloat(item.costo_promedio).toFixed(2);
+
+                const fila = `
+                    <tr>
+                        <td class="fw-bold text-secondary">${item.clave_producto}</td>
+                        <td class="text-primary fw-bold">${item.nombre_comercial}</td>
+                        <td class="align-middle">${stockTexto}</td>
+                        <td class="text-success fw-bold align-middle">$${costo}</td>
+                        <td class="align-middle">${caducidad}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error: ${datos.error}</td></tr>`;
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error de conexión al cargar inventario.</td></tr>`;
+    }
 };
+
+// =====================================================================
+// INVENTARIO DE TÉCNICOS (CAMIONETAS)
+// =====================================================================
+
+window.cargarInventarioTecnicos = async function() {
+    const tbody = document.getElementById('tabla-almacen-tecnicos');
+    const selectFiltro = document.getElementById('filtro-tecnico-inv');
+    
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Sincronizando con camionetas...</td></tr>';
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/inventario/tecnicos');
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            if (datos.inventario.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Aún no hay material asignado a ninguna camioneta.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            
+            // Usamos un "Set" para guardar los nombres de los técnicos sin repetirlos (para el filtro)
+            const tecnicosUnicos = new Set();
+
+            datos.inventario.forEach(item => {
+                tecnicosUnicos.add(item.nombre_almacen);
+                
+                // Lógica de envases vs mililitros
+                let stockTexto = '';
+                if(item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
+                    const envases = (parseFloat(item.cantidad_disponible) / parseFloat(item.capacidad_presentacion)).toFixed(1);
+                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida} <span class="text-muted small">(${envases} envases)</span>`;
+                } else {
+                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida}`;
+                }
+
+                // Agregamos un data-atributo a la fila para poder filtrarla fácilmente
+                const fila = `
+                    <tr class="fila-inv-tecnico" data-tecnico="${item.nombre_almacen}">
+                        <td class="fw-bold text-secondary align-middle">${item.nombre_almacen}</td>
+                        <td class="text-primary fw-bold align-middle">${item.nombre_comercial}</td>
+                        <td class="align-middle">${stockTexto}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+
+            // Llenamos el select del filtro con los nombres únicos que encontramos
+            selectFiltro.innerHTML = '<option value="todos">Ver todos los técnicos</option>';
+            tecnicosUnicos.forEach(tecnico => {
+                selectFiltro.innerHTML += `<option value="${tecnico}">${tecnico}</option>`;
+            });
+
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger py-4">Error: ${datos.error}</td></tr>`;
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger py-4">Error de conexión con las camionetas.</td></tr>`;
+    }
+};
+
+// Evento para hacer que el filtro funcione en tiempo real
+document.getElementById('filtro-tecnico-inv')?.addEventListener('change', function() {
+    const seleccionado = this.value;
+    const filas = document.querySelectorAll('.fila-inv-tecnico');
+    
+    filas.forEach(fila => {
+        if (seleccionado === 'todos' || fila.getAttribute('data-tecnico') === seleccionado) {
+            fila.style.display = ''; // Lo mostramos
+        } else {
+            fila.style.display = 'none'; // Lo ocultamos
+        }
+    });
+});
+
+// =====================================================================
+// TRASPASOS (DE OFICINA A CAMIONETAS)
+// =====================================================================
+
+// 1. Abrir modal de traspaso y cargar datos
+document.getElementById('btn-traspasar-stock')?.addEventListener('click', async () => {
+    const modal = new bootstrap.Modal(document.getElementById('modalTraspasoStock'));
+    document.getElementById('form-traspaso-stock').reset();
+    document.getElementById('ayuda-stock-maximo').innerText = '';
+    document.getElementById('traspaso-tipo-unidad').disabled = false;
+    document.getElementById('opt-unidad-base').innerText = 'ml / g';
+    modal.show();
+
+    // Cargar Técnicos
+    try {
+        const resTecnicos = await fetch(BASE_URL + '/api/tecnicos');
+        const datosTec = await resTecnicos.json();
+        const selectTecnico = document.getElementById('traspaso-tecnico');
+        selectTecnico.innerHTML = '<option value="">Seleccione un técnico...</option>';
+        if (datosTec.exito) {
+            datosTec.tecnicos.forEach(t => {
+                selectTecnico.innerHTML += `<option value="${t.id_usuario}" data-nombre="${t.nombre_completo}">${t.nombre_completo}</option>`;
+            });
+        }
+    } catch (e) {
+        console.error("Error al cargar técnicos:", e);
+    }
+
+    // Cargar Inventario Disponible
+    try {
+        const resInv = await fetch(BASE_URL + '/api/inventario/general');
+        const datosInv = await resInv.json();
+        const selectProd = document.getElementById('traspaso-producto');
+        selectProd.innerHTML = '<option value="">Seleccione qué va a entregar...</option>';
+        
+        if (datosInv.exito) {
+            const disponibles = datosInv.inventario.filter(item => parseFloat(item.cantidad_disponible) > 0);
+            
+            disponibles.forEach(item => {
+                const stockBase = parseFloat(item.cantidad_disponible);
+                const capacidad = parseFloat(item.capacidad_presentacion) || 1;
+                let stockEnvases = stockBase;
+                
+                if (item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
+                    stockEnvases = (stockBase / capacidad).toFixed(2);
+                }
+                
+                selectProd.innerHTML += `
+                    <option value="${item.clave_producto}" 
+                            data-unidad="${item.unidad_medida}"
+                            data-capacidad="${capacidad}"
+                            data-stock-base="${stockBase}"
+                            data-stock-envases="${stockEnvases}"
+                            data-nombre="${item.nombre_comercial}">
+                        ${item.clave_producto} - ${item.nombre_comercial} (Disp: ${stockEnvases} envases)
+                    </option>`;
+            });
+        }
+    } catch (e) {
+        console.error("Error al cargar inventario:", e);
+    }
+});
+
+// 2. Función para recalcular los topes según lo que se elija
+function actualizarMaximosTraspaso() {
+    const selectProd = document.getElementById('traspaso-producto');
+    const selectUnidad = document.getElementById('traspaso-tipo-unidad');
+    const opcion = selectProd.options[selectProd.selectedIndex];
+
+    if (opcion.value) {
+        const unidad = opcion.getAttribute('data-unidad');
+        const stockBase = opcion.getAttribute('data-stock-base');
+        const stockEnvases = opcion.getAttribute('data-stock-envases');
+
+        // Mostramos la unidad real (ml, g, pz)
+        document.getElementById('opt-unidad-base').innerText = unidad;
+
+        // Si es una pieza (ej. Desarmador), bloqueamos la opción de 'ml/g'
+        if(unidad === 'pz') {
+            selectUnidad.value = 'envase';
+            selectUnidad.disabled = true;
+        } else {
+            selectUnidad.disabled = false;
+        }
+
+        // Ajustamos la etiqueta visual y el validador HTML (max)
+        if (selectUnidad.value === 'envase') {
+            document.getElementById('ayuda-stock-maximo').innerText = `Stock máximo: ${stockEnvases} envases/pz`;
+            document.getElementById('traspaso-cantidad').max = stockEnvases;
+        } else {
+            document.getElementById('ayuda-stock-maximo').innerText = `Stock máximo: ${stockBase} ${unidad}`;
+            document.getElementById('traspaso-cantidad').max = stockBase;
+        }
+    } else {
+        document.getElementById('ayuda-stock-maximo').innerText = '';
+        document.getElementById('traspaso-cantidad').removeAttribute('max');
+        selectUnidad.disabled = false;
+    }
+}
+
+// Escuchar cambios en el producto y en el selector de unidad
+document.getElementById('traspaso-producto')?.addEventListener('change', actualizarMaximosTraspaso);
+document.getElementById('traspaso-tipo-unidad')?.addEventListener('change', actualizarMaximosTraspaso);
+
+// 3. Enviar el traspaso al servidor
+document.getElementById('form-traspaso-stock')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btnGuardar = document.getElementById('btn-guardar-traspaso');
+    btnGuardar.innerText = "Procesando traspaso..."; 
+    btnGuardar.disabled = true;
+
+    const selectTecnico = document.getElementById('traspaso-tecnico');
+    const selectProd = document.getElementById('traspaso-producto');
+    const opcionProd = selectProd.options[selectProd.selectedIndex];
+    
+    const nombreTecnico = selectTecnico.options[selectTecnico.selectedIndex].getAttribute('data-nombre');
+    
+    // Matemática: Siempre le enviamos al Backend la unidad base pura (ml/g/pz)
+    const cantidadCapturada = parseFloat(document.getElementById('traspaso-cantidad').value);
+    const tipoUnidadElige = document.getElementById('traspaso-tipo-unidad').value;
+    const capacidadPresentacion = parseFloat(opcionProd.getAttribute('data-capacidad'));
+
+    let cantidadBaseParaBD = cantidadCapturada;
+    if (tipoUnidadElige === 'envase') {
+        cantidadBaseParaBD = cantidadCapturada * capacidadPresentacion;
+    }
+
+    const datosTraspaso = {
+        clave_producto: selectProd.value,
+        id_tecnico: selectTecnico.value,
+        nombre_tecnico: nombreTecnico, 
+        cantidad_entregada_base: cantidadBaseParaBD, // Aquí va el número transformado
+        notas: document.getElementById('traspaso-notas').value,
+        id_usuario_registra: localStorage.getItem('idUsuario')
+    };
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/inventario/traspaso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosTraspaso)
+        });
+        
+        const datos = await respuesta.json();
+        
+        if (datos.exito) {
+            const modalEl = document.getElementById('modalTraspasoStock');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            this.reset();
+            cargarInventarioOficina(); 
+            cargarInventarioTecnicos();
+            alert("¡Traspaso exitoso! Material asignado a la camioneta.");
+        } else {
+            alert("Error al traspasar: " + datos.error);
+        }
+    } catch (error) {
+        alert("Hubo un problema de conexión al procesar el traspaso.");
+    } finally {
+        btnGuardar.innerText = "Confirmar Entrega"; 
+        btnGuardar.disabled = false;
+    }
+});
