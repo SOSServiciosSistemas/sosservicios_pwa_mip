@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Servicio - SOS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Librerías para Firma y PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        body { background-color: #f0f0f0; padding: 20px; font-size: 0.85rem; }
+        .hoja-impresion { background: white; max-width: 21.5cm; margin: 0 auto; padding: 2cm; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .borde-inferior { border-bottom: 1px solid #000; display: inline-block; width: 100%; min-height: 20px; }
+        .tabla-reporte th, .tabla-reporte td { border: 1px solid #000 !important; padding: 4px; text-align: center; vertical-align: middle; }
+        .header-gris { background-color: #d9d9d9 !important; font-weight: bold; }
+        
+        /* Contenedor de la firma digital */
+        .canvas-container { border: 2px dashed #198754; background: #f8f9fa; border-radius: 8px; width: 100%; max-width: 400px; margin: 0 auto; }
+        canvas { width: 100%; height: 200px; display: block; touch-action: none; }
+        
+        @media print {
+            body { background-color: white; padding: 0; }
+            .hoja-impresion { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            .no-imprimir { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Panel para que el cliente firme en la tablet/celular -->
+    <div class="container text-center mb-4 no-imprimir" id="controles-tecnico">
+        <h4 class="text-primary mb-3">Por favor, firme de conformidad</h4>
+        <div class="canvas-container mb-2">
+            <canvas id="canvas-firma"></canvas>
+        </div>
+        <button class="btn btn-warning btn-sm fw-bold shadow-sm me-2" onclick="limpiarFirma()">🧹 Borrar Firma</button>
+        <button class="btn btn-success fw-bold shadow-sm" id="btn-generar-pdf">✅ Finalizar y Guardar</button>
+    </div>
+
+    <!-- EL DOCUMENTO PDF -->
+    <div class="hoja-impresion" id="documento-reporte">
+        <div class="row mb-3">
+            <div class="col-3 text-center">
+                <h2 class="fw-bold text-secondary">SOS</h2>
+                <span style="font-size: 0.6rem;">Manejo Integral de Plagas</span>
+            </div>
+            <div class="col-6 text-center" style="font-size: 0.75rem;">
+                <strong>SOS Manejo Integral de Plagas</strong><br>
+                Av. Pradera # 2716, Col. Parques del Sur<br>
+                León, Gto. México. C.P. 37536<br>
+                Tel. +52 477 273 19 07 / +52 477 363 95 30<br>
+                info@sosservicios.com.mx
+            </div>
+            <div class="col-3 text-end">
+                <div class="mb-2">FECHA: <span id="rep-fecha" class="borde-inferior w-50"></span></div>
+                <h3 class="text-danger fw-bold">FOLIO <span id="rep-folio"></span></h3>
+            </div>
+        </div>
+
+        <div class="row mb-3 g-2 align-items-end">
+            <div class="col-12 text-center header-gris border border-dark p-1 mb-2">REPORTE DE SERVICIO</div>
+            <div class="col-12">Nombre del Cliente: <span id="rep-cliente" class="borde-inferior" style="width: 85%;"></span></div>
+            <div class="col-8">Domicilio: <span id="rep-domicilio" class="borde-inferior" style="width: 80%;"></span></div>
+            <div class="col-4">Teléfonos: <span id="rep-telefonos" class="borde-inferior" style="width: 75%;"></span></div>
+            <div class="col-5">Giro del Cliente: <span id="rep-giro" class="borde-inferior" style="width: 70%;"></span></div>
+            <div class="col-3">Ciudad: <span id="rep-ciudad" class="borde-inferior" style="width: 70%;"></span></div>
+            <div class="col-2">Hora Entrada: <span id="rep-hora-ent" class="borde-inferior" style="width: 50%;"></span></div>
+            <div class="col-2">Hora Salida: <span id="rep-hora-sal" class="borde-inferior" style="width: 50%;"></span></div>
+            <div class="col-8">Contacto: <span id="rep-contacto" class="borde-inferior" style="width: 85%;"></span></div>
+            <div class="col-4">Ingreso áreas: <span id="rep-hora-ingreso" class="borde-inferior" style="width: 60%;"></span></div>
+        </div>
+
+        <table class="table tabla-reporte mb-3">
+            <thead class="header-gris">
+                <tr><th colspan="4">DETALLE DE PRODUCTO A UTILIZAR</th></tr>
+                <tr>
+                    <th style="width: 10%;">TIPO</th>
+                    <th style="width: 40%;">INGREDIENTE ACTIVO</th>
+                    <th style="width: 30%;">REGISTRO COFEPRIS</th>
+                    <th style="width: 20%;">DOSIS</th>
+                </tr>
+            </thead>
+            <tbody id="rep-tabla-productos"></tbody>
+        </table>
+
+        <div class="border border-dark p-2 mb-3">
+            <div class="header-gris text-center p-1 border-bottom border-dark mb-2">ACCIONES Y SEGUIMIENTO</div>
+            <p><strong>Acciones realizadas:</strong> <span id="rep-acciones"></span></p>
+            <p><strong>Seguimiento:</strong> <span id="rep-seguimiento"></span></p>
+        </div>
+
+        <div class="row mt-5 pt-5 text-center align-items-end">
+            <div class="col-6">
+                <!-- HUECO PARA INSERTAR LA IMAGEN DE LA FIRMA -->
+                <img id="img-firma-cliente" src="" style="max-height: 100px; display: none; margin: 0 auto;">
+                <div class="borde-inferior w-75 mx-auto mb-2"></div>
+                NOMBRE Y FIRMA DEL CLIENTE
+            </div>
+            <div class="col-6">
+                <div class="borde-inferior w-75 mx-auto mb-2" id="rep-nombre-tecnico"></div>
+                NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA
+            </div>
+        </div>
+    </div>
+
+    <!-- Referenciamos config.js un nivel arriba -->
+    <script src="../config.js"></script>
+    <script src="reportecliente.js"></script>
+</body>
+</html>
