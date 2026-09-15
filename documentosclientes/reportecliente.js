@@ -1,34 +1,65 @@
 const urlParams = new URLSearchParams(window.location.search);
 const idOrden = urlParams.get('folio');
 
-// Variables para la firma
+// Variable global para la firma
 let signaturePad;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Inicializar el lienzo de firma
-    const canvas = document.getElementById('canvas-firma');
+    // 1. Inicializar el lienzo de firma (ahora apuntando al canvas del modal)
+    const canvas = document.getElementById('pizarra-firma');
     signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
 
+    // Función para ajustar el tamaño del canvas (vital para móviles)
     function redimensionarCanvas() {
-        const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
         canvas.height = canvas.offsetHeight * ratio;
         canvas.getContext("2d").scale(ratio, ratio);
         signaturePad.clear();
     }
-    window.onresize = redimensionarCanvas;
-    redimensionarCanvas();
 
-    // 2. Cargar los datos de la orden
+    // 2. Controladores del Modal de Firma
+    const modalFirma = document.getElementById('modal-firma');
+    const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+    const btnCerrarFirma = document.getElementById('btn-cerrar-firma');
+    const btnBorrarFirma = document.getElementById('btn-borrar-firma');
+    const btnGuardarFirma = document.getElementById('btn-guardar-firma');
+
+    // Abrir el panel
+    btnAbrirFirma.addEventListener('click', () => {
+        modalFirma.classList.remove('d-none');
+        document.body.style.overflow = 'hidden'; // Congela el fondo de la pantalla
+        setTimeout(redimensionarCanvas, 100); // Redimensiona cuando ya es visible
+    });
+
+    // Cerrar el panel
+    btnCerrarFirma.addEventListener('click', () => {
+        modalFirma.classList.add('d-none');
+        document.body.style.overflow = 'auto'; // Descongela el fondo
+    });
+
+    // Limpiar firma
+    btnBorrarFirma.addEventListener('click', () => {
+        signaturePad.clear();
+    });
+
+    // Reajustar si giran el celular
+    window.addEventListener("resize", () => {
+        if (!modalFirma.classList.contains('d-none')) {
+            redimensionarCanvas();
+        }
+    });
+
+    // Asignar el evento para generar PDF al botón de guardar del modal
+    btnGuardarFirma.addEventListener('click', generarPDF);
+
+    // 3. Cargar los datos de la orden de la Base de Datos
     if (idOrden) {
         await cargarDatosReporte(idOrden);
     }
 });
 
-window.limpiarFirma = function() {
-    signaturePad.clear();
-};
-
+// Función para obtener los datos del servidor
 async function cargarDatosReporte(id) {
     try {
         const respuesta = await fetch(BASE_URL + `/api/ordenes/${id}/reporte-final`);
@@ -77,27 +108,35 @@ async function cargarDatosReporte(id) {
     }
 }
 
-// 3. Generar PDF y enviarlo al servidor
-document.getElementById('btn-generar-pdf').addEventListener('click', async () => {
+// 4. Función para guardar firma, generar PDF y enviar al Backend
+async function generarPDF() {
     if (signaturePad.isEmpty()) {
-        alert("El cliente debe firmar el documento en el recuadro antes de guardar.");
+        alert("El cliente debe firmar el documento antes de guardar.");
         return;
     }
 
-    const btnPdf = document.getElementById('btn-generar-pdf');
-    btnPdf.innerText = "⏳ Generando y guardando...";
-    btnPdf.disabled = true;
+    // A. Ocultar el modal de firma y restaurar el scroll
+    const modalFirma = document.getElementById('modal-firma');
+    modalFirma.classList.add('d-none');
+    document.body.style.overflow = 'auto';
 
-    // A. Pegar la firma en la hoja
+    // B. Cambiar el botón inferior a estado de carga y ocultar su contenedor para no imprimirlo
+    const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+    const zonaBotonFirmar = document.getElementById('zona-boton-firmar');
+    btnAbrirFirma.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Generando y guardando...`;
+    btnAbrirFirma.disabled = true;
+    zonaBotonFirmar.style.display = 'none';
+
+    // C. Pegar la firma en la hoja
     const imagenFirma = signaturePad.toDataURL("image/png");
     const imgElement = document.getElementById('img-firma-cliente');
+    const lineaFirma = document.getElementById('linea-firma-cliente');
+    
     imgElement.src = imagenFirma;
-    imgElement.style.display = 'block';
+    imgElement.style.display = 'block'; // Mostramos la firma
+    lineaFirma.style.display = 'none';  // Ocultamos la rayita para que no estorbe
 
-    // B. Ocultar el panel de firma para que no salga impreso
-    document.getElementById('controles-tecnico').style.display = 'none';
-
-    // C. Opciones de PDF
+    // D. Opciones de PDF
     const elementoHoja = document.getElementById('documento-reporte');
     const opciones = {
         margin:       1,
@@ -108,8 +147,9 @@ document.getElementById('btn-generar-pdf').addEventListener('click', async () =>
     };
 
     try {
-        // Transformar a Base64
+        // Transformar a Base64 puro
         const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
+        
         // Enviar al Backend
         const respuesta = await fetch(BASE_URL + '/api/reportes/guardar-pdf', {
             method: 'POST',
@@ -124,19 +164,26 @@ document.getElementById('btn-generar-pdf').addEventListener('click', async () =>
             window.location.href = "../viewtecnico/tecnico.html"; // Regresa al menú principal del técnico
         } else {
             alert("Error del servidor: " + datos.error);
-            restaurarVistaBotones(btnPdf);
+            restaurarVistaBotones();
         }
     } catch (error) {
         console.error(error);
         alert("Error de conexión al generar el PDF.");
-        restaurarVistaBotones(btnPdf);
+        restaurarVistaBotones();
     }
-});
-
-function restaurarVistaBotones(btnPdf) {
-    document.getElementById('controles-tecnico').style.display = 'block';
-    document.getElementById('img-firma-cliente').style.display = 'none';
-    btnPdf.innerText = "✅ Finalizar y Guardar";
-    btnPdf.disabled = false;
 }
 
+// Restaura la vista si algo falla al guardar
+function restaurarVistaBotones() {
+    const zonaBotonFirmar = document.getElementById('zona-boton-firmar');
+    const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+    const imgElement = document.getElementById('img-firma-cliente');
+    const lineaFirma = document.getElementById('linea-firma-cliente');
+
+    zonaBotonFirmar.style.display = 'block'; // Volvemos a mostrar la zona del botón
+    btnAbrirFirma.innerHTML = `<i class="fas fa-pen me-2"></i> Firmar Orden`;
+    btnAbrirFirma.disabled = false;
+    
+    imgElement.style.display = 'none'; // Ocultamos la firma si falló
+    lineaFirma.style.display = 'inline-block'; // Mostramos la rayita de nuevo
+}
