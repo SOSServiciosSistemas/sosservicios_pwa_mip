@@ -138,6 +138,7 @@ async function generarPDF() {
 
     // D. Opciones de PDF
     const elementoHoja = document.getElementById('documento-reporte');
+    window.scrollTo(0, 0);
     const opciones = {
         margin:       1,
         filename:     `Reporte_${idOrden}.pdf`,
