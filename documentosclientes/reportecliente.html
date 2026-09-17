@@ -13,83 +13,197 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        body { background-color: #f0f0f0; padding: 20px; font-size: 0.85rem; }
-        .hoja-impresion { background: white; max-width: 21.5cm; margin: 0 auto; padding: 2cm; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .borde-inferior { border-bottom: 1px solid #000; display: inline-block; width: 100%; min-height: 20px; }
-        .tabla-reporte th, .tabla-reporte td { border: 1px solid #000 !important; padding: 4px; text-align: center; vertical-align: middle; }
-        .header-gris { background-color: #d9d9d9 !important; font-weight: bold; }
+        body { background-color: #f0f0f0; padding: 20px; font-size: 0.7rem; font-family: Arial, sans-serif; }
+        .hoja-impresion { background: white; width: 21.5cm; min-height: 27.9cm; margin: 0 auto; padding: 1cm; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative;}
+        
+        /* Estilos del formato oficial */
+        .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 0.65rem; }
+        .tabla-oficial th, .tabla-oficial td { border: 1px solid #000; padding: 3px; vertical-align: middle; }
+        .bg-gris { background-color: #d9d9d9 !important; font-weight: bold; text-align: center; }
+        .borde-inferior { border-bottom: 1px solid #000; display: inline-block; min-height: 15px; }
+        .caja-check { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; margin-right: 5px; vertical-align: middle; }
+        
+        .seccion-datos { display: flex; flex-wrap: wrap; font-size: 0.7rem; margin-bottom: 5px; }
+        .campo { display: flex; align-items: flex-end; margin-bottom: 4px; }
+        .campo-label { white-space: nowrap; margin-right: 5px; }
+        .campo-valor { flex-grow: 1; border-bottom: 1px solid #000; min-height: 14px; }
         
         @media print {
             body { background-color: white; padding: 0; }
-            .hoja-impresion { box-shadow: none; margin: 0; padding: 0; max-width: 100%; }
+            .hoja-impresion { box-shadow: none; margin: 0; padding: 0; width: 100%; }
             .no-imprimir { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- EL DOCUMENTO PDF (La vista previa para el cliente) -->
+<!-- EL DOCUMENTO PDF (Formato Oficial SOS) -->
     <div class="hoja-impresion" id="documento-reporte">
-        <div class="row mb-3">
-            <div class="col-3 text-center">
-                <h2 class="fw-bold text-secondary">SOS</h2>
-                <span style="font-size: 0.6rem;">Manejo Integral de Plagas</span>
+        
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div style="width: 25%; text-align: center;">
+                <h1 class="fw-bold text-secondary m-0" style="font-size: 2.5rem; line-height: 1;">SOS</h1>
+                <span style="font-size: 0.5rem; font-weight: bold;">Manejo Integral de Plagas</span><br>
+                <span style="font-size: 0.5rem;">www.sosservicios.com.mx</span>
             </div>
-            <div class="col-6 text-center" style="font-size: 0.75rem;">
+            <div style="width: 45%; text-align: center; font-size: 0.65rem;">
                 <strong>SOS Manejo Integral de Plagas</strong><br>
                 Av. Pradera # 2716, Col. Parques del Sur<br>
                 León, Gto. México. C.P. 37536<br>
                 Tel. +52 477 273 19 07 / +52 477 363 95 30<br>
                 info@sosservicios.com.mx
             </div>
-            <div class="col-3 text-end">
-                <div class="mb-2">FECHA: <span id="rep-fecha" class="borde-inferior w-50"></span></div>
-                <h3 class="text-danger fw-bold">FOLIO <span id="rep-folio"></span></h3>
+            <div style="width: 30%; text-align: right;">
+                <div class="d-flex align-items-end justify-content-end mb-2" style="font-size: 0.75rem;">
+                    <span class="me-2">FECHA:</span> 
+                    <span id="rep-fecha" class="borde-inferior" style="width: 60%;"></span>
+                </div>
+                <h3 class="text-danger fw-bold m-0">FOLIO</h3>
+                <h4 class="text-danger fw-bold m-0" id="rep-folio"></h4>
             </div>
         </div>
 
-        <div class="row mb-3 g-2 align-items-end">
-            <div class="col-12 text-center header-gris border border-dark p-1 mb-2">REPORTE DE SERVICIO</div>
-            <div class="col-12">Nombre del Cliente: <span id="rep-cliente" class="borde-inferior" style="width: 85%;"></span></div>
-            <div class="col-8">Domicilio: <span id="rep-domicilio" class="borde-inferior" style="width: 80%;"></span></div>
-            <div class="col-4">Teléfonos: <span id="rep-telefonos" class="borde-inferior" style="width: 75%;"></span></div>
-            <div class="col-5">Giro del Cliente: <span id="rep-giro" class="borde-inferior" style="width: 70%;"></span></div>
-            <div class="col-3">Ciudad: <span id="rep-ciudad" class="borde-inferior" style="width: 70%;"></span></div>
-            <div class="col-2">Hora Entrada: <span id="rep-hora-ent" class="borde-inferior" style="width: 50%;"></span></div>
-            <div class="col-2">Hora Salida: <span id="rep-hora-sal" class="borde-inferior" style="width: 50%;"></span></div>
-            <div class="col-8">Contacto: <span id="rep-contacto" class="borde-inferior" style="width: 85%;"></span></div>
-            <div class="col-4">Ingreso áreas: <span id="rep-hora-ingreso" class="borde-inferior" style="width: 60%;"></span></div>
+        <!-- Título y Checkboxes de Servicio -->
+        <div class="d-flex mb-2">
+            <div style="width: 55%; padding-right: 10px;">
+                <div class="bg-gris border border-dark p-1 mb-1" style="font-size: 0.8rem;">REPORTE DE SERVICIO <span style="font-size: 0.5rem; font-weight: normal;">REP. SERV. 001</span></div>
+            </div>
+            <div style="width: 45%; display: flex; font-size: 0.65rem;">
+                <div style="width: 50%;">
+                    <div><span class="caja-check"></span> Control de Plagas</div>
+                    <div><span class="caja-check"></span> Sanitización</div>
+                    <div><span class="caja-check"></span> Desinfección</div>
+                    <div><span class="caja-check"></span> Limpieza</div>
+                    <div><span class="caja-check"></span> Otro___________</div>
+                </div>
+                <div style="width: 50%;">
+                    <div><span class="caja-check"></span> Aplicación</div>
+                    <div><span class="caja-check"></span> Inspección</div>
+                    <div><span class="caja-check"></span> Mantenimiento</div>
+                    <div><span class="caja-check"></span> Refuerzo</div>
+                    <div><span class="caja-check"></span> Otro___________</div>
+                </div>
+            </div>
         </div>
 
-        <table class="table tabla-reporte mb-3">
-            <thead class="header-gris">
-                <tr><th colspan="4">DETALLE DE PRODUCTO A UTILIZAR</th></tr>
+        <!-- Datos del Cliente -->
+        <div class="seccion-datos">
+            <div class="campo" style="width: 100%;"><span class="campo-label">Nombre del Cliente:</span><span class="campo-valor" id="rep-cliente"></span></div>
+            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Domicilio:</span><span class="campo-valor" id="rep-domicilio"></span></div>
+            <div class="campo" style="width: 40%;"><span class="campo-label">Teléfonos:</span><span class="campo-valor" id="rep-telefonos"></span></div>
+            <div class="campo" style="width: 45%; padding-right: 5px;"><span class="campo-label">Giro del Cliente:</span><span class="campo-valor" id="rep-giro"></span></div>
+            <div class="campo" style="width: 25%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span class="campo-valor" id="rep-ciudad"></span></div>
+            <div class="campo" style="width: 15%; padding-right: 5px;"><span class="campo-label">Hora de Entrada:</span><span class="campo-valor text-center" id="rep-hora-ent"></span></div>
+            <div class="campo" style="width: 15%;"><span class="campo-label">Hora de Salida:</span><span class="campo-valor text-center" id="rep-hora-sal"></span></div>
+            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span class="campo-valor" id="rep-contacto"></span></div>
+            <div class="campo" style="width: 40%;"><span class="campo-label">Hora de ingreso a áreas tratadas:</span><span class="campo-valor text-center" id="rep-hora-reingreso"></span></div>
+        </div>
+
+        <!-- Detalle de Producto -->
+        <div class="d-flex">
+            <div style="width: 75%; padding-right: 5px;">
+                <table class="tabla-oficial">
+                    <thead>
+                        <tr><th colspan="4" class="bg-gris">DETALLE DE PRODUCTO A UTILIZAR</th></tr>
+                        <tr class="bg-gris">
+                            <th style="width: 5%;">TIPO</th>
+                            <th style="width: 45%;">INGREDIENTE ACTIVO</th>
+                            <th style="width: 35%;">REGISTRO DE CICOPLAFEST COFEPRIS</th>
+                            <th style="width: 15%;">DOSIS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rep-tabla-productos">
+                        <!-- Se llena con JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div style="width: 25%;">
+                <table class="tabla-oficial" style="height: 100%;">
+                    <thead><tr><th class="bg-gris">TIPO DE PRODUCTO UTILIZADO</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td style="border: 1px solid #000; padding-left: 10px;">
+                                <div><span class="caja-check"></span> Plaguicida</div>
+                                <div><span class="caja-check"></span> Rodenticida</div>
+                                <div><span class="caja-check"></span> Sanitizante</div>
+                                <div><span class="caja-check"></span> Desinfectante</div>
+                                <div><span class="caja-check"></span> Otro_________</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div style="font-size: 0.5rem; margin-top: -5px; margin-bottom: 5px;">NOTA: PARA MAYOR INFORMACIÓN CONSULTA LA ETIQUETA</div>
+
+        <!-- Áreas Tratadas -->
+        <table class="tabla-oficial">
+            <thead class="bg-gris">
                 <tr>
-                    <th style="width: 10%;">TIPO</th>
-                    <th style="width: 40%;">INGREDIENTE ACTIVO</th>
-                    <th style="width: 30%;">REGISTRO COFEPRIS</th>
-                    <th style="width: 20%;">DOSIS</th>
+                    <th rowspan="2" style="width: 25%;">ÁREA</th>
+                    <th colspan="3">ACTIVIDAD</th>
+                    <th rowspan="2" style="width: 12%;">**TIPO DE PLAGA A COMBATIR</th>
+                    <th rowspan="2" style="width: 10%;">TIPO DE PRODUCTO</th>
+                    <th rowspan="2" style="width: 12%;">MÉTODO DE APLICACIÓN</th>
+                    <th rowspan="2" style="width: 31%;">OBSERVACIONES Y RECOMENDACIONES</th>
+                </tr>
+                <tr>
+                    <th style="width: 3%;">SI</th>
+                    <th style="width: 4%;">*</th>
+                    <th style="width: 3%;">NO</th>
                 </tr>
             </thead>
-            <tbody id="rep-tabla-productos"></tbody>
+            <tbody id="rep-tabla-areas">
+                <!-- Se llena con JS. Espacios vacíos por defecto -->
+            </tbody>
         </table>
 
-        <div class="border border-dark p-2 mb-3">
-            <div class="header-gris text-center p-1 border-bottom border-dark mb-2">ACCIONES Y SEGUIMIENTO</div>
-            <p><strong>Acciones realizadas:</strong> <span id="rep-acciones"></span></p>
-            <p><strong>Seguimiento:</strong> <span id="rep-seguimiento"></span></p>
+        <!-- Infestación y Acciones -->
+        <table class="tabla-oficial" style="margin-top: -5px;">
+            <tr class="bg-gris">
+                <td style="width: 25%;">* GRADO DE INFESTACIÓN</td>
+                <td style="width: 25%;">A) ALTO</td>
+                <td style="width: 25%;">B) MODERADO</td>
+                <td style="width: 25%;">C) BAJO</td>
+            </tr>
+            <tr><td colspan="4" class="bg-gris">ACCIONES</td></tr>
+            <tr><td colspan="4" style="height: 40px; vertical-align: top;" id="rep-acciones"></td></tr>
+            <tr><td colspan="4" class="bg-gris">SEGUIMIENTO</td></tr>
+            <tr><td colspan="4" style="height: 40px; vertical-align: top;" id="rep-seguimiento"></td></tr>
+        </table>
+
+        <!-- Tratamiento y Firmas -->
+        <div class="d-flex" style="border: 1px solid #000; margin-top: 5px;">
+            <div style="width: 65%; border-right: 1px solid #000;">
+                <div class="bg-gris p-1" style="border-bottom: 1px solid #000;">TRATAMIENTO</div>
+                <div style="height: 60px;"></div>
+            </div>
+            <div style="width: 35%; padding: 5px; font-size: 0.65rem;">
+                <div class="mb-1">COSTO DEL SERVICIO: <span class="borde-inferior" style="width: 50%;"></span></div>
+                <div class="mb-1">Importe con letra: ( <span class="borde-inferior" style="width: 70%;"></span> )</div>
+                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check"></span> NO <span class="caja-check"></span></div>
+                <div>TRATAMIENTO: <span class="borde-inferior" style="width: 20%;"></span> DE <span class="borde-inferior" style="width: 20%;"></span></div>
+            </div>
         </div>
 
-        <div class="row mt-5 pt-5 text-center align-items-end">
+        <div style="font-size: 0.45rem; text-align: center; margin: 2px 0;">
+            **Tipo de Plaga: BG-Cucaracha Alemana / PA-Cucaracha Americana / T-Tijerilla / A-Araña / H-Hormiga / G-Grillo / C-Cochinilla / AL-Alacrán / PI-Plaga de Jardín / AB-Abejas / PG-Plaga Granos Almacenados / O-Otros (Identificación de Plaga) / CC-Chinche de Cama / R-Roedor
+        </div>
+        
+        <div class="bg-gris border border-dark mb-4">PRÓXIMO SERVICIO</div>
+
+        <!-- Firmas -->
+        <div class="row text-center align-items-end mt-4 mb-2" style="font-size: 0.65rem;">
             <div class="col-6">
-                <!-- HUECO PARA INSERTAR LA IMAGEN DE LA FIRMA -->
-                <img id="img-firma-cliente" src="" style="max-height: 100px; display: none; margin: 0 auto;">
-                <div class="borde-inferior w-75 mx-auto mb-2" id="linea-firma-cliente"></div>
+                <img id="img-firma-cliente" src="" style="max-height: 80px; display: none; margin: 0 auto;">
+                <div class="borde-inferior w-75 mx-auto mb-1" id="linea-firma-cliente"></div>
                 NOMBRE Y FIRMA DEL CLIENTE
             </div>
             <div class="col-6">
-                <div class="borde-inferior w-75 mx-auto mb-2" id="rep-nombre-tecnico"></div>
-                NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA
+                <div class="borde-inferior w-75 mx-auto mb-1" id="rep-nombre-tecnico"></div>
+                NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA<br>
+                <span style="font-weight: bold; font-size: 0.75rem;">V-4/2019</span>
             </div>
         </div>
     </div>

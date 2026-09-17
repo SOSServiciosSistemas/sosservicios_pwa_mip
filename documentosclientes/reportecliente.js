@@ -68,40 +68,63 @@ async function cargarDatosReporte(id) {
         if (datos.exito) {
             const orden = datos.orden;
             
+            // Función auxiliar para horas
+            const formatHora = (fecha) => fecha ? new Date(fecha).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '';
+            
             document.getElementById('rep-folio').innerText = orden.id_orden.toString().padStart(5, '0');
             document.getElementById('rep-fecha').innerText = new Date(orden.fecha_servicio).toLocaleDateString('es-MX');
             document.getElementById('rep-cliente').innerText = orden.nombre_cliente;
             document.getElementById('rep-domicilio').innerText = orden.direccion_completa;
             document.getElementById('rep-telefonos').innerText = orden.telefono;
-            document.getElementById('rep-giro').innerText = orden.giro_comercial || 'N/A';
-            document.getElementById('rep-ciudad').innerText = orden.ciudad || 'León, Gto.';
-            document.getElementById('rep-hora-ent').innerText = orden.hora_llegada || '--:--';
-            document.getElementById('rep-hora-sal').innerText = orden.hora_salida || '--:--';
+            document.getElementById('rep-giro').innerText = orden.giro_comercial || '';
+            document.getElementById('rep-ciudad').innerText = orden.ciudad || '';
             document.getElementById('rep-contacto').innerText = orden.persona_contacto || orden.nombre_cliente;
-            
+            document.getElementById('rep-hora-ent').innerText = formatHora(orden.hora_llegada);
+            document.getElementById('rep-hora-sal').innerText = formatHora(orden.hora_salida);
+            document.getElementById('rep-nombre-tecnico').innerText = orden.nombre_tecnico;
+
+            // Lógica para Hora de Reingreso (+2 horas)
+            let textoReingreso = "";
+            if (orden.hora_salida) {
+                let fechaSalida = new Date(orden.hora_salida);
+                fechaSalida.setHours(fechaSalida.getHours() + 2);
+                textoReingreso = fechaSalida.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+            }
+            document.getElementById('rep-hora-reingreso').innerText = textoReingreso;
+
+            // Llenado de Productos (Asegurando 4 filas fijas A,B,C,D para mantener formato)
             const tbodyProductos = document.getElementById('rep-tabla-productos');
             tbodyProductos.innerHTML = '';
+            const letras = ['A', 'B', 'C', 'D'];
             
-            if (datos.productos_utilizados && datos.productos_utilizados.length > 0) {
-                const letras = ['A', 'B', 'C', 'D'];
-                datos.productos_utilizados.forEach((prod, index) => {
-                    const letra = letras[index] || '-';
-                    tbodyProductos.innerHTML += `
-                        <tr>
-                            <td class="fw-bold">${letra}</td>
-                            <td>${prod.ingrediente_activo || prod.nombre_comercial}</td>
-                            <td>${prod.registro_sanitario || 'N/A'}</td>
-                            <td>${prod.cantidad_usada} ${prod.unidad_medida}</td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbodyProductos.innerHTML = '<tr><td colspan="4">No se registraron productos químicos.</td></tr>';
+            for (let i = 0; i < 4; i++) {
+                let prod = (datos.productos_utilizados && datos.productos_utilizados[i]) ? datos.productos_utilizados[i] : null;
+                tbodyProductos.innerHTML += `
+                    <tr>
+                        <td class="fw-bold text-center">${letras[i]}</td>
+                        <td>${prod ? (prod.ingrediente_activo || prod.nombre_comercial) : ''}</td>
+                        <td>${prod ? (prod.registro_sanitario || 'N/A') : ''}</td>
+                        <td class="text-center">${prod ? (prod.cantidad_usada + ' ' + prod.unidad_medida) : ''}</td>
+                    </tr>
+                `;
             }
 
-            document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || 'Sin observaciones detalladas.';
-            document.getElementById('rep-seguimiento').innerText = orden.recomendaciones_seguimiento || 'Ninguno.';
-            document.getElementById('rep-nombre-tecnico').innerText = orden.nombre_tecnico;
+            // Llenado de la tabla de Áreas (Generando 10 filas para dar el espacio del reporte)
+            // Si en el futuro tienes los datos de las áreas en JSON, los mapeas aquí en lugar de celdas vacías.
+            const tbodyAreas = document.getElementById('rep-tabla-areas');
+            tbodyAreas.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                tbodyAreas.innerHTML += `
+                    <tr>
+                        <td style="height: 16px;"></td>
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                `;
+            }
+
+            // Acciones y Seguimiento
+            document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || '';
+            document.getElementById('rep-seguimiento').innerText = orden.recomendaciones_seguimiento || '';
         }
     } catch (error) {
         console.error("Error al cargar el reporte del cliente:", error);
