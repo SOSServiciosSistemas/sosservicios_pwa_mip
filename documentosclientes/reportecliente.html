@@ -14,7 +14,15 @@
     
     <style>
         body { background-color: #f0f0f0; padding: 20px; font-size: 0.7rem; font-family: Arial, sans-serif; }
-        .hoja-impresion { background: white; width: 21.5cm; min-height: 27.9cm; margin: 0 auto; padding: 1cm; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative;}
+        .hoja-impresion { 
+            background: white; 
+            width: 100%; 
+            max-width: 20.5cm; 
+            margin: 0 auto; 
+            padding: 0.5cm; 
+            box-sizing: border-box; /* Crucial: evita que el padding ensanche la hoja */
+            position: relative;
+        }
         
         /* Estilos del formato oficial */
         .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 0.65rem; }
@@ -43,9 +51,7 @@
         <!-- Encabezado -->
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div style="width: 25%; text-align: center;">
-                <h1 class="fw-bold text-secondary m-0" style="font-size: 2.5rem; line-height: 1;">SOS</h1>
-                <span style="font-size: 0.5rem; font-weight: bold;">Manejo Integral de Plagas</span><br>
-                <span style="font-size: 0.5rem;">www.sosservicios.com.mx</span>
+            <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-width: 90%; max-height: 50px; object-fit: contain; margin-bottom: 2px;">
             </div>
             <div style="width: 45%; text-align: center; font-size: 0.65rem;">
                 <strong>SOS Manejo Integral de Plagas</strong><br>
@@ -161,13 +167,14 @@
         <div class="d-flex" style="border: 1px solid #000; margin-top: 5px;">
             <div style="width: 65%; border-right: 1px solid #000;">
                 <div class="bg-gris p-1" style="border-bottom: 1px solid #000;">TRATAMIENTO</div>
-                <div style="height: 60px;"></div>
+                <div style="height: 60px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                    TRATAMIENTO: <span class="borde-inferior text-center fw-bold mx-2" style="width: 15%;" id="rep-tratamiento-actual"></span> DE <span class="borde-inferior text-center fw-bold mx-2" style="width: 15%;" id="rep-tratamiento-total"></span>
+                </div>
             </div>
             <div style="width: 35%; padding: 5px; font-size: 0.65rem;">
                 <div class="mb-1">COSTO DEL SERVICIO: $<span class="borde-inferior text-center fw-bold" style="width: 50%;" id="rep-costo"></span></div>
-                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold" style="width: 70%;" id="rep-costo-letra"></span> )</div>
+                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold" style="width: 70%; font-size: 0.55rem;" id="rep-costo-letra"></span> )</div>
                 <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check text-center fw-bold" id="chk-factura-si" style="line-height: 10px;"></span> NO <span class="caja-check text-center fw-bold" id="chk-factura-no" style="line-height: 10px;"></span></div>
-                <div>TRATAMIENTO: <span class="borde-inferior text-center fw-bold" style="width: 20%;" id="rep-tratamiento-actual"></span> DE <span class="borde-inferior text-center fw-bold" style="width: 20%;" id="rep-tratamiento-total"></span></div>
             </div>
         </div>
 

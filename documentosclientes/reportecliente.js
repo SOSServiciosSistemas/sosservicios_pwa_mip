@@ -67,7 +67,7 @@ async function cargarDatosReporte(id) {
 
         if (datos.exito) {
             const orden = datos.orden;
-            
+            console.log("DATOS DE LA ORDEN:", orden);
             // Función auxiliar para horas (Ajuste UTC-6 para zona horaria de México)
             const formatHora = (fecha) => {
                 if (!fecha) return '';
@@ -171,10 +171,16 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-tratamiento-actual').innerText = orden.num_tratamiento || '';
             document.getElementById('rep-tratamiento-total').innerText = orden.total_tratamientos || '';
             
-            let costoMostrar = orden.costo_con_iva || orden.costo_sin_iva || '';
-            if (costoMostrar) costoMostrar = parseFloat(costoMostrar).toFixed(2);
-            document.getElementById('rep-costo').innerText = costoMostrar;
-            document.getElementById('rep-costo-letra').innerText = '';
+            // Toma el costo de control_pagos (si ya se facturó) o el costo base de la orden (ingresos_cobrados)
+            let costoMostrar = orden.costo_con_iva || orden.costo_sin_iva || orden.ingresos_cobrados || '';
+            if (costoMostrar) {
+                let costoNum = parseFloat(costoMostrar);
+                document.getElementById('rep-costo').innerText = costoNum.toFixed(2);
+                document.getElementById('rep-costo-letra').innerText = numeroALetras(costoNum) + " M.N.";
+            } else {
+                document.getElementById('rep-costo').innerText = '';
+                document.getElementById('rep-costo-letra').innerText = '';
+            }
 
             // 4. Acciones y Seguimiento
             document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || jsonDetalles.acciones_correctivas || '';
@@ -264,4 +270,45 @@ function restaurarVistaBotones() {
     
     imgElement.style.display = 'none'; // Ocultamos la firma si falló
     lineaFirma.style.display = 'inline-block'; // Mostramos la rayita de nuevo
+}
+
+// Función para convertir números a letras (Pesos Mexicanos)
+function numeroALetras(num) {
+    if (!num || num === 0) return "CERO PESOS 00/100";
+    const centavos = Math.round((num - Math.floor(num)) * 100).toString().padStart(2, '0');
+    
+    function decenar(n) {
+        if (n < 10) return ["", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE"][n];
+        if (n >= 10 && n < 20) return ["DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISEIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE"][n - 10];
+        if (n === 20) return "VEINTE";
+        if (n > 20 && n < 30) return "VEINTI" + decenar(n - 20);
+        const decs = ["", "", "", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"];
+        const d = Math.floor(n / 10);
+        const u = n % 10;
+        return decs[d] + (u > 0 ? " Y " + decenar(u) : "");
+    }
+    
+    function centenar(n) {
+        if (n === 100) return "CIEN";
+        const cents = ["", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"];
+        const c = Math.floor(n / 100);
+        const resto = n % 100;
+        return cents[c] + (resto > 0 ? " " + decenar(resto) : "");
+    }
+    
+    function millar(n) {
+        if (n === 0) return "";
+        if (n === 1) return "UN MIL";
+        return centenar(n) + " MIL";
+    }
+    
+    const miles = Math.floor(num / 1000);
+    const resto = Math.floor(num % 1000);
+    
+    let letras = "";
+    if (miles > 0) letras += millar(miles) + " ";
+    if (resto > 0) letras += centenar(resto);
+    if (letras.trim() === "UN") letras = "UN";
+    
+    return (letras.trim() + " PESOS " + centavos + "/100").toUpperCase();
 }
