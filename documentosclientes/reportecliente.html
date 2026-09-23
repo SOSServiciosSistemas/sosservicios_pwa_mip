@@ -52,6 +52,7 @@
                 Av. Pradera # 2716, Col. Parques del Sur<br>
                 León, Gto. México. C.P. 37536<br>
                 Tel. +52 477 273 19 07 / +52 477 363 95 30<br>
+                No° Licencia Sanitaria 07-11A173<br>
                 info@sosservicios.com.mx
             </div>
             <div style="width: 30%; text-align: right;">
@@ -63,29 +64,27 @@
                 <h4 class="text-danger fw-bold m-0" id="rep-folio"></h4>
             </div>
         </div>
-
-        <!-- Título y Checkboxes de Servicio -->
-        <div class="d-flex mb-2">
-            <div style="width: 55%; padding-right: 10px;">
-                <div class="bg-gris border border-dark p-1 mb-1" style="font-size: 0.8rem;">REPORTE DE SERVICIO <span style="font-size: 0.5rem; font-weight: normal;">REP. SERV. 001</span></div>
-            </div>
-            <div style="width: 45%; display: flex; font-size: 0.65rem;">
-                <div style="width: 50%;">
-                    <div><span class="caja-check"></span> Control de Plagas</div>
-                    <div><span class="caja-check"></span> Sanitización</div>
-                    <div><span class="caja-check"></span> Desinfección</div>
-                    <div><span class="caja-check"></span> Limpieza</div>
-                    <div><span class="caja-check"></span> Otro___________</div>
-                </div>
-                <div style="width: 50%;">
-                    <div><span class="caja-check"></span> Aplicación</div>
-                    <div><span class="caja-check"></span> Inspección</div>
-                    <div><span class="caja-check"></span> Mantenimiento</div>
-                    <div><span class="caja-check"></span> Refuerzo</div>
-                    <div><span class="caja-check"></span> Otro___________</div>
-                </div>
+        
+        <!-- Bloque del Título (Ocupa el 100% del ancho) -->
+        <div class="w-100 mb-2">
+            <div class="bg-gris border border-dark p-1 text-center"
+                style="font-size: 0.8rem; font-weight: bold; letter-spacing: 1px;">
+                REPORTE DE SERVICIO
             </div>
         </div>
+        
+        <!-- Bloque de Checkboxes en Horizontal (De lado a lado de la hoja) -->
+        <div class="d-flex justify-content-between align-items-center w-100 mb-3" style="font-size: 0.65rem; padding: 0 5px;">
+            <div><span class="caja-check"></span> Aplicación</div>&nbsp;
+            <div><span class="caja-check"></span> Inspección</div>&nbsp;
+            <div><span class="caja-check"></span> Mantenimiento</div>&nbsp;
+            <div><span class="caja-check"></span> Refuerzo</div>&nbsp;
+            <div style="flex-grow: 1; text-align: right; padding-left: 15px;">
+                <span class="caja-check"></span> Otro: <span
+                    style="border-bottom: 1px solid #000; display: inline-block; width: 70%;"></span>
+            </div>
+        </div>
+
 
         <!-- Datos del Cliente -->
         <div class="seccion-datos">
@@ -118,22 +117,7 @@
                     </tbody>
                 </table>
             </div>
-            <div style="width: 25%;">
-                <table class="tabla-oficial" style="height: 100%;">
-                    <thead><tr><th class="bg-gris">TIPO DE PRODUCTO UTILIZADO</th></tr></thead>
-                    <tbody>
-                        <tr>
-                            <td style="border: 1px solid #000; padding-left: 10px;">
-                                <div><span class="caja-check"></span> Plaguicida</div>
-                                <div><span class="caja-check"></span> Rodenticida</div>
-                                <div><span class="caja-check"></span> Sanitizante</div>
-                                <div><span class="caja-check"></span> Desinfectante</div>
-                                <div><span class="caja-check"></span> Otro_________</div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            
         </div>
         <div style="font-size: 0.5rem; margin-top: -5px; margin-bottom: 5px;">NOTA: PARA MAYOR INFORMACIÓN CONSULTA LA ETIQUETA</div>
 
@@ -163,9 +147,9 @@
         <table class="tabla-oficial" style="margin-top: -5px;">
             <tr class="bg-gris">
                 <td style="width: 25%;">* GRADO DE INFESTACIÓN</td>
-                <td style="width: 25%;">A) ALTO</td>
-                <td style="width: 25%;">B) MODERADO</td>
-                <td style="width: 25%;">C) BAJO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-alto" style="line-height: 10px;"></span> A) ALTO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-moderado" style="line-height: 10px;"></span> B) MODERADO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-bajo" style="line-height: 10px;"></span> C) BAJO</td>
             </tr>
             <tr><td colspan="4" class="bg-gris">ACCIONES</td></tr>
             <tr><td colspan="4" style="height: 40px; vertical-align: top;" id="rep-acciones"></td></tr>
@@ -180,16 +164,14 @@
                 <div style="height: 60px;"></div>
             </div>
             <div style="width: 35%; padding: 5px; font-size: 0.65rem;">
-                <div class="mb-1">COSTO DEL SERVICIO: <span class="borde-inferior" style="width: 50%;"></span></div>
-                <div class="mb-1">Importe con letra: ( <span class="borde-inferior" style="width: 70%;"></span> )</div>
-                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check"></span> NO <span class="caja-check"></span></div>
-                <div>TRATAMIENTO: <span class="borde-inferior" style="width: 20%;"></span> DE <span class="borde-inferior" style="width: 20%;"></span></div>
+                <div class="mb-1">COSTO DEL SERVICIO: $<span class="borde-inferior text-center fw-bold" style="width: 50%;" id="rep-costo"></span></div>
+                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold" style="width: 70%;" id="rep-costo-letra"></span> )</div>
+                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check text-center fw-bold" id="chk-factura-si" style="line-height: 10px;"></span> NO <span class="caja-check text-center fw-bold" id="chk-factura-no" style="line-height: 10px;"></span></div>
+                <div>TRATAMIENTO: <span class="borde-inferior text-center fw-bold" style="width: 20%;" id="rep-tratamiento-actual"></span> DE <span class="borde-inferior text-center fw-bold" style="width: 20%;" id="rep-tratamiento-total"></span></div>
             </div>
         </div>
 
-        <div style="font-size: 0.45rem; text-align: center; margin: 2px 0;">
-            **Tipo de Plaga: BG-Cucaracha Alemana / PA-Cucaracha Americana / T-Tijerilla / A-Araña / H-Hormiga / G-Grillo / C-Cochinilla / AL-Alacrán / PI-Plaga de Jardín / AB-Abejas / PG-Plaga Granos Almacenados / O-Otros (Identificación de Plaga) / CC-Chinche de Cama / R-Roedor
-        </div>
+       
         
         <div class="bg-gris border border-dark mb-4">PRÓXIMO SERVICIO</div>
 
@@ -203,7 +185,6 @@
             <div class="col-6">
                 <div class="borde-inferior w-75 mx-auto mb-1" id="rep-nombre-tecnico"></div>
                 NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA<br>
-                <span style="font-weight: bold; font-size: 0.75rem;">V-4/2019</span>
             </div>
         </div>
     </div>

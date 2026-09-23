@@ -68,8 +68,13 @@ async function cargarDatosReporte(id) {
         if (datos.exito) {
             const orden = datos.orden;
             
-            // Función auxiliar para horas
-            const formatHora = (fecha) => fecha ? new Date(fecha).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '';
+            // Función auxiliar para horas (Ajuste UTC-6 para zona horaria de México)
+            const formatHora = (fecha) => {
+                if (!fecha) return '';
+                let d = new Date(fecha);
+                d.setHours(d.getHours() - 6);
+                return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+            };
             
             document.getElementById('rep-folio').innerText = orden.id_orden.toString().padStart(5, '0');
             document.getElementById('rep-fecha').innerText = new Date(orden.fecha_servicio).toLocaleDateString('es-MX');
@@ -83,11 +88,11 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-hora-sal').innerText = formatHora(orden.hora_salida);
             document.getElementById('rep-nombre-tecnico').innerText = orden.nombre_tecnico;
 
-            // Lógica para Hora de Reingreso (+2 horas)
+            // Lógica para Hora de Reingreso (+2 horas sobre la hora real de México)
             let textoReingreso = "";
             if (orden.hora_salida) {
                 let fechaSalida = new Date(orden.hora_salida);
-                fechaSalida.setHours(fechaSalida.getHours() + 2);
+                fechaSalida.setHours(fechaSalida.getHours() - 6 + 2); 
                 textoReingreso = fechaSalida.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
             }
             document.getElementById('rep-hora-reingreso').innerText = textoReingreso;
@@ -109,22 +114,71 @@ async function cargarDatosReporte(id) {
                 `;
             }
 
-            // Llenado de la tabla de Áreas (Generando 10 filas para dar el espacio del reporte)
-            // Si en el futuro tienes los datos de las áreas en JSON, los mapeas aquí en lugar de celdas vacías.
+            // ==========================================================
+            // LLENADO DINÁMICO DE ÁREAS TRATADAS Y DETALLES JSON
+            // ==========================================================
+            const jsonDetalles = orden.detalles_completos || {};
+            const tablaAreas = jsonDetalles.tabla_areas || jsonDetalles.areas || [];
             const tbodyAreas = document.getElementById('rep-tabla-areas');
             tbodyAreas.innerHTML = '';
+            
             for (let i = 0; i < 10; i++) {
-                tbodyAreas.innerHTML += `
-                    <tr>
-                        <td style="height: 16px;"></td>
-                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                    </tr>
-                `;
+                if (tablaAreas[i]) {
+                    const area = tablaAreas[i];
+                    const actSi = (area.actividad === 'SI' || area.actividad === true) ? 'X' : '';
+                    const actNo = (area.actividad === 'NO' || area.actividad === false) ? 'X' : '';
+                    const plagasStr = Array.isArray(area.plagas) ? area.plagas.join(', ') : (area.plagas || '');
+                    
+                    tbodyAreas.innerHTML += `
+                        <tr>
+                            <td style="height: 16px;" class="fw-bold">${area.nombre || area.area || ''}</td>
+                            <td class="text-center fw-bold">${actSi}</td>
+                            <td class="text-center"></td>
+                            <td class="text-center fw-bold">${actNo}</td>
+                            <td class="text-center fw-bold">${plagasStr}</td>
+                            <td class="text-center fw-bold">${area.productos_num || area.producto || ''}</td>                            <td class="text-center fw-bold">${area.metodo || area.metodo_aplicacion || ''}</td>
+                            <td class="text-center">${area.observaciones || ''}</td>
+                        </tr>
+                    `;
+                } else {
+                    // Generar filas en blanco para que el PDF no pierda su tamaño
+                    tbodyAreas.innerHTML += `
+                        <tr>
+                            <td style="height: 16px;"></td>
+                            <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        </tr>
+                    `;
+                }
             }
 
-            // Acciones y Seguimiento
-            document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || '';
-            document.getElementById('rep-seguimiento').innerText = orden.recomendaciones_seguimiento || '';
+            // ==========================================================
+            // LLENADO DE CHECKBOXES, COSTOS Y TRATAMIENTOS
+            // ==========================================================
+            // 1. Grado de infestación
+            const grado = (jsonDetalles.grado_infestacion || '').toUpperCase();
+            if(grado === 'ALTO') document.getElementById('chk-alto').innerText = 'X';
+            if(grado === 'MODERADO') document.getElementById('chk-moderado').innerText = 'X';
+            if(grado === 'BAJO') document.getElementById('chk-bajo').innerText = 'X';
+
+            // 2. Factura
+            if (orden.requiere_factura === true) {
+                document.getElementById('chk-factura-si').innerText = 'X';
+            } else if (orden.requiere_factura === false) {
+                document.getElementById('chk-factura-no').innerText = 'X';
+            }
+
+            // 3. Tratamientos y Costos
+            document.getElementById('rep-tratamiento-actual').innerText = orden.num_tratamiento || '';
+            document.getElementById('rep-tratamiento-total').innerText = orden.total_tratamientos || '';
+            
+            let costoMostrar = orden.costo_con_iva || orden.costo_sin_iva || '';
+            if (costoMostrar) costoMostrar = parseFloat(costoMostrar).toFixed(2);
+            document.getElementById('rep-costo').innerText = costoMostrar;
+            document.getElementById('rep-costo-letra').innerText = '';
+
+            // 4. Acciones y Seguimiento
+            document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || jsonDetalles.acciones_correctivas || '';
+            document.getElementById('rep-seguimiento').innerText = orden.recomendaciones_seguimiento || jsonDetalles.indicaciones_proximas || '';
         }
     } catch (error) {
         console.error("Error al cargar el reporte del cliente:", error);
