@@ -203,7 +203,7 @@ async function generarPDF() {
     modalFirma.classList.add('d-none');
     document.body.style.overflow = 'auto';
 
-    // B. Cambiar el botón inferior a estado de carga y ocultar su contenedor para no imprimirlo
+    // B. Cambiar el botón inferior a estado de carga y ocultar su contenedor
     const btnAbrirFirma = document.getElementById('btn-abrir-firma');
     const zonaBotonFirmar = document.getElementById('zona-boton-firmar');
     btnAbrirFirma.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Generando y guardando...`;
@@ -216,46 +216,46 @@ async function generarPDF() {
     const lineaFirma = document.getElementById('linea-firma-cliente');
     
     imgElement.src = imagenFirma;
-    imgElement.style.display = 'block'; // Mostramos la firma
-    lineaFirma.style.display = 'none';  // Ocultamos la rayita para que no estorbe
+    imgElement.style.display = 'block'; 
+    lineaFirma.style.display = 'none';  
 
-    // D. Opciones de PDF
-    const elementoHoja = document.getElementById('documento-reporte');
-    window.scrollTo(0, 0);
-    const opciones = {
-        margin:       0.4, // Margen exterior reducido
-        filename:     `Reporte_${idOrden}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
-    };
-    
+    // PAUSA ESTRATÉGICA: Damos 500ms al procesador del celular para pintar la imagen en el DOM
+    setTimeout(async () => {
+        // D. Opciones de PDF
+        const elementoHoja = document.getElementById('documento-reporte');
+        window.scrollTo(0, 0);
+        const opciones = {
+            margin:       0.4,
+            filename:     `Reporte_${idOrden}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
+        };
 
-    try {
-        // Transformar a Base64 puro
-        const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
-        
-        // Enviar al Backend
-        const respuesta = await fetch(BASE_URL + '/api/reportes/guardar-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ folio: idOrden, pdfBase64: pdfBase64 })
-        });
+        try {
+            const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
+            
+            const respuesta = await fetch(BASE_URL + '/api/reportes/guardar-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ folio: idOrden, pdfBase64: pdfBase64 })
+            });
 
-        const datos = await respuesta.json();
+            const datos = await respuesta.json();
 
-        if (datos.exito) {
-            alert("¡Documento guardado con éxito en el servidor de la oficina!");
-            window.location.href = "../viewtecnico/tecnico.html"; // Regresa al menú principal del técnico
-        } else {
-            alert("Error del servidor: " + datos.error);
+            if (datos.exito) {
+                alert("¡Documento guardado con éxito en el servidor de la oficina!");
+                window.location.href = "../viewtecnico/tecnico.html"; 
+            } else {
+                alert("Error del servidor: " + datos.error);
+                restaurarVistaBotones();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error de conexión al generar el PDF.");
             restaurarVistaBotones();
         }
-    } catch (error) {
-        console.error(error);
-        alert("Error de conexión al generar el PDF.");
-        restaurarVistaBotones();
-    }
+    }, 500); // 500 milisegundos de espera
 }
 
 // Restaura la vista si algo falla al guardar
