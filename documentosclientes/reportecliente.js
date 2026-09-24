@@ -122,16 +122,16 @@ async function cargarDatosReporte(id) {
             const tbodyAreas = document.getElementById('rep-tabla-areas');
             tbodyAreas.innerHTML = '';
             
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 8; i++) {
                 if (tablaAreas[i]) {
                     const area = tablaAreas[i];
                     const actSi = (area.actividad === 'SI' || area.actividad === true) ? 'X' : '';
                     const actNo = (area.actividad === 'NO' || area.actividad === false) ? 'X' : '';
                     const plagasStr = Array.isArray(area.plagas) ? area.plagas.join(', ') : (area.plagas || '');
-                    
+                     
                     tbodyAreas.innerHTML += `
                         <tr>
-                            <td style="height: 16px;" class="fw-bold">${area.nombre || area.area || ''}</td>
+                            <td style="height: 12px;" class="fw-bold">${area.nombre || area.area || ''}</td>
                             <td class="text-center fw-bold">${actSi}</td>
                             <td class="text-center"></td>
                             <td class="text-center fw-bold">${actNo}</td>
@@ -144,7 +144,7 @@ async function cargarDatosReporte(id) {
                     // Generar filas en blanco para que el PDF no pierda su tamaño
                     tbodyAreas.innerHTML += `
                         <tr>
-                            <td style="height: 16px;"></td>
+                            <td style="height: 12px;"></td>
                             <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
                         </tr>
                     `;
@@ -225,7 +225,7 @@ async function generarPDF() {
         const elementoHoja = document.getElementById('documento-reporte');
         window.scrollTo(0, 0);
         const opciones = {
-            margin:       [0.1, 0.4, 0.1, 0.4], // [Arriba, Derecha, Abajo, Izquierda]
+            margin:       [0, 0.4, 0, 0.4], // [0 Arriba, 0.4 Derecha, 0 Abajo, 0.4 Izquierda]
             filename:     `Reporte_${idOrden}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
