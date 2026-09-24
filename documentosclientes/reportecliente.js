@@ -223,12 +223,13 @@ async function generarPDF() {
     const elementoHoja = document.getElementById('documento-reporte');
     window.scrollTo(0, 0);
     const opciones = {
-        margin:       1,
+        margin:       0.4, // Margen exterior reducido
         filename:     `Reporte_${idOrden}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
     };
+    
 
     try {
         // Transformar a Base64 puro
