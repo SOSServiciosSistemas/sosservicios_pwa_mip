@@ -225,7 +225,7 @@ async function generarPDF() {
         const elementoHoja = document.getElementById('documento-reporte');
         window.scrollTo(0, 0);
         const opciones = {
-            margin:       0.4,
+            margin:       [0.1, 0.4, 0.1, 0.4], // [Arriba, Derecha, Abajo, Izquierda]
             filename:     `Reporte_${idOrden}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
@@ -275,7 +275,7 @@ function restaurarVistaBotones() {
 
 // Función para convertir números a letras (Pesos Mexicanos)
 function numeroALetras(num) {
-    if (!num || num === 0) return "CERO PESOS 00/100";
+    if (!num || num === 0) return "CERO PESOS 00/100";Próximo 
     const centavos = Math.round((num - Math.floor(num)) * 100).toString().padStart(2, '0');
     
     function decenar(n) {

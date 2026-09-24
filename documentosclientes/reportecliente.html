@@ -19,7 +19,7 @@
             width: 100%; 
             max-width: 20.5cm; 
             margin: 0 auto; 
-            padding: 0.5cm; 
+            padding: 0.1cm 0.5cm; 
             box-sizing: border-box; /* Crucial: evita que el padding ensanche la hoja */
             position: relative;
         }
@@ -184,8 +184,7 @@
         <!-- Firmas (reducimos los márgenes mt-4 mb-2 a mt-2 mb-0) -->
         <div class="row text-center align-items-end mt-2 mb-0" style="font-size: 0.65rem;">
             <div class="col-6">
-                <img id="img-firma-cliente" src="" style="max-height: 70px; display: none; margin: 0 auto;">
-                <div class="borde-inferior w-75 mx-auto mb-1" id="linea-firma-cliente"></div>
+<img id="img-firma-cliente" src="" style="max-height: 50px; display: none; margin: 0 auto;">                <div class="borde-inferior w-75 mx-auto mb-1" id="linea-firma-cliente"></div>
                 NOMBRE Y FIRMA DEL CLIENTE
             </div>
             <div class="col-6">
@@ -194,24 +193,6 @@
             </div>
         </div>
     </div> <!-- Cierre de la hoja de impresión -->
-
-       
-        
-        <div class="bg-gris border border-dark mb-4">PRÓXIMO SERVICIO</div>
-
-        <!-- Firmas -->
-        <div class="row text-center align-items-end mt-4 mb-2" style="font-size: 0.65rem;">
-            <div class="col-6">
-                <img id="img-firma-cliente" src="" style="max-height: 80px; display: none; margin: 0 auto;">
-                <div class="borde-inferior w-75 mx-auto mb-1" id="linea-firma-cliente"></div>
-                NOMBRE Y FIRMA DEL CLIENTE
-            </div>
-            <div class="col-6">
-                <div class="borde-inferior w-75 mx-auto mb-1" id="rep-nombre-tecnico"></div>
-                NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA<br>
-            </div>
-        </div>
-    </div>
 
     <!-- BOTÓN INFERIOR PARA ABRIR LA FIRMA -->
     <div class="container text-center mt-4 mb-5 no-imprimir" id="zona-boton-firmar">
