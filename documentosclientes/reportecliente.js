@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('pizarra-firma');
     signaturePad = new SignaturePad(canvas, { 
         backgroundColor: 'rgb(255, 255, 255)',
-        minWidth: 2,  // Grosor mínimo (cuando el trazo es rápido)
-        maxWidth: 5   // Grosor máximo (cuando el trazo es lento)
+        minWidth: 5,  // Grosor mínimo (cuando el trazo es rápido)
+        maxWidth: 10   // Grosor máximo (cuando el trazo es lento)
     });
 
     // Función para ajustar el tamaño del canvas (indispensable para celulares)
