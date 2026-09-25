@@ -5,11 +5,15 @@ const idOrden = urlParams.get('folio');
 let signaturePad;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Inicializar el lienzo de firma (ahora apuntando al canvas del modal)
+    // Inicializa el lienzo de firma (apuntando al canvas del modal)
     const canvas = document.getElementById('pizarra-firma');
-    signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
+    signaturePad = new SignaturePad(canvas, { 
+        backgroundColor: 'rgb(255, 255, 255)',
+        minWidth: 2,  // Grosor mínimo (cuando el trazo es rápido)
+        maxWidth: 5   // Grosor máximo (cuando el trazo es lento)
+    });
 
-    // Función para ajustar el tamaño del canvas (vital para móviles)
+    // Función para ajustar el tamaño del canvas (indispensable para celulares)
     function redimensionarCanvas() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
         canvas.width = canvas.offsetWidth * ratio;
@@ -18,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         signaturePad.clear();
     }
 
-    // 2. Controladores del Modal de Firma
+    // Controladores del Modal de Firma
     const modalFirma = document.getElementById('modal-firma');
     const btnAbrirFirma = document.getElementById('btn-abrir-firma');
     const btnCerrarFirma = document.getElementById('btn-cerrar-firma');
@@ -53,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Asignar el evento para generar PDF al botón de guardar del modal
     btnGuardarFirma.addEventListener('click', generarPDF);
 
-    // 3. Cargar los datos de la orden de la Base de Datos
+    // Cargar los datos de la orden de la Base de Datos
     if (idOrden) {
         await cargarDatosReporte(idOrden);
     }
@@ -97,7 +101,7 @@ async function cargarDatosReporte(id) {
             }
             document.getElementById('rep-hora-reingreso').innerText = textoReingreso;
 
-            // Llenado de Productos (Asegurando 4 filas fijas A,B,C,D para mantener formato)
+            // Llenado de Productos (4 filas fijas A,B,C,D para mantener formato)
             const tbodyProductos = document.getElementById('rep-tabla-productos');
             tbodyProductos.innerHTML = '';
             const letras = ['A', 'B', 'C', 'D'];
@@ -275,7 +279,7 @@ function restaurarVistaBotones() {
 
 // Función para convertir números a letras (Pesos Mexicanos)
 function numeroALetras(num) {
-    if (!num || num === 0) return "CERO PESOS 00/100";Próximo 
+    if (!num || num === 0) return "CERO PESOS 00/100"; 
     const centavos = Math.round((num - Math.floor(num)) * 100).toString().padStart(2, '0');
     
     function decenar(n) {
