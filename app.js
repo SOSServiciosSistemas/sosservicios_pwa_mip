@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Le cambiamos el texto al botón mientras busca
             btnProbar.innerText = "Conectando...";
             
-            // Hacemos la petición a tu API local
-            const respuesta = await fetch('http://localhost:3000/api/test-db');
+            // Hacemos la petición a la API utilizando BASE_URL (requiere que config.js se cargue antes)
+            const respuesta = await fetch(`${BASE_URL}/api/test-db`);
             const datos = await respuesta.json();
 
             // Mostramos el resultado en la pantalla
