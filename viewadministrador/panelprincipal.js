@@ -416,6 +416,22 @@ document.getElementById('form-actualizar-firma')?.addEventListener('submit', asy
             body: JSON.stringify({ firma_digital: firmaDigital })
         });
 
+        if (!respuesta.ok) {
+            const errorTexto = await respuesta.text();
+            let mensajeError = `Error en el servidor (${respuesta.status})`;
+            try {
+                const errorJson = JSON.parse(errorTexto);
+                if (errorJson.error) mensajeError = errorJson.error;
+            } catch (e) {
+                if (respuesta.status === 404) {
+                    mensajeError = 'El servidor aún no tiene cargada la nueva versión del backend (Error 404). Por favor haz "git pull" y reinicia el backend en el servidor.';
+                }
+            }
+            alertaError.textContent = mensajeError;
+            alertaError.classList.remove('d-none');
+            return;
+        }
+
         const datos = await respuesta.json();
 
         if (datos.exito) {
