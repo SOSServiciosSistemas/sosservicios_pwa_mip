@@ -91,6 +91,13 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-hora-ent').innerText = formatHora(orden.hora_llegada);
             document.getElementById('rep-hora-sal').innerText = formatHora(orden.hora_salida);
             document.getElementById('rep-nombre-tecnico').innerText = orden.nombre_tecnico;
+            if (orden.firma_tecnico) {
+                const imgFirmaTecnico = document.getElementById('img-firma-tecnico');
+                if (imgFirmaTecnico) {
+                    imgFirmaTecnico.src = orden.firma_tecnico;
+                    imgFirmaTecnico.style.display = 'block';
+                }
+            }
 
             // Lógica para Hora de Reingreso (+2 horas sobre la hora real de México)
             let textoReingreso = "";

@@ -91,20 +91,18 @@
 
         <!-- SECCIÓN 1: FIRMA DEL TÉCNICO (Para cerrar la ruta) -->
         <div id="seccion-firma-tecnico" class="card shadow-sm border-0 mb-4 p-3 border-start border-danger border-4">
-            <h5 class="fw-bold text-danger mb-3 border-bottom pb-2">1. Cierre de Ruta (Firma del Técnico)</h5>
+            <h5 class="fw-bold text-danger mb-3 border-bottom pb-2">1. Cierre de Ruta (Firma Electrónica del Técnico)</h5>
             <form id="form-cierre-ruta">
                 <div class="mb-3">
                     <label class="form-label fw-bold text-secondary">Kilometraje Final *</label>
                     <input type="number" class="form-control text-center fw-bold border-danger shadow-sm" id="cr-km-final" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-secondary d-block text-center">Firma *</label>
-                    <div class="border bg-white shadow-sm rounded" style="touch-action: none;">
-                        <canvas id="canvas-firma-tecnico" width="300" height="150" class="w-100" style="cursor: crosshair;"></canvas>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none w-100 mt-1" onclick="limpiarCanvas('canvas-firma-tecnico')">Borrar firma</button>
+                    <label class="form-label fw-bold text-secondary">Contraseña del Técnico *</label>
+                    <input type="password" class="form-control text-center fw-bold shadow-sm" id="cr-password-tecnico" placeholder="Ingresa tu contraseña para firmar" required autocomplete="current-password">
+                    <div class="form-text text-center">Al ingresar tu contraseña válida se estampará tu firma oficial digital registrada.</div>
                 </div>
-                <button type="submit" class="btn btn-danger w-100 fw-bold py-3 fs-5 shadow-sm" id="btn-guardar-cierre">Bloquear y Cerrar Ruta</button>
+                <button type="submit" class="btn btn-danger w-100 fw-bold py-3 fs-5 shadow-sm" id="btn-guardar-cierre">🔐 Firmar y Cerrar Ruta</button>
             </form>
         </div>
 
@@ -113,7 +111,7 @@
             <h5 class="fw-bold text-primary mb-3 border-bottom pb-2">2. Liquidación (Mesa de Control)</h5>
             
             <div class="mb-3 text-center">
-                <label class="form-label fw-bold text-secondary">Firma del Técnico (Bloqueada)</label>
+                <label class="form-label fw-bold text-secondary">Firma Digital del Técnico</label>
                 <div class="border bg-light rounded p-2">
                     <img id="img-firma-tecnico" src="" alt="Firma Técnico" class="img-fluid" style="max-height: 100px;">
                 </div>
@@ -121,13 +119,17 @@
 
             <form id="form-liquidar-ruta">
                 <div class="mb-3">
-                    <label class="form-label fw-bold text-secondary d-block text-center">Firma de Recibido (Responsable) *</label>
-                    <div class="border bg-white shadow-sm rounded" style="touch-action: none;">
-                        <canvas id="canvas-firma-mesa" width="300" height="150" class="w-100" style="cursor: crosshair;"></canvas>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none w-100 mt-1" onclick="limpiarCanvas('canvas-firma-mesa')">Borrar firma</button>
+                    <label class="form-label fw-bold text-secondary">Responsable de Mesa de Control *</label>
+                    <select class="form-select fw-bold shadow-sm" id="liq-usuario-mesa" required>
+                        <option value="">Seleccione personal de Mesa de Control...</option>
+                    </select>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 fw-bold py-3 fs-5 shadow-sm" id="btn-guardar-liquidacion">Recibir Efectivo y Liquidar</button>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary">Contraseña de Mesa de Control *</label>
+                    <input type="password" class="form-control text-center fw-bold shadow-sm" id="liq-password-mesa" placeholder="Ingresa tu contraseña para validar y firmar" required autocomplete="current-password">
+                    <div class="form-text text-center">Al validar tu contraseña se estampará tu firma digital oficial.</div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-3 fs-5 shadow-sm" id="btn-guardar-liquidacion">🔐 Validar Contraseña y Liquidar</button>
                 
                 <!-- NUEVO BOTÓN PARA CANCELAR Y VOLVER -->
                 <button type="button" class="btn btn-outline-secondary w-100 fw-bold mt-2 py-2" onclick="window.location.reload()">Cancelar y Volver a la Agenda</button>

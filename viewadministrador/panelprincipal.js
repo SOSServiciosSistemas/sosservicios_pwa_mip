@@ -11,6 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarUsuarios();
     cargarClientes();
     cargarProductos(); 
+
+    // Inicializar lienzos de firma digital
+    configurarCanvasFirma('canvas-firma-nuevo', 'btn-limpiar-firma-nuevo');
+    configurarCanvasFirma('canvas-firma-actualizar', 'btn-limpiar-firma-actualizar');
 });
 
 // Cerrar sesión
@@ -26,7 +30,7 @@ let listaUsuariosCache = [];
 
 async function cargarUsuarios() {
     const tbody = document.getElementById('tabla-usuarios');
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando usuarios...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando usuarios...</td></tr>';
 
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/usuarios');
@@ -36,11 +40,11 @@ async function cargarUsuarios() {
             listaUsuariosCache = datos.usuarios || [];
             renderizarUsuarios(listaUsuariosCache);
         } else {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar usuarios: ${datos.error || 'Desconocido'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Error al cargar usuarios: ${datos.error || 'Desconocido'}</td></tr>`;
         }
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error de conexión al cargar la lista de usuarios.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Error de conexión al cargar la lista de usuarios.</td></tr>';
     }
 }
 
@@ -49,7 +53,7 @@ function renderizarUsuarios(usuarios) {
     tbody.innerHTML = '';
 
     if (!usuarios || usuarios.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron usuarios.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No se encontraron usuarios.</td></tr>';
         return;
     }
 
@@ -84,19 +88,33 @@ function renderizarUsuarios(usuarios) {
             </button>
         `;
 
+        const badgeFirma = user.tiene_firma
+            ? '<span class="badge bg-success-subtle text-success border border-success-subtle">✍️ Registrada</span>'
+            : '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">⚠️ Sin firma</span>';
+
+        const botonFirma = `
+            <button class="btn btn-sm btn-outline-success ms-1" 
+                onclick="abrirModalFirma(${user.id_usuario}, '${user.nombre_completo.replace(/'/g, "\\'")}', '${user.firma_digital ? user.firma_digital.replace(/'/g, "\\'") : ''}')" 
+                title="Registrar / Actualizar firma oficial de ${user.nombre_completo}">
+                ✍️
+            </button>
+        `;
+
         const fila = `
             <tr>
                 <td class="fw-semibold">${user.nombre_completo}</td>
                 <td><code class="text-dark bg-light px-2 py-1 rounded">@${user.usuario}</code></td>
                 <td>${badgeRol}</td>
+                <td>${badgeFirma}</td>
                 <td>
                     <span class="badge ${user.activo ? 'bg-success' : 'bg-danger'}">
                         ${user.activo ? 'Activo' : 'Inactivo'}
                     </span>
                 </td>
-                <td class="text-end">
+                <td class="text-end text-nowrap">
                     ${botonEstatus}
                     ${botonPassword}
+                    ${botonFirma}
                 </td>
             </tr>
         `;
@@ -152,6 +170,7 @@ document.getElementById('btn-nuevo-usuario')?.addEventListener('click', () => {
 
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     document.getElementById('form-nuevo-usuario').reset();
+    limpiarCanvasFirma('canvas-firma-nuevo');
 
     const alertaError = document.getElementById('user-error-alert');
     if (alertaError) {
@@ -206,6 +225,15 @@ document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async 
         return;
     }
 
+    const canvasNuevo = document.getElementById('canvas-firma-nuevo');
+    if (!canvasNuevo || canvasNuevo.getAttribute('data-firmada') !== 'true') {
+        alertaError.textContent = 'Es obligatorio registrar la firma digital oficial del usuario.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    const firmaDigital = canvasNuevo.toDataURL('image/png');
+
     const btnGuardar = document.getElementById('btn-guardar-usuario');
     const textoOriginal = btnGuardar.innerHTML;
     btnGuardar.disabled = true;
@@ -219,7 +247,8 @@ document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async 
                 nombre_completo: nombre,
                 usuario: usuario,
                 rol: rol,
-                password: password
+                password: password,
+                firma_digital: firmaDigital
             })
         });
 
@@ -231,7 +260,7 @@ document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async 
             if (modal) modal.hide();
 
             cargarUsuarios();
-            alert(`¡Usuario "${nombre}" registrado con éxito con rol de ${rol}!`);
+            alert(`¡Usuario "${nombre}" registrado con éxito con su firma digital oficial!`);
         } else {
             alertaError.textContent = datos.error || 'Ocurrió un error al registrar el usuario.';
             alertaError.classList.remove('d-none');
@@ -323,6 +352,165 @@ document.getElementById('form-cambiar-password')?.addEventListener('submit', asy
         btnGuardar.innerHTML = textoOriginal;
     }
 });
+
+// ----------------------------------------------------
+// Modal y Actualización de Firma Oficial Digital
+// ----------------------------------------------------
+window.abrirModalFirma = function(idUsuario, nombreCompleto, firmaActual) {
+    const modalEl = document.getElementById('modalActualizarFirma');
+    if (!modalEl) return;
+
+    document.getElementById('form-actualizar-firma').reset();
+    document.getElementById('firma-id-usuario').value = idUsuario;
+    document.getElementById('firma-nombre-usuario').value = nombreCompleto;
+
+    limpiarCanvasFirma('canvas-firma-actualizar');
+
+    const contPrevia = document.getElementById('contenedor-firma-previa');
+    const imgPrevia = document.getElementById('img-firma-previa');
+    if (firmaActual && firmaActual !== 'null' && firmaActual !== 'undefined' && firmaActual.length > 20) {
+        imgPrevia.src = firmaActual;
+        contPrevia.classList.remove('d-none');
+    } else {
+        contPrevia.classList.add('d-none');
+        imgPrevia.src = '';
+    }
+
+    const alertaError = document.getElementById('firma-error-alert');
+    if (alertaError) {
+        alertaError.classList.add('d-none');
+        alertaError.textContent = '';
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
+document.getElementById('form-actualizar-firma')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const alertaError = document.getElementById('firma-error-alert');
+    alertaError.classList.add('d-none');
+    alertaError.textContent = '';
+
+    const idUsuario = document.getElementById('firma-id-usuario').value;
+    const canvas = document.getElementById('canvas-firma-actualizar');
+
+    if (!canvas || canvas.getAttribute('data-firmada') !== 'true') {
+        alertaError.textContent = 'Por favor dibuja la nueva firma oficial antes de guardar.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    const firmaDigital = canvas.toDataURL('image/png');
+
+    const btnGuardar = document.getElementById('btn-guardar-firma');
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Guardando...';
+
+    try {
+        const respuesta = await fetch(BASE_URL + `/api/admin/usuarios/${idUsuario}/firma`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ firma_digital: firmaDigital })
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            const modalEl = document.getElementById('modalActualizarFirma');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            cargarUsuarios();
+            alert('¡Firma oficial registrada y actualizada con éxito!');
+        } else {
+            alertaError.textContent = datos.error || 'Ocurrió un error al guardar la firma.';
+            alertaError.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Error al actualizar firma:", error);
+        alertaError.textContent = 'Error de conexión con el servidor. Revisa tu red.';
+        alertaError.classList.remove('d-none');
+    } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+    }
+});
+
+// ----------------------------------------------------
+// Utilidades de Canvas para Firma
+// ----------------------------------------------------
+function configurarCanvasFirma(idCanvas, idBotonLimpiar) {
+    const canvas = document.getElementById(idCanvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#000000';
+    let dibujando = false;
+
+    const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    };
+
+    const iniciar = (e) => {
+        e.preventDefault();
+        dibujando = true;
+        canvas.setAttribute('data-firmada', 'true');
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+    };
+
+    const dibujar = (e) => {
+        e.preventDefault();
+        if (!dibujando) return;
+        const p = getPos(e);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+    };
+
+    const detener = () => {
+        dibujando = false;
+        ctx.closePath();
+    };
+
+    canvas.addEventListener('mousedown', iniciar);
+    canvas.addEventListener('mousemove', dibujar);
+    canvas.addEventListener('mouseup', detener);
+    canvas.addEventListener('mouseleave', detener);
+
+    canvas.addEventListener('touchstart', iniciar, { passive: false });
+    canvas.addEventListener('touchmove', dibujar, { passive: false });
+    canvas.addEventListener('touchend', detener);
+
+    const btnLimpiar = document.getElementById(idBotonLimpiar);
+    if (btnLimpiar) {
+        btnLimpiar.addEventListener('click', (e) => {
+            e.preventDefault();
+            limpiarCanvasFirma(idCanvas);
+        });
+    }
+}
+
+function limpiarCanvasFirma(idCanvas) {
+    const canvas = document.getElementById(idCanvas);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    canvas.setAttribute('data-firmada', 'false');
+}
 
 // ==========================================
 // MÓDULO DE CLIENTES 

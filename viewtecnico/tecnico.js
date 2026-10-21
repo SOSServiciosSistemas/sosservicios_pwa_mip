@@ -23,10 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tituloAgenda = document.getElementById('titulo-agenda');
     if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFecha}`;
 
-    // Inicializa los dos lienzos de dibujo para las firmas
-    iniciarCanvas('canvas-firma-tecnico');
-    iniciarCanvas('canvas-firma-mesa');
-
     // Verifica el estado de la bitácora del día actual
     await verificarBitacora(idUsuario);
 });
@@ -299,6 +295,9 @@ async function cargarPlaneador(esModoMesaControl) {
             // Renderiza la firma almacenada del técnico
             const firmas = datos.bitacora.firmas_cierre || {};
             document.getElementById('img-firma-tecnico').src = firmas.tecnico || '';
+
+            // Cargar personal de Mesa de Control en el selector
+            cargarUsuariosMesaControl();
         } else {
             document.getElementById('seccion-firma-tecnico').style.display = 'block';
             document.getElementById('seccion-firma-mesa').style.display = 'none';
@@ -309,14 +308,31 @@ async function cargarPlaneador(esModoMesaControl) {
     }
 }
 
+// Carga lista de usuarios con rol Mesa de Control para la liquidación
+async function cargarUsuariosMesaControl() {
+    const select = document.getElementById('liq-usuario-mesa');
+    if (!select) return;
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/mesa-control/usuarios');
+        const datos = await respuesta.json();
+        if (datos.exito && datos.usuarios) {
+            select.innerHTML = '<option value="">Seleccione personal de Mesa de Control...</option>';
+            datos.usuarios.forEach(u => {
+                select.innerHTML += `<option value="${u.id_usuario}">${u.nombre_completo}</option>`;
+            });
+        }
+    } catch (error) {
+        console.error("Error al cargar personal de Mesa de Control:", error);
+    }
+}
+
 // ================= FORMULARIOS DE CIERRE Y LIQUIDACIÓN =================
 document.getElementById('form-cierre-ruta').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const canvas = document.getElementById('canvas-firma-tecnico');
     
-    // Valida la existencia de la firma en el lienzo
-    if (canvas.getAttribute('data-firmada') !== 'true') {
-        alert("⚠️ Es obligatorio dibujar tu firma para cerrar la ruta.");
+    const password = document.getElementById('cr-password-tecnico').value;
+    if (!password) {
+        alert("⚠️ Ingresa tu contraseña para verificar tu identidad y firmar.");
         return;
     }
 
@@ -328,43 +344,55 @@ document.getElementById('form-cierre-ruta').addEventListener('submit', async (e)
     }
 
     const btn = document.getElementById('btn-guardar-cierre');
-    btn.innerText = "Guardando..."; btn.disabled = true;
+    btn.innerText = "Validando y firmando..."; btn.disabled = true;
 
     try {
+        const idTecnico = localStorage.getItem('idUsuario');
         const respuesta = await fetch(BASE_URL + '/api/bitacoras/cerrar-ruta', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id_bitacora: idBitacoraDiaria,
                 km_final: kmFinal,
-                firma_tecnico: canvas.toDataURL("image/png")
+                id_usuario: idTecnico,
+                password: password
             })
         });
         const datos = await respuesta.json();
         
         if (datos.exito) {
-            alert("Ruta cerrada. Ahora entrega el dispositivo en Mesa de Control.");
+            alert("✅ Ruta cerrada y firmada exitosamente. Ahora entrega el dispositivo en Mesa de Control.");
+            document.getElementById('cr-password-tecnico').value = '';
             // Ejecuta la transición automática a la vista de Mesa de Control
             cargarPlaneador(true);
+        } else {
+            alert("❌ " + (datos.error || "No se pudo cerrar la ruta"));
+            btn.innerText = "🔐 Firmar y Cerrar Ruta"; btn.disabled = false;
         }
     } catch (error) {
         alert("Error de conexión al cerrar.");
-        btn.innerText = "Bloquear y Cerrar Ruta"; btn.disabled = false;
+        btn.innerText = "🔐 Firmar y Cerrar Ruta"; btn.disabled = false;
     }
 });
 
 document.getElementById('form-liquidar-ruta').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const canvas = document.getElementById('canvas-firma-mesa');
     
-    // Valida la existencia de la firma de responsabilidad
-    if (canvas.getAttribute('data-firmada') !== 'true') {
-        alert("⚠️ La firma de Mesa de Control es obligatoria.");
+    const idResponsable = document.getElementById('liq-usuario-mesa').value;
+    const password = document.getElementById('liq-password-mesa').value;
+
+    if (!idResponsable) {
+        alert("⚠️ Debes seleccionar el usuario responsable de Mesa de Control.");
+        return;
+    }
+
+    if (!password) {
+        alert("⚠️ Ingresa la contraseña de Mesa de Control para validar la firma.");
         return;
     }
 
     const btn = document.getElementById('btn-guardar-liquidacion');
-    btn.innerText = "Liquidando..."; btn.disabled = true;
+    btn.innerText = "Validando y liquidando..."; btn.disabled = true;
 
     try {
         const respuesta = await fetch(BASE_URL + '/api/bitacoras/entregar', {
@@ -372,19 +400,24 @@ document.getElementById('form-liquidar-ruta').addEventListener('submit', async (
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id_bitacora: idBitacoraDiaria,
-                firma_responsable: canvas.toDataURL("image/png"),
+                id_usuario_responsable: idResponsable,
+                password: password,
                 total_entregado: totalEfectivoCalculado
             })
         });
         const datos = await respuesta.json();
         
         if (datos.exito) {
+            alert("✅ " + (datos.mensaje || "Liquidación completada y firmada exitosamente."));
             // Refresca la aplicación para renderizar la pantalla final de éxito
             window.location.reload(); 
+        } else {
+            alert("❌ " + (datos.error || "Error al completar la liquidación."));
+            btn.innerText = "🔐 Validar Contraseña y Liquidar"; btn.disabled = false;
         }
     } catch (error) {
-        alert("Error de conexión.");
-        btn.innerText = "Recibir Efectivo y Liquidar"; btn.disabled = false;
+        alert("Error de conexión al liquidar.");
+        btn.innerText = "🔐 Validar Contraseña y Liquidar"; btn.disabled = false;
     }
 });
 
