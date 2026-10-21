@@ -22,44 +22,107 @@ document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
 // ==========================================
 // MÓDULO DE USUARIOS
 // ==========================================
+let listaUsuariosCache = [];
+
 async function cargarUsuarios() {
+    const tbody = document.getElementById('tabla-usuarios');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando usuarios...</td></tr>';
+
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/usuarios');
         const datos = await respuesta.json();
         
-        const tbody = document.getElementById('tabla-usuarios');
-        tbody.innerHTML = ''; 
-
-        if(datos.exito) {
-            datos.usuarios.forEach(user => {
-                const fila = `
-                    <tr>
-                        <td>${user.nombre_completo}</td>
-                        <td>${user.usuario}</td>
-                        <td><span class="badge bg-secondary">${user.rol}</span></td>
-                        <td>
-                            <span class="badge ${user.activo ? 'bg-success' : 'bg-danger'}">
-                                ${user.activo ? 'Activo' : 'Inactivo'}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm ${user.activo ? 'btn-danger' : 'btn-success'}" 
-                                onclick="cambiarEstatusUsuario(${user.id_usuario}, ${!user.activo})">
-                                ${user.activo ? 'Desactivar' : 'Reactivar'}
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += fila;
-            });
+        if (datos.exito) {
+            listaUsuariosCache = datos.usuarios || [];
+            renderizarUsuarios(listaUsuariosCache);
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al cargar usuarios: ${datos.error || 'Desconocido'}</td></tr>`;
         }
     } catch (error) {
         console.error("Error al cargar usuarios:", error);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Error de conexión al cargar la lista de usuarios.</td></tr>';
     }
 }
 
+function renderizarUsuarios(usuarios) {
+    const tbody = document.getElementById('tabla-usuarios');
+    tbody.innerHTML = '';
+
+    if (!usuarios || usuarios.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No se encontraron usuarios.</td></tr>';
+        return;
+    }
+
+    const idUsuarioActual = localStorage.getItem('idUsuario');
+
+    usuarios.forEach(user => {
+        let badgeRol = '<span class="badge bg-secondary">' + user.rol + '</span>';
+        if (user.rol === 'Tecnico') badgeRol = '<span class="badge bg-primary">🔧 Técnico</span>';
+        else if (user.rol === 'Mesa_Control') badgeRol = '<span class="badge bg-info text-dark">🖥️ Mesa de Control</span>';
+        else if (user.rol === 'Direccion') badgeRol = '<span class="badge bg-warning text-dark">📊 Dirección</span>';
+        else if (user.rol === 'Admin') badgeRol = '<span class="badge bg-dark">🛡️ Admin</span>';
+
+        const esMismoUsuario = (user.id_usuario == idUsuarioActual);
+
+        let botonEstatus = '';
+        if (esMismoUsuario) {
+            botonEstatus = `<span class="badge bg-light text-secondary border px-2 py-1" title="Esta es tu sesión activa">Tu cuenta</span>`;
+        } else {
+            botonEstatus = `
+                <button class="btn btn-sm ${user.activo ? 'btn-outline-danger' : 'btn-outline-success'}" 
+                    onclick="cambiarEstatusUsuario(${user.id_usuario}, ${!user.activo})">
+                    ${user.activo ? 'Desactivar' : 'Reactivar'}
+                </button>
+            `;
+        }
+
+        const botonPassword = `
+            <button class="btn btn-sm btn-outline-secondary ms-1" 
+                onclick="abrirModalPassword(${user.id_usuario}, '${user.nombre_completo.replace(/'/g, "\\'")}')" 
+                title="Cambiar contraseña de ${user.nombre_completo}">
+                🔑
+            </button>
+        `;
+
+        const fila = `
+            <tr>
+                <td class="fw-semibold">${user.nombre_completo}</td>
+                <td><code class="text-dark bg-light px-2 py-1 rounded">@${user.usuario}</code></td>
+                <td>${badgeRol}</td>
+                <td>
+                    <span class="badge ${user.activo ? 'bg-success' : 'bg-danger'}">
+                        ${user.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                </td>
+                <td class="text-end">
+                    ${botonEstatus}
+                    ${botonPassword}
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += fila;
+    });
+}
+
+// Filtro rápido de usuarios por texto
+document.getElementById('filtro-usuarios')?.addEventListener('input', function() {
+    const termino = this.value.toLowerCase().trim();
+    if (!termino) {
+        renderizarUsuarios(listaUsuariosCache);
+        return;
+    }
+
+    const filtrados = listaUsuariosCache.filter(u => 
+        (u.nombre_completo && u.nombre_completo.toLowerCase().includes(termino)) ||
+        (u.usuario && u.usuario.toLowerCase().includes(termino)) ||
+        (u.rol && u.rol.toLowerCase().includes(termino))
+    );
+    renderizarUsuarios(filtrados);
+});
+
 async function cambiarEstatusUsuario(id, nuevoEstatus) {
-    if(!confirm(`¿Estás seguro de cambiar el estatus de este usuario?`)) return;
+    const accionTexto = nuevoEstatus ? 'reactivar' : 'desactivar';
+    if (!confirm(`¿Estás seguro de ${accionTexto} a este usuario?`)) return;
 
     try {
         const respuesta = await fetch(BASE_URL + `/api/admin/usuarios/${id}/estatus`, {
@@ -69,15 +132,197 @@ async function cambiarEstatusUsuario(id, nuevoEstatus) {
         });
         const datos = await respuesta.json();
         
-        if(datos.exito) {
+        if (datos.exito) {
             cargarUsuarios(); // Recarga la tabla
         } else {
-            alert("Error: " + datos.error);
+            alert("Error: " + (datos.error || "No se pudo cambiar el estatus"));
         }
     } catch (error) {
         console.error("Error al cambiar estatus:", error);
+        alert("Error de conexión al intentar cambiar el estatus del usuario.");
     }
 }
+
+// ----------------------------------------------------
+// Apertura y Guardado de Nuevo Usuario
+// ----------------------------------------------------
+document.getElementById('btn-nuevo-usuario')?.addEventListener('click', () => {
+    const modalEl = document.getElementById('modalNuevoUsuario');
+    if (!modalEl) return;
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    document.getElementById('form-nuevo-usuario').reset();
+
+    const alertaError = document.getElementById('user-error-alert');
+    if (alertaError) {
+        alertaError.classList.add('d-none');
+        alertaError.textContent = '';
+    }
+
+    modal.show();
+});
+
+// Envío del formulario de Nuevo Usuario
+document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const alertaError = document.getElementById('user-error-alert');
+    alertaError.classList.add('d-none');
+    alertaError.textContent = '';
+
+    const nombre = document.getElementById('user-nombre').value.trim();
+    const usuario = document.getElementById('user-username').value.trim();
+    const rol = document.getElementById('user-rol').value;
+    const password = document.getElementById('user-password').value;
+    const passwordConfirm = document.getElementById('user-password-confirm').value;
+
+    if (!nombre || !usuario || !rol || !password) {
+        alertaError.textContent = 'Por favor completa todos los campos requeridos.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    if (!['Tecnico', 'Mesa_Control'].includes(rol)) {
+        alertaError.textContent = 'Solo se permite registrar usuarios con rol Técnico o Mesa de Control desde este panel.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    if (usuario.length < 3) {
+        alertaError.textContent = 'El nombre de usuario debe tener al menos 3 caracteres.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    if (password.length < 4) {
+        alertaError.textContent = 'La contraseña debe tener un mínimo de 4 caracteres.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        alertaError.textContent = 'Las contraseñas no coinciden. Por favor verifícalas.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    const btnGuardar = document.getElementById('btn-guardar-usuario');
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Guardando...';
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/admin/usuarios', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombre_completo: nombre,
+                usuario: usuario,
+                rol: rol,
+                password: password
+            })
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            const modalEl = document.getElementById('modalNuevoUsuario');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            cargarUsuarios();
+            alert(`¡Usuario "${nombre}" registrado con éxito con rol de ${rol}!`);
+        } else {
+            alertaError.textContent = datos.error || 'Ocurrió un error al registrar el usuario.';
+            alertaError.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Error en la petición de registrar usuario:", error);
+        alertaError.textContent = 'Error de conexión con el servidor. Revisa tu red o intenta más tarde.';
+        alertaError.classList.remove('d-none');
+    } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+    }
+});
+
+// ----------------------------------------------------
+// Modal y Cambio de Contraseña de Usuario
+// ----------------------------------------------------
+window.abrirModalPassword = function(idUsuario, nombreCompleto) {
+    const modalEl = document.getElementById('modalCambiarPassword');
+    if (!modalEl) return;
+
+    document.getElementById('form-cambiar-password').reset();
+    document.getElementById('reset-id-usuario').value = idUsuario;
+    document.getElementById('reset-nombre-usuario').value = nombreCompleto;
+
+    const alertaError = document.getElementById('reset-error-alert');
+    if (alertaError) {
+        alertaError.classList.add('d-none');
+        alertaError.textContent = '';
+    }
+
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
+document.getElementById('form-cambiar-password')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const alertaError = document.getElementById('reset-error-alert');
+    alertaError.classList.add('d-none');
+    alertaError.textContent = '';
+
+    const idUsuario = document.getElementById('reset-id-usuario').value;
+    const nuevaPassword = document.getElementById('reset-nueva-password').value;
+    const confirmarPassword = document.getElementById('reset-confirmar-password').value;
+
+    if (!nuevaPassword || nuevaPassword.length < 4) {
+        alertaError.textContent = 'La nueva contraseña debe tener al menos 4 caracteres.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    if (nuevaPassword !== confirmarPassword) {
+        alertaError.textContent = 'Las contraseñas no coinciden.';
+        alertaError.classList.remove('d-none');
+        return;
+    }
+
+    const btnGuardar = document.getElementById('btn-guardar-password');
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Actualizando...';
+
+    try {
+        const respuesta = await fetch(BASE_URL + `/api/admin/usuarios/${idUsuario}/password`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: nuevaPassword })
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            const modalEl = document.getElementById('modalCambiarPassword');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            alert('¡Contraseña actualizada con éxito!');
+        } else {
+            alertaError.textContent = datos.error || 'No se pudo actualizar la contraseña.';
+            alertaError.classList.remove('d-none');
+        }
+    } catch (error) {
+        console.error("Error al actualizar contraseña:", error);
+        alertaError.textContent = 'Error de conexión con el servidor.';
+        alertaError.classList.remove('d-none');
+    } finally {
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+    }
+});
 
 // ==========================================
 // MÓDULO DE CLIENTES 

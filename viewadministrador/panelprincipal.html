@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="panelprincipal.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
 
     <!-- Barra de Navegación Superior -->
@@ -23,40 +25,48 @@
         <!-- Menú de Pestañas (Tabs) -->
         <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios" type="button" role="tab">👤 Usuarios</button>
+                <button class="nav-link active" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios"
+                    type="button" role="tab">👤 Usuarios</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes" type="button" role="tab">🏢 Clientes</button>
+                <button class="nav-link" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes" type="button"
+                    role="tab">🏢 Clientes</button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos" type="button" role="tab">📦 Productos (Químicos)</button>
+                <button class="nav-link" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos"
+                    type="button" role="tab">📦 Productos (Químicos)</button>
             </li>
             <!-- NUEVA PESTAÑA: Historial -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial" type="button" role="tab">📑 Historial Inventario</button>
+                <button class="nav-link" id="historial-tab" data-bs-toggle="tab" data-bs-target="#historial"
+                    type="button" role="tab">📑 Historial Inventario</button>
             </li>
         </ul>
 
         <!-- Contenedor del contenido de las pestañas -->
         <div class="tab-content" id="adminTabsContent">
-            
+
             <!-- ========================================== -->
             <!-- PESTAÑA 1: USUARIOS                        -->
             <!-- ========================================== -->
             <div class="tab-pane fade show active" id="usuarios" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Gestión de Usuarios</h4>
-                    <button class="btn btn-success" id="btn-nuevo-usuario">+ Nuevo Usuario</button>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h4 class="mb-0">Gestión de Usuarios</h4>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="filtro-usuarios" class="form-control form-control-sm"
+                            placeholder="🔍 Buscar usuario..." style="max-width: 220px;">
+                        <button class="btn btn-success text-nowrap" id="btn-nuevo-usuario">+ Nuevo Usuario</button>
+                    </div>
                 </div>
                 <div class="table-responsive bg-white shadow-sm rounded">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>Nombre</th>
                                 <th>Usuario</th>
                                 <th>Rol</th>
                                 <th>Estatus</th>
-                                <th>Acciones</th>
+                                <th class="text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-usuarios">
@@ -121,13 +131,14 @@
             <div class="tab-pane fade" id="historial" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4>Auditoría de Movimientos</h4>
-                    <button class="btn btn-outline-primary btn-sm" onclick="cargarHistorialInventario()">🔄 Actualizar</button>
+                    <button class="btn btn-outline-primary btn-sm" onclick="cargarHistorialInventario()">🔄
+                        Actualizar</button>
                 </div>
-                
+
                 <!-- Barra de Filtros Avanzados -->
                 <div class="row mb-3 bg-white p-3 rounded shadow-sm mx-0 border">
                     <h6 class="text-secondary fw-bold mb-3">Filtros de Búsqueda en Base de Datos</h6>
-                    
+
                     <div class="col-md-3 mb-2">
                         <label class="form-label small fw-bold">Fecha Inicio</label>
                         <input type="date" id="filtro-fecha-inicio" class="form-control form-control-sm">
@@ -148,11 +159,14 @@
                     </div>
 
                     <div class="col-12 border-top my-3"></div>
-                    
+
                     <!-- Filtros rápidos locales -->
                     <div class="col-md-7 mb-2">
-                        <label class="form-label small fw-bold text-primary">Búsqueda Rápida (sobre los resultados mostrados)</label>
-                        <input type="text" id="filtro-texto-historial" class="form-control form-control-sm border-primary" placeholder="Escribe un químico, técnico o nota para filtrar al instante...">
+                        <label class="form-label small fw-bold text-primary">Búsqueda Rápida (sobre los resultados
+                            mostrados)</label>
+                        <input type="text" id="filtro-texto-historial"
+                            class="form-control form-control-sm border-primary"
+                            placeholder="Escribe un químico, técnico o nota para filtrar al instante...">
                     </div>
                     <div class="col-md-5 mb-2">
                         <label class="form-label small fw-bold text-primary">Filtrar por Tipo</label>
@@ -183,7 +197,8 @@
                                 </thead>
                                 <tbody id="tabla-historial-inventario">
                                     <tr>
-                                        <td colspan="7" class="text-center text-muted py-4">Cargando auditoría de inventario...</td>
+                                        <td colspan="7" class="text-center text-muted py-4">Cargando auditoría de
+                                            inventario...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -191,31 +206,163 @@
                     </div>
                 </div>
             </div>
+        </div> <!-- Fin de #adminTabsContent -->
+    </div> <!-- Fin de .container -->
+
+    <!-- ========================================== -->
+    <!-- MODAL: NUEVO USUARIO                       -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="modalNuevoUsuarioLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="modalNuevoUsuarioLabel">
+                        <span>👤</span> Registrar Nuevo Usuario
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="form-nuevo-usuario">
+                        <!-- Nombre Completo -->
+                        <div class="mb-3">
+                            <label for="user-nombre" class="form-label fw-bold">Nombre Completo *</label>
+                            <input type="text" class="form-control" id="user-nombre"
+                                placeholder="Ej. Carlos Mendoza López" required autocomplete="name">
+                            <div class="form-text">Nombre real para órdenes, reportes y firmas de servicio.</div>
+                        </div>
+
+                        <!-- Nombre de Usuario (Login) -->
+                        <div class="mb-3">
+                            <label for="user-username" class="form-label fw-bold">Nombre de Usuario (Login) *</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">@</span>
+                                <input type="text" class="form-control" id="user-username" placeholder="Ej. cmendoza"
+                                    required autocomplete="username">
+                            </div>
+                            <div class="form-text">Identificador único con el que iniciará sesión en el sistema.</div>
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="mb-3">
+                            <label for="user-rol" class="form-label fw-bold">Rol en el Sistema *</label>
+                            <select class="form-select" id="user-rol" required>
+                                <option value="">Seleccione un rol...</option>
+                                <option value="Tecnico">🔧 Técnico (Aplicador en campo)</option>
+                                <option value="Mesa_Control">🖥️ Mesa de Control (Operaciones e inventarios)</option>
+                            </select>
+                            <div class="form-text">Roles gestionables desde el panel (Admin y Dirección se gestionan
+                                desde consola).</div>
+                        </div>
+
+                        <!-- Contraseña y Confirmación -->
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="user-password" class="form-label fw-bold">Contraseña *</label>
+                                <input type="password" class="form-control" id="user-password"
+                                    placeholder="Mínimo 4 caracteres" required autocomplete="new-password">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="user-password-confirm" class="form-label fw-bold">Confirmar *</label>
+                                <input type="password" class="form-control" id="user-password-confirm"
+                                    placeholder="Repite contraseña" required autocomplete="new-password">
+                            </div>
+                        </div>
+
+                        <!-- Alerta de validación o error -->
+                        <div id="user-error-alert" class="alert alert-danger d-none py-2 px-3 small mb-0" role="alert">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="form-nuevo-usuario" class="btn btn-success fw-bold"
+                        id="btn-guardar-usuario">
+                        Guardar Usuario
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: CAMBIAR CONTRASEÑA                  -->
+    <!-- ========================================== -->
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalCambiarPasswordLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title d-flex align-items-center gap-2" id="modalCambiarPasswordLabel">
+                        <span>🔑</span> Cambiar Contraseña de Usuario
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="form-cambiar-password">
+                        <input type="hidden" id="reset-id-usuario">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Usuario Seleccionado</label>
+                            <input type="text" class="form-control bg-light" id="reset-nombre-usuario" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reset-nueva-password" class="form-label fw-bold">Nueva Contraseña *</label>
+                            <input type="password" class="form-control" id="reset-nueva-password"
+                                placeholder="Mínimo 4 caracteres" required autocomplete="new-password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="reset-confirmar-password" class="form-label fw-bold">Confirmar Nueva Contraseña
+                                *</label>
+                            <input type="password" class="form-control" id="reset-confirmar-password"
+                                placeholder="Repite la nueva contraseña" required autocomplete="new-password">
+                        </div>
+                        <div id="reset-error-alert" class="alert alert-danger d-none py-2 px-3 small mb-0" role="alert">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" form="form-cambiar-password" class="btn btn-primary fw-bold"
+                        id="btn-guardar-password">
+                        Actualizar Contraseña
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ========================================== -->
     <!-- MODAL: NUEVO PRODUCTO                      -->
     <!-- ========================================== -->
-    <div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-labelledby="modalNuevoProductoLabel" aria-hidden="true">
+    <div class="modal fade" id="modalNuevoProducto" tabindex="-1" aria-labelledby="modalNuevoProductoLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalNuevoProductoLabel">Registrar Nuevo Producto al Catálogo</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="modalNuevoProductoLabel">Registrar Nuevo Producto al Catálogo
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="form-nuevo-producto">
-                        
+
                         <!-- Fila 1: Nombre y Clave -->
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label for="prod-nombre" class="form-label fw-bold">Nombre Comercial *</label>
-                                <input type="text" class="form-control" id="prod-nombre" placeholder="Ej. Cipermetrina 20%" required>
+                                <input type="text" class="form-control" id="prod-nombre"
+                                    placeholder="Ej. Cipermetrina 20%" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="prod-clave" class="form-label fw-bold">Clave del Producto *</label>
-                                <input type="text" class="form-control" id="prod-clave" placeholder="Ej. CRP1000" required>
+                                <input type="text" class="form-control" id="prod-clave" placeholder="Ej. CRP1000"
+                                    required>
                             </div>
                         </div>
-                        
+
                         <!-- Fila 2: Categoría y Medidas -->
                         <div class="row mb-3">
                             <div class="col-md-4">
@@ -236,9 +383,12 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="prod-presentacion" class="form-label fw-bold">Capacidad Presentación *</label>
-                                <input type="number" class="form-control" id="prod-presentacion" placeholder="Ej. 1000" required>
-                                <div class="form-text" style="font-size: 0.75rem;">Ej: Si el envase es de 1 Litro, escribe 1000.</div>
+                                <label for="prod-presentacion" class="form-label fw-bold">Capacidad Presentación
+                                    *</label>
+                                <input type="number" class="form-control" id="prod-presentacion" placeholder="Ej. 1000"
+                                    required>
+                                <div class="form-text" style="font-size: 0.75rem;">Ej: Si el envase es de 1
+                                    Litro, escribe 1000.</div>
                             </div>
                         </div>
 
@@ -247,7 +397,8 @@
                             <h6 class="text-primary mb-3">Datos exclusivos para Químicos</h6>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="prod-subcategoria" class="form-label">Subcategoría (Banda)</label>
+                                    <label for="prod-subcategoria" class="form-label">Subcategoría
+                                        (Banda)</label>
                                     <select class="form-select" id="prod-subcategoria">
                                         <option value="">Seleccione...</option>
                                         <option value="Verde">Banda Verde</option>
@@ -272,7 +423,8 @@
                         <!-- Fila 3: Stock de Alerta -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="prod-stock-min" class="form-label fw-bold">Stock Mínimo (Alerta) *</label>
+                                <label for="prod-stock-min" class="form-label fw-bold">Stock Mínimo (Alerta)
+                                    *</label>
                                 <input type="number" step="0.01" class="form-control" id="prod-stock-min" required>
                             </div>
                         </div>
@@ -281,7 +433,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" form="form-nuevo-producto" class="btn btn-primary">Guardar Producto</button>
+                    <button type="submit" form="form-nuevo-producto" class="btn btn-primary">Guardar
+                        Producto</button>
                 </div>
             </div>
         </div>
@@ -291,8 +444,9 @@
     <!-- SCRIPTS                                    -->
     <!-- ========================================== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../config.js"></script> 
+    <script src="../config.js"></script>
     <script src="panelprincipal.js"></script>
 
 </body>
+
 </html>
