@@ -88,45 +88,91 @@
 
                     document.getElementById('titulo-folio').innerText = `FOLIO: ${folioCompleto}`;
 
-                    // Dibujamos el formato emulando la hoja impresa
-                    document.getElementById('contenedor-datos').innerHTML = `
-                        <div class="row mb-3 border-bottom pb-2">
-                            <div class="col-6"><strong>TIPO DE SERVICIO:</strong> <br><span class="text-primary">${orden.tipo_servicio || 'N/A'}</span></div>
-                            <div class="col-6 text-end"><strong>FOLIO:</strong> <br><span class="text-danger fw-bold h5">${folioCompleto}</span></div>
-                        </div>
+                        let cobranzaHTML = '';
+                        const esMulti = Boolean(orden.es_multitratamiento || (parseInt(orden.total_tratamientos) > 1));
+                        const numTrat = parseInt(orden.num_tratamiento) || 1;
+                        const totalTrat = parseInt(orden.total_tratamientos) || 1;
 
-                        <div class="row mb-3">
-                            <div class="col-6"><strong>Fecha:</strong> <br>${fecha}</div>
-                            <div class="col-6"><strong>Horario:</strong> <br>${hora}</div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-12"><strong>Nombre:</strong> ${orden.nombre_cliente}</div>
-                            <div class="col-12 mt-2"><strong>Dirección:</strong> ${orden.domicilio}</div>
-                            <div class="col-12 mt-2"><strong>Colonia:</strong> ${orden.colonia}</div>
-                            <div class="col-6 mt-2"><strong>Ciudad:</strong> ${orden.ciudad}</div>
-                            <div class="col-6 mt-2 text-primary fw-bold"><strong>Tel:</strong> <a href="tel:${telefono}">${telefono}</a></div>
-                        </div>
-                        
-                        <h6 class="mt-4 fw-bold text-center bg-light p-2 border">PLAGAS A TRATAR</h6>
-                        <div class="row small mb-4">
-                            ${plagasHTML}
-                        </div>
+                        if (esMulti) {
+                            const costoTotalTrat = parseFloat(orden.costo_total_tratamiento || 0);
+                            const pagadoPrevio = parseFloat(orden.total_cobrado_previo || 0);
+                            const saldoPend = parseFloat(orden.saldo_pendiente !== undefined ? orden.saldo_pendiente : (orden.ingresos_cobrados || 0));
 
-                        <div class="row small mb-3 border-bottom pb-3">
-                            <div class="col-6"><strong>Fecha servicio anterior:</strong> <br>${fechaAnterior}</div>
-                            <div class="col-6 text-end"><strong>Tratamiento:</strong> <br>${orden.num_tratamiento} de ${orden.total_tratamientos}</div>
-                        </div>
+                            if (saldoPend <= 0) {
+                                cobranzaHTML = `
+                                    <div class="border rounded p-3 bg-light text-center">
+                                        <span class="badge bg-success fs-6 py-2 px-3 mb-2">✔ TRATAMIENTO LIQUIDADO</span>
+                                        <div class="text-muted small">Costo total: $${costoTotalTrat.toFixed(2)} | Pagado en visitas previas: $${pagadoPrevio.toFixed(2)}</div>
+                                        <h4 class="mb-0 text-success fw-bold mt-1">A COBRAR: $0.00</h4>
+                                    </div>
+                                `;
+                            } else {
+                                const alertaAdeudo = (numTrat >= 3) 
+                                    ? `<div class="alert alert-danger py-2 px-3 mt-2 mb-0 small fw-bold">⚠️ Atención: Cliente con adeudo en visita ${numTrat} de ${totalTrat}. Si el cliente no liquida, contactar a Mesa de Control.</div>`
+                                    : '';
 
-                        <h6 class="mt-4 fw-bold text-center border-bottom pb-2">ANTECEDENTES E INDICACIONES</h6>
-                        <div class="campo-resaltado text-dark small mb-4">
-                            ${orden.observaciones_mesa || 'Sin indicaciones previas.'}
-                        </div>
+                                cobranzaHTML = `
+                                    <div class="border rounded p-3 bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold text-dark">COBRO EN ESTA VISITA (${numTrat} de ${totalTrat}):</div>
+                                                <div class="text-muted small">Total tratamiento: $${costoTotalTrat.toFixed(2)} | Pagado previo: $${pagadoPrevio.toFixed(2)}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="small text-muted d-block">Saldo Pendiente</span>
+                                                <h3 class="mb-0 text-danger fw-bold">$${saldoPend.toFixed(2)}</h3>
+                                            </div>
+                                        </div>
+                                        ${alertaAdeudo}
+                                    </div>
+                                `;
+                            }
+                        } else {
+                            const costoSimple = parseFloat(orden.costo || orden.ingresos_cobrados || 0);
+                            cobranzaHTML = `
+                                <div class="d-flex justify-content-between align-items-center bg-light p-3 border rounded">
+                                    <h5 class="mb-0 fw-bold">COSTO:</h5>
+                                    <h4 class="mb-0 text-success fw-bold">$${costoSimple.toFixed(2)}</h4>
+                                </div>
+                            `;
+                        }
 
-                        <div class="d-flex justify-content-between align-items-center bg-light p-3 border rounded">
-                            <h5 class="mb-0 fw-bold">COSTO:</h5>
-                            <h4 class="mb-0 text-success fw-bold">$${orden.ingresos_cobrados || '0.00'}</h4>
-                        </div>
-                    `;
+                        // Dibujamos el formato emulando la hoja impresa
+                        document.getElementById('contenedor-datos').innerHTML = `
+                            <div class="row mb-3 border-bottom pb-2">
+                                <div class="col-6"><strong>TIPO DE SERVICIO:</strong> <br><span class="text-primary">${orden.tipo_servicio || 'N/A'}</span></div>
+                                <div class="col-6 text-end"><strong>FOLIO:</strong> <br><span class="text-danger fw-bold h5">${folioCompleto}</span></div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-6"><strong>Fecha:</strong> <br>${fecha}</div>
+                                <div class="col-6"><strong>Horario:</strong> <br>${hora}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12"><strong>Nombre:</strong> ${orden.nombre_cliente}</div>
+                                <div class="col-12 mt-2"><strong>Dirección:</strong> ${orden.domicilio}</div>
+                                <div class="col-12 mt-2"><strong>Colonia:</strong> ${orden.colonia}</div>
+                                <div class="col-6 mt-2"><strong>Ciudad:</strong> ${orden.ciudad}</div>
+                                <div class="col-6 mt-2 text-primary fw-bold"><strong>Tel:</strong> <a href="tel:${telefono}">${telefono}</a></div>
+                            </div>
+                            
+                            <h6 class="mt-4 fw-bold text-center bg-light p-2 border">PLAGAS A TRATAR</h6>
+                            <div class="row small mb-4">
+                                ${plagasHTML}
+                            </div>
+
+                            <div class="row small mb-3 border-bottom pb-3">
+                                <div class="col-6"><strong>Fecha servicio anterior:</strong> <br>${fechaAnterior}</div>
+                                <div class="col-6 text-end"><strong>Tratamiento:</strong> <br>${orden.num_tratamiento} de ${orden.total_tratamientos}</div>
+                            </div>
+
+                            <h6 class="mt-4 fw-bold text-center border-bottom pb-2">ANTECEDENTES E INDICACIONES</h6>
+                            <div class="campo-resaltado text-dark small mb-4">
+                                ${orden.observaciones_mesa || 'Sin indicaciones previas.'}
+                            </div>
+
+                            ${cobranzaHTML}
+                        `;
                 } else {
                     document.getElementById('contenedor-datos').innerHTML = `<div class="alert alert-warning">No se encontró la información de la orden.</div>`;
                 }

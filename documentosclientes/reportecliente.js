@@ -187,14 +187,19 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-tratamiento-total').innerText = orden.total_tratamientos || '';
             
             // Toma el costo de control_pagos (si ya se facturó) o el costo base de la orden (ingresos_cobrados)
-            let costoMostrar = orden.costo_con_iva || orden.costo_sin_iva || orden.ingresos_cobrados || '';
-            if (costoMostrar) {
-                let costoNum = parseFloat(costoMostrar);
+            let costoMostrar = (orden.costo_con_iva !== null && orden.costo_con_iva !== undefined && orden.costo_con_iva !== '') 
+                ? orden.costo_con_iva 
+                : ((orden.costo_sin_iva !== null && orden.costo_sin_iva !== undefined && orden.costo_sin_iva !== '') 
+                    ? orden.costo_sin_iva 
+                    : orden.ingresos_cobrados);
+
+            if (costoMostrar !== null && costoMostrar !== undefined && costoMostrar !== '') {
+                let costoNum = parseFloat(costoMostrar) || 0;
                 document.getElementById('rep-costo').innerText = costoNum.toFixed(2);
                 document.getElementById('rep-costo-letra').innerText = numeroALetras(costoNum) + " M.N.";
             } else {
-                document.getElementById('rep-costo').innerText = '';
-                document.getElementById('rep-costo-letra').innerText = '';
+                document.getElementById('rep-costo').innerText = '0.00';
+                document.getElementById('rep-costo-letra').innerText = 'CERO PESOS 00/100 M.N.';
             }
 
             // 4. Acciones y Seguimiento
