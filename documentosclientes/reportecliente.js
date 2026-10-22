@@ -91,6 +91,10 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-hora-ent').innerText = formatHora(orden.hora_llegada);
             document.getElementById('rep-hora-sal').innerText = formatHora(orden.hora_salida);
             document.getElementById('rep-nombre-tecnico').innerText = orden.nombre_tecnico;
+            const elLineaCliente = document.getElementById('linea-firma-cliente');
+            if (elLineaCliente) {
+                elLineaCliente.innerText = orden.persona_contacto || orden.nombre_cliente || '';
+            }
             if (orden.firma_tecnico) {
                 const imgFirmaTecnico = document.getElementById('img-firma-tecnico');
                 if (imgFirmaTecnico) {
@@ -221,14 +225,15 @@ async function generarPDF() {
     btnAbrirFirma.disabled = true;
     zonaBotonFirmar.style.display = 'none';
 
-    // C. Pegar la firma en la hoja
-    const imagenFirma = signaturePad.toDataURL("image/png");
+    // C. Recortar los bordes vacíos del canvas y pegar la firma en la hoja
+    const canvasPizarra = document.getElementById('pizarra-firma');
+    const imagenFirma = recortarFirma(canvasPizarra);
     const imgElement = document.getElementById('img-firma-cliente');
     const lineaFirma = document.getElementById('linea-firma-cliente');
     
     imgElement.src = imagenFirma;
     imgElement.style.display = 'block'; 
-    lineaFirma.style.display = 'none';  
+    if (lineaFirma) lineaFirma.style.display = 'block';  
 
     // PAUSA ESTRATÉGICA: Damos 500ms al procesador del celular para pintar la imagen en el DOM
     setTimeout(async () => {
@@ -281,7 +286,74 @@ function restaurarVistaBotones() {
     btnAbrirFirma.disabled = false;
     
     imgElement.style.display = 'none'; // Ocultamos la firma si falló
-    lineaFirma.style.display = 'inline-block'; // Mostramos la rayita de nuevo
+    if (lineaFirma) lineaFirma.style.display = 'block'; // Mantenemos la línea visible
+}
+
+// Recorta automáticamente todo el espacio en blanco alrededor de los trazos de la firma
+function recortarFirma(canvas) {
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Extraemos los pixeles del lienzo
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let hayTrazo = false;
+
+    // Muestreo con paso 2 para máximo rendimiento en pantallas móviles de alta resolución
+    for (let y = 0; y < h; y += 2) {
+        for (let x = 0; x < w; x += 2) {
+            const index = (y * w + x) * 4;
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            const a = data[index + 3];
+
+            // Detectar tinta (no blanco y no transparente)
+            if (a > 30 && (r < 225 || g < 225 || b < 225)) {
+                hayTrazo = true;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (!hayTrazo) {
+        return canvas.toDataURL("image/png");
+    }
+
+    // Margen de seguridad estético (padding)
+    const padding = Math.max(15, Math.round(w * 0.02));
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(w, maxX + padding);
+    maxY = Math.min(h, maxY + padding);
+
+    const cropWidth = maxX - minX;
+    const cropHeight = maxY - minY;
+
+    // Crear lienzo temporal ajustado al tamaño real de la firma
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = cropWidth;
+    croppedCanvas.height = cropHeight;
+    const croppedCtx = croppedCanvas.getContext('2d');
+
+    // Fondo blanco limpio
+    croppedCtx.fillStyle = '#ffffff';
+    croppedCtx.fillRect(0, 0, cropWidth, cropHeight);
+
+    // Dibujar únicamente el área del trazo
+    croppedCtx.drawImage(
+        canvas,
+        minX, minY, cropWidth, cropHeight,
+        0, 0, cropWidth, cropHeight
+    );
+
+    return croppedCanvas.toDataURL("image/png");
 }
 
 // Función para convertir números a letras (Pesos Mexicanos)
