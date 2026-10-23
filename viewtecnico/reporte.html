@@ -208,39 +208,28 @@
         // TARJETAS DE QUÍMICOS (Formato Móvil)
         // ==========================================
         function calcularGastoFila(fila) {
-            const inputDosis = fila.querySelector('.campo-dosis');
+            const inputNum = fila.querySelector('.campo-dosis-num');
+            const inputDen = fila.querySelector('.campo-dosis-den');
             const inputLitros = fila.querySelector('.campo-litros');
             const inputGasto = fila.querySelector('.campo-gasto');
 
-            if (!inputDosis || !inputLitros || !inputGasto) return;
+            if (!inputNum || !inputDen || !inputLitros || !inputGasto) return;
 
-            const dosisTexto = (inputDosis.value || '').trim();
+            const strNum = (inputNum.value || '').trim();
+            const strDen = (inputDen.value || '').trim();
             const litros = parseFloat(inputLitros.value) || 0;
 
-            if (!dosisTexto) return;
+            if (!strNum) return;
 
-            let ratio = 0; // Cantidad por cada litro preparado
+            const numMatch = strNum.replace(/,/g, '.').match(/[0-9]+(?:\.[0-9]+)?/);
+            const denMatch = strDen.replace(/,/g, '.').match(/[0-9]+(?:\.[0-9]+)?/);
 
-            if (dosisTexto.includes('/')) {
-                const partes = dosisTexto.split('/');
-                const numMatch = partes[0].replace(/,/g, '.').match(/[0-9]+(?:\.[0-9]+)?/);
-                const denMatch = partes[1].replace(/,/g, '.').match(/[0-9]+(?:\.[0-9]+)?/);
+            const numerador = numMatch ? parseFloat(numMatch[0]) : 0;
+            // Si el técnico aún no escribe en el segundo cuadro, por defecto se asume 1l
+            const denominador = denMatch ? parseFloat(denMatch[0]) : (strDen === '' ? 1 : 0);
 
-                const numerador = numMatch ? parseFloat(numMatch[0]) : 0;
-                // Si no hay número tras la barra (ej: "5ml/l" o "5ml/lt"), se asume 1 litro
-                const denominador = denMatch ? parseFloat(denMatch[0]) : 1;
-
-                if (denominador > 0) {
-                    ratio = numerador / denominador;
-                }
-            } else {
-                // Sin barra: si se ingresó solo un número o ej "5ml"
-                const numMatch = dosisTexto.replace(/,/g, '.').match(/[0-9]+(?:\.[0-9]+)?/);
-                ratio = numMatch ? parseFloat(numMatch[0]) : 0;
-            }
-
-            if (ratio > 0 && litros > 0) {
-                const total = ratio * litros;
+            if (denominador > 0 && numerador > 0 && litros > 0) {
+                const total = (numerador / denominador) * litros;
                 inputGasto.value = (Math.round(total * 100) / 100).toString();
             }
         }
@@ -260,29 +249,35 @@
                         <select class="form-select form-select-sm campo-clave border-primary" required>${inventarioOpciones}</select>
                     </div>
                     <div class="row g-2">
-                        <div class="col-4">
+                        <div class="col-5">
                             <div class="etiqueta-flotante">Dosis</div>
-                            <input type="text" class="form-control form-control-sm campo-dosis" placeholder="Ej. 5ml/1l" autocomplete="off">
+                            <div class="input-group input-group-sm">
+                                <input type="text" inputmode="decimal" class="form-control form-control-sm campo-dosis-num px-1 text-center" placeholder="5ml" autocomplete="off">
+                                <span class="input-group-text px-1 bg-light fw-bold text-muted">/</span>
+                                <input type="text" inputmode="decimal" class="form-control form-control-sm campo-dosis-den px-1 text-center" placeholder="1l" autocomplete="off">
+                            </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col-3">
                             <div class="etiqueta-flotante">Lts. Prep.</div>
-                            <input type="number" step="any" min="0" class="form-control form-control-sm campo-litros" placeholder="Lts">
+                            <input type="number" step="any" min="0" class="form-control form-control-sm campo-litros px-1 text-center" placeholder="Lts">
                         </div>
                         <div class="col-4">
                             <div class="etiqueta-flotante text-danger">Total Gasto</div>
-                            <input type="number" step="0.01" min="0" class="form-control form-control-sm campo-gasto border-danger" placeholder="ml/gr" required>
+                            <input type="number" step="0.01" min="0" class="form-control form-control-sm campo-gasto border-danger px-1 text-center fw-bold text-danger" placeholder="ml/gr" required>
                         </div>
                     </div>
                 </div>
             `;
             contenedor.appendChild(div);
 
-            const inputDosis = div.querySelector('.campo-dosis');
+            const inputNum = div.querySelector('.campo-dosis-num');
+            const inputDen = div.querySelector('.campo-dosis-den');
             const inputLitros = div.querySelector('.campo-litros');
-            inputDosis.addEventListener('input', () => calcularGastoFila(div));
-            inputLitros.addEventListener('input', () => calcularGastoFila(div));
-            inputDosis.addEventListener('change', () => calcularGastoFila(div));
-            inputLitros.addEventListener('change', () => calcularGastoFila(div));
+
+            [inputNum, inputDen, inputLitros].forEach(inp => {
+                inp.addEventListener('input', () => calcularGastoFila(div));
+                inp.addEventListener('change', () => calcularGastoFila(div));
+            });
 
             actualizarNumeracionQuimicos();
         }
@@ -638,10 +633,20 @@
             document.querySelectorAll('.item-quimico').forEach((fila, idx) => {
                 const clave = fila.querySelector('.campo-clave').value;
                 if(clave.trim() !== "") { 
+                    const numRaw = (fila.querySelector('.campo-dosis-num').value || '').trim();
+                    const denRaw = (fila.querySelector('.campo-dosis-den').value || '').trim();
+
+                    let dosisFormateada = '';
+                    if (numRaw || denRaw) {
+                        const numTxt = numRaw ? (/[a-zA-Z]/.test(numRaw) ? numRaw : `${numRaw}ml`) : '0ml';
+                        const denTxt = denRaw ? (/[a-zA-Z]/.test(denRaw) ? denRaw : `${denRaw}l`) : '1l';
+                        dosisFormateada = `${numTxt}/${denTxt}`;
+                    }
+
                     productos.push({
                         numero_producto: idx + 1,
                         clave_producto: clave,
-                        dosis: fila.querySelector('.campo-dosis').value.trim() || '',
+                        dosis: dosisFormateada,
                         litros_preparados: parseFloat(fila.querySelector('.campo-litros').value) || 0,
                         gasto_real: parseFloat(fila.querySelector('.campo-gasto').value) || 0
                     });
