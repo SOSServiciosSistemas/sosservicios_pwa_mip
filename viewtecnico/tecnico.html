@@ -64,7 +64,10 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="fw-bold text-primary mb-0">Planeador de Actividades</h4>
-            <button class="btn btn-outline-secondary btn-sm" onclick="volverAgenda()" id="btn-volver-agenda">Ver Agenda</button>
+            <div>
+                <button class="btn btn-outline-primary btn-sm me-1" onclick="verificarBitacora(localStorage.getItem('idUsuario'))" title="Comprobar si el administrador reabrió la ruta">🔄 Actualizar</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="volverAgenda()" id="btn-volver-agenda">Ver Agenda</button>
+            </div>
         </div>
 
         <!-- Tabla Financiera (Idéntica al formato físico) -->

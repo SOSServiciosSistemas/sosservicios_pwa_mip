@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sos-servicios-v3';
+const CACHE_NAME = 'sos-servicios-v4';
 
 // Archivos estáticos principales que queremos que funcionen sin conexión (Offline)
 const urlsToCache = [

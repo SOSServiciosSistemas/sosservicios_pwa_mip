@@ -921,3 +921,143 @@ function aplicarFiltrosHistorial() {
 // Escuchamos cuando el usuario escriba o cambie el selector
 document.getElementById('filtro-texto-historial')?.addEventListener('input', aplicarFiltrosHistorial);
 document.getElementById('filtro-tipo-historial')?.addEventListener('change', aplicarFiltrosHistorial);
+
+// =====================================================================
+// CONTROL DE RUTAS Y REAPERTURA DE PLANEADORES (ADMINISTRADOR)
+// =====================================================================
+let listaRutasAdminCache = [];
+
+async function cargarRutasAdmin() {
+    const tbody = document.getElementById('tabla-rutas-admin');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando rutas y planeadores...</td></tr>';
+
+    try {
+        const respuesta = await fetch(BASE_URL + '/api/bitacoras/historial');
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            listaRutasAdminCache = datos.bitacoras || [];
+            filtrarRutasAdmin();
+        } else {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Error al cargar rutas: ${datos.error || 'Desconocido'}</td></tr>`;
+        }
+    } catch (error) {
+        console.error("Error al cargar rutas:", error);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Error de conexión con el servidor.</td></tr>';
+    }
+}
+
+function filtrarRutasAdmin() {
+    const texto = (document.getElementById('filtro-texto-rutas')?.value || '').toLowerCase();
+    const estatus = document.getElementById('filtro-estatus-rutas')?.value || 'TODOS';
+    const tbody = document.getElementById('tabla-rutas-admin');
+    if (!tbody) return;
+
+    const filtradas = listaRutasAdminCache.filter(b => {
+        const coincideTexto = (b.tecnico || '').toLowerCase().includes(texto) || String(b.id_bitacora).includes(texto);
+        const coincideEstatus = (estatus === 'TODOS') || b.estatus === estatus;
+        return coincideTexto && coincideEstatus;
+    });
+
+    if (filtradas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron rutas con los filtros aplicados.</td></tr>';
+        return;
+    }
+
+    let html = '';
+    filtradas.forEach(b => {
+        // Formatear fecha en horario local de México
+        const fechaDate = new Date(b.fecha_jornada);
+        const fechaAjustada = new Date(fechaDate.getTime() + (fechaDate.getTimezoneOffset() * 60000));
+        const fechaTxt = fechaAjustada.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
+        
+        let kmTexto = '<span class="text-muted">Sin datos</span>';
+        if (b.km_inicial !== null && b.km_inicial !== undefined) {
+            if (b.km_final !== null && b.km_final !== undefined) {
+                const diff = (parseFloat(b.km_final) - parseFloat(b.km_inicial)).toFixed(1);
+                kmTexto = `${b.km_inicial} ➔ ${b.km_final} <br><small class="text-primary fw-bold">(${diff} km)</small>`;
+            } else {
+                kmTexto = `<span class="badge bg-light text-dark border">Inicio: ${b.km_inicial} km</span>`;
+            }
+        }
+
+        const efectivo = b.total_efectivo_entregado ? `$${parseFloat(b.total_efectivo_entregado).toFixed(2)}` : '<span class="text-muted small">Pendiente</span>';
+
+        let badgeEstatus = '';
+        if (b.estatus === 'En_Ruta') {
+            badgeEstatus = '<span class="badge bg-warning text-dark">🚚 En Ruta</span>';
+        } else if (b.estatus === 'Cerrada_Ruta') {
+            badgeEstatus = '<span class="badge bg-danger">🔒 Cerrada</span>';
+        } else if (b.estatus === 'Entregada') {
+            badgeEstatus = '<span class="badge bg-success">✅ Liquidada</span>';
+        }
+
+        // CONDICIONES PARA REABRIR:
+        // 1. Debe ser de hoy (b.es_hoy === true)
+        // 2. Debe estar Cerrada_Ruta (no En_Ruta ni Entregada)
+        let botonReabrir = '';
+        if (b.es_hoy && b.estatus === 'Cerrada_Ruta') {
+            botonReabrir = `
+                <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm me-1 mb-1" 
+                        onclick="reabrirRuta(${b.id_bitacora}, '${escape(b.tecnico)}')">
+                    🔓 Reabrir Ruta
+                </button>
+            `;
+        }
+
+        html += `
+            <tr>
+                <td class="fw-bold">#${b.id_bitacora}</td>
+                <td>
+                    <span class="text-capitalize">${fechaTxt}</span>
+                    ${b.es_hoy ? '<br><span class="badge bg-info text-dark">Hoy</span>' : ''}
+                </td>
+                <td class="fw-bold text-primary">${b.tecnico}</td>
+                <td>${kmTexto}</td>
+                <td class="fw-bold text-success">${efectivo}</td>
+                <td>${badgeEstatus}</td>
+                <td>
+                    <div class="d-flex flex-wrap justify-content-center gap-1">
+                        ${botonReabrir}
+                        <a href="../viewmesacontrol/planeadoractividadestecnico/imprimir_planeador.html?id=${b.id_bitacora}" 
+                           target="_blank" class="btn btn-outline-secondary btn-sm mb-1">
+                            🖨️ Ver Formato
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+}
+
+async function reabrirRuta(idBitacora, tecnicoEscaped) {
+    const tecnico = unescape(tecnicoEscaped);
+    const confirmacion = confirm(`¿Estás seguro de REABRIR la ruta del técnico ${tecnico} (Folio #${idBitacora})?\n\nAl reabrirla:\n- El técnico volverá a tener su ruta abierta del día de hoy.\n- Podrá ver su agenda y registrar los nuevos servicios imprevistos.\n- Al finalizar la jornada deberá registrar nuevamente su KM final y su contraseña/firma para cerrarla.`);
+    if (!confirmacion) return;
+
+    try {
+        const respuesta = await fetch(BASE_URL + `/api/bitacoras/${idBitacora}/reabrir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            alert("✅ " + (datos.mensaje || "Ruta reabierta con éxito. El técnico ya puede continuar trabajando."));
+            cargarRutasAdmin();
+        } else {
+            alert("❌ " + (datos.error || "No se pudo reabrir la ruta."));
+        }
+    } catch (error) {
+        console.error("Error al reabrir ruta:", error);
+        alert("Error de conexión al intentar reabrir la ruta.");
+    }
+}
+
+// Cargar rutas cuando se haga clic en la pestaña
+document.getElementById('rutas-tab')?.addEventListener('shown.bs.tab', () => {
+    cargarRutasAdmin();
+});
