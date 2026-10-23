@@ -119,12 +119,19 @@ async function cargarDatosReporte(id) {
             
             for (let i = 0; i < 4; i++) {
                 let prod = (datos.productos_utilizados && datos.productos_utilizados[i]) ? datos.productos_utilizados[i] : null;
+                let textoDosis = '';
+                if (prod) {
+                    const d = (prod.dosis || prod.cantidad_usada || '').toString().trim();
+                    if (d) {
+                        textoDosis = /[a-zA-Z/]/.test(d) ? d : (d + ' ' + (prod.unidad_medida || ''));
+                    }
+                }
                 tbodyProductos.innerHTML += `
                     <tr>
                         <td class="fw-bold text-center">${letras[i]}</td>
                         <td>${prod ? (prod.ingrediente_activo || prod.nombre_comercial) : ''}</td>
                         <td>${prod ? (prod.registro_sanitario || 'N/A') : ''}</td>
-                        <td class="text-center">${prod ? (prod.cantidad_usada + ' ' + prod.unidad_medida) : ''}</td>
+                        <td class="text-center">${textoDosis}</td>
                     </tr>
                 `;
             }
