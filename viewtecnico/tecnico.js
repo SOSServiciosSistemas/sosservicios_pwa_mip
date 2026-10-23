@@ -1,6 +1,8 @@
 let idBitacoraDiaria = null;
 let kmInicialDia = 0;
 let totalEfectivoCalculado = 0;
+let esCierreRutaAnterior = false;
+let textoFechaHoy = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Verifica la sesión activa del usuario
@@ -17,11 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     const fechaHoy = new Date();
     const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
-    let textoFecha = fechaHoy.toLocaleDateString('es-MX', opcionesFecha);
-    textoFecha = textoFecha.charAt(0).toUpperCase() + textoFecha.slice(1);
+    textoFechaHoy = fechaHoy.toLocaleDateString('es-MX', opcionesFecha);
+    textoFechaHoy = textoFechaHoy.charAt(0).toUpperCase() + textoFechaHoy.slice(1);
     
     const tituloAgenda = document.getElementById('titulo-agenda');
-    if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFecha}`;
+    if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFechaHoy}`;
 
     // Verifica el estado de la bitácora del día actual
     await verificarBitacora(idUsuario);
@@ -33,15 +35,62 @@ async function verificarBitacora(idUsuario) {
         const respuesta = await fetch(BASE_URL + `/api/bitacoras/hoy/${idUsuario}`);
         const datos = await respuesta.json();
 
+        // Ocultar banner de cierre pendiente por defecto
+        const bannerPendiente = document.getElementById('banner-cierre-anterior');
+        if (bannerPendiente) bannerPendiente.style.display = 'none';
+
         if (datos.exito && datos.bitacora) {
             idBitacoraDiaria = datos.bitacora.id_bitacora;
             
             // Asegura la conversión a número para validaciones posteriores
             kmInicialDia = parseFloat(datos.bitacora.km_inicial);
 
+            if (datos.pendiente_cierre_anterior) {
+                // Caso crítico: Hay una ruta de un día previo que no se cerró
+                esCierreRutaAnterior = true;
+
+                // Ocultar agenda y barra de ruta
+                document.getElementById('barra-bitacora').style.display = 'none';
+                document.getElementById('contenedor-agenda').style.display = 'none';
+
+                // Formatear la fecha del día anterior pendiente
+                const fechaDate = new Date(datos.bitacora.fecha_jornada);
+                const fechaAjustada = new Date(fechaDate.getTime() + (fechaDate.getTimezoneOffset() * 60000));
+                const fechaTxt = fechaAjustada.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+
+                const tituloAgenda = document.getElementById('titulo-agenda');
+                if (tituloAgenda) tituloAgenda.innerText = `Cierre Obligatorio: ${fechaTxt}`;
+
+                if (bannerPendiente) {
+                    const textoBanner = document.getElementById('banner-cierre-anterior-texto');
+                    if (textoBanner) {
+                        textoBanner.innerHTML = `No puedes iniciar tu jornada de hoy porque no cerraste tu ruta de <strong>${fechaTxt}</strong>. Registra tu KM final y contraseña para firmar y cerrar el día anterior.`;
+                    }
+                    bannerPendiente.style.display = 'block';
+                }
+
+                // Ocultar botón de volver a agenda porque debe cerrar obligatoriamente
+                const btnVolver = document.getElementById('btn-volver-agenda');
+                if (btnVolver) btnVolver.style.display = 'none';
+
+                // Cargar planeador de la ruta anterior en modo técnico para que firme
+                cargarPlaneador(false);
+                return;
+            }
+
+            // Flujo normal: Bitácora del día actual
+            esCierreRutaAnterior = false;
+            const btnVolver = document.getElementById('btn-volver-agenda');
+            if (btnVolver) btnVolver.style.display = 'inline-block';
+
+            const tituloAgenda = document.getElementById('titulo-agenda');
+            if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFechaHoy}`;
+
             if (datos.bitacora.estatus === 'En_Ruta') {
                 // Muestra la agenda y la barra inferior si la ruta está activa
                 document.getElementById('barra-bitacora').style.display = 'flex';
+                document.getElementById('contenedor-agenda').style.display = 'block';
+                document.getElementById('contenedor-planeador').style.display = 'none';
                 cargarAgendaTecnico(idUsuario);
             } else if (datos.bitacora.estatus === 'Cerrada_Ruta') {
                 // Oculta la barra y despliega directamente el Planeador
@@ -50,6 +99,8 @@ async function verificarBitacora(idUsuario) {
             } else if (datos.bitacora.estatus === 'Entregada') {
                 // Oculta la barra y muestra el mensaje de éxito
                 document.getElementById('barra-bitacora').style.display = 'none';
+                document.getElementById('contenedor-planeador').style.display = 'none';
+                document.getElementById('contenedor-agenda').style.display = 'block';
                 document.getElementById('contenedor-agenda').innerHTML = `
                     <div class="alert alert-success text-center py-5 shadow-sm border-0 mt-4 rounded-4">
                         <h1 class="display-1">✅</h1>
@@ -58,8 +109,17 @@ async function verificarBitacora(idUsuario) {
                     </div>`;
             }
         } else {
-            // Activa el candado estático si no existe una bitácora registrada
+            // No existe bitácora hoy y no hay pendientes de días anteriores
+            esCierreRutaAnterior = false;
+            document.getElementById('barra-bitacora').style.display = 'none';
+            document.getElementById('contenedor-planeador').style.display = 'none';
             document.getElementById('contenedor-agenda').innerHTML = ''; 
+            document.getElementById('contenedor-agenda').style.display = 'block';
+
+            const tituloAgenda = document.getElementById('titulo-agenda');
+            if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFechaHoy}`;
+
+            // Activa el modal del chequeo de camioneta para iniciar el nuevo día
             new bootstrap.Modal(document.getElementById('modalAperturaJornada')).show();
         }
     } catch (error) {
@@ -103,9 +163,10 @@ document.getElementById('form-apertura-jornada').addEventListener('submit', asyn
             
             const modalElement = document.getElementById('modalAperturaJornada');
             const modal = bootstrap.Modal.getInstance(modalElement);
-            modal.hide();
+            if (modal) modal.hide();
             
             // Dibuja la agenda y muestra la barra inferior tras completar el registro
+            document.getElementById('contenedor-agenda').style.display = 'block';
             document.getElementById('barra-bitacora').style.display = 'flex';
             cargarAgendaTecnico(localStorage.getItem('idUsuario'));
         } else {
@@ -225,6 +286,10 @@ window.abrirModalCierre = function() {
 
 // Restaura la vista de la agenda
 window.volverAgenda = function() {
+    if (esCierreRutaAnterior) {
+        alert("⚠️ No puedes volver a la agenda hasta que cierres y firmes la ruta del día anterior.");
+        return;
+    }
     document.getElementById('contenedor-planeador').style.display = 'none';
     document.getElementById('contenedor-agenda').style.display = 'block';
     document.getElementById('barra-bitacora').style.display = 'flex';
@@ -361,16 +426,33 @@ document.getElementById('form-cierre-ruta').addEventListener('submit', async (e)
         const datos = await respuesta.json();
         
         if (datos.exito) {
-            alert("✅ Ruta cerrada y firmada exitosamente. Ahora entrega el dispositivo en Mesa de Control.");
             document.getElementById('cr-password-tecnico').value = '';
-            // Ejecuta la transición automática a la vista de Mesa de Control
-            cargarPlaneador(true);
+            document.getElementById('cr-km-final').value = '';
+
+            if (esCierreRutaAnterior) {
+                alert("✅ Ruta del día anterior cerrada y firmada exitosamente.\n\nA continuación realiza el chequeo de la camioneta para iniciar la ruta de tu nuevo día.");
+                
+                // Ocultar vista del planeador
+                document.getElementById('contenedor-planeador').style.display = 'none';
+                const bannerPendiente = document.getElementById('banner-cierre-anterior');
+                if (bannerPendiente) bannerPendiente.style.display = 'none';
+
+                // Restablecer bandera y proceder a abrir la jornada de hoy
+                esCierreRutaAnterior = false;
+                await verificarBitacora(idTecnico);
+            } else {
+                alert("✅ Ruta cerrada y firmada exitosamente. Ahora entrega el dispositivo en Mesa de Control.");
+                // Ejecuta la transición automática a la vista de Mesa de Control
+                cargarPlaneador(true);
+            }
         } else {
             alert("❌ " + (datos.error || "No se pudo cerrar la ruta"));
             btn.innerText = "🔐 Firmar y Cerrar Ruta"; btn.disabled = false;
         }
     } catch (error) {
         alert("Error de conexión al cerrar.");
+        btn.innerText = "🔐 Firmar y Cerrar Ruta"; btn.disabled = false;
+    } finally {
         btn.innerText = "🔐 Firmar y Cerrar Ruta"; btn.disabled = false;
     }
 });
