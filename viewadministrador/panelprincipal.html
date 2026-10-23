@@ -114,6 +114,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Producto</th>
+                                <th>Tipo</th>
                                 <th>Ingrediente Activo</th>
                                 <th>Estatus</th>
                                 <th>Acciones</th>
@@ -465,8 +466,20 @@
                             <h6 class="text-primary mb-3">Datos exclusivos para Químicos</h6>
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="prod-subcategoria" class="form-label">Subcategoría
-                                        (Banda)</label>
+                                    <label for="prod-tipo-quimico" class="form-label fw-bold">Tipo de Químico</label>
+                                    <select class="form-select" id="prod-tipo-quimico">
+                                        <option value="">Seleccione...</option>
+                                        <option value="Plaguicida">Plaguicida</option>
+                                        <option value="Rodenticida">Rodenticida</option>
+                                        <option value="Sanitizante">Sanitizante</option>
+                                        <option value="Desinfectante">Desinfectante</option>
+                                        <option value="Otro">Otro (especificar)</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-2 d-none" id="prod-tipo-quimico-otro"
+                                        placeholder="Especifique el tipo de químico...">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="prod-subcategoria" class="form-label">Subcategoría (Banda)</label>
                                     <select class="form-select" id="prod-subcategoria">
                                         <option value="">Seleccione...</option>
                                         <option value="Verde">Banda Verde</option>
@@ -475,15 +488,15 @@
                                         <option value="Roja">Banda Roja</option>
                                     </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="prod-ingrediente" class="form-label">Ingrediente Activo</label>
-                                    <input type="text" class="form-control" id="prod-ingrediente">
-                                </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-12">
+                                <div class="col-md-6">
+                                    <label for="prod-ingrediente" class="form-label">Ingrediente Activo</label>
+                                    <input type="text" class="form-control" id="prod-ingrediente" placeholder="Ej. Fipronil">
+                                </div>
+                                <div class="col-md-6">
                                     <label for="prod-registro" class="form-label">Registro Sanitario</label>
-                                    <input type="text" class="form-control" id="prod-registro">
+                                    <input type="text" class="form-control" id="prod-registro" placeholder="Ej. RSCO-INAC-0103...">
                                 </div>
                             </div>
                         </div>

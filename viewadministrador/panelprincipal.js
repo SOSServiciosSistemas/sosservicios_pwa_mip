@@ -600,9 +600,11 @@ async function cargarProductos() {
 
         if(datos.exito) {
             datos.productos.forEach(producto => {
+                const tipoTexto = producto.tipo_quimico || (producto.categoria === 'Quimico' ? 'Químico' : (producto.categoria || 'N/A'));
                 const fila = `
                     <tr>
-                        <td>${producto.nombre_comercial}</td>
+                        <td><strong>${producto.nombre_comercial}</strong><br><small class="text-muted">${producto.clave_producto}</small></td>
+                        <td><span class="badge bg-light text-dark border">${tipoTexto}</span></td>
                         <td>${producto.ingrediente_activo || 'N/A'}</td>
                         <td>
                             <span class="badge ${producto.activo ? 'bg-success' : 'bg-danger'}">
@@ -655,6 +657,12 @@ document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
     const modal = new bootstrap.Modal(document.getElementById('modalNuevoProducto'));
     document.getElementById('form-nuevo-producto').reset(); // Limpia el formulario
     document.getElementById('seccion-quimicos').classList.add('d-none'); // Oculta sección química por defecto
+    const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+    if (inputOtro) {
+        inputOtro.classList.add('d-none');
+        inputOtro.required = false;
+        inputOtro.value = '';
+    }
     modal.show();
 });
 
@@ -667,15 +675,50 @@ document.getElementById('prod-categoria').addEventListener('change', function() 
     } else {
         seccionQuimicos.classList.add('d-none'); // Lo oculta
         // Limpiamos los campos por si el usuario se equivocó y los había llenado
+        document.getElementById('prod-tipo-quimico').value = '';
+        const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+        if (inputOtro) {
+            inputOtro.value = '';
+            inputOtro.classList.add('d-none');
+            inputOtro.required = false;
+        }
         document.getElementById('prod-subcategoria').value = '';
         document.getElementById('prod-ingrediente').value = '';
         document.getElementById('prod-registro').value = '';
     }
 });
 
+// Toggle input libre cuando se selecciona 'Otro' en tipo de químico
+const selTipoQuimico = document.getElementById('prod-tipo-quimico');
+if (selTipoQuimico) {
+    selTipoQuimico.addEventListener('change', function() {
+        const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+        if (!inputOtro) return;
+        if (this.value === 'Otro') {
+            inputOtro.classList.remove('d-none');
+            inputOtro.required = true;
+            inputOtro.focus();
+        } else {
+            inputOtro.classList.add('d-none');
+            inputOtro.required = false;
+            inputOtro.value = '';
+        }
+    });
+}
+
 // Guardar el nuevo producto en la base de datos
 document.getElementById('form-nuevo-producto').addEventListener('submit', async function(e) {
     e.preventDefault(); // Evita que la página se recargue
+
+    let tipoQuimico = null;
+    if (document.getElementById('prod-categoria').value === 'Quimico') {
+        const valTipo = document.getElementById('prod-tipo-quimico').value;
+        if (valTipo === 'Otro') {
+            tipoQuimico = (document.getElementById('prod-tipo-quimico-otro').value || '').trim() || 'Otro';
+        } else {
+            tipoQuimico = valTipo || null;
+        }
+    }
 
     // Recopilamos los datos del formulario
     const nuevoProducto = {
@@ -687,6 +730,7 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
         stock_minimo: document.getElementById('prod-stock-min').value,
         
         // Estos campos solo tendrán valor si es Químico, si no, se enviarán vacíos
+        tipo_quimico: tipoQuimico,
         subcategoria: document.getElementById('prod-subcategoria').value || null,
         ingrediente_activo: document.getElementById('prod-ingrediente').value || null,
         registro_sanitario: document.getElementById('prod-registro').value || null
