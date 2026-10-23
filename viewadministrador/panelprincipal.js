@@ -657,7 +657,13 @@ document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
     const modal = new bootstrap.Modal(document.getElementById('modalNuevoProducto'));
     document.getElementById('form-nuevo-producto').reset(); // Limpia el formulario
     document.getElementById('seccion-quimicos').classList.add('d-none'); // Oculta sección química por defecto
+    
+    const selTipo = document.getElementById('prod-tipo-quimico');
+    const selSub = document.getElementById('prod-subcategoria');
     const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+    
+    if (selTipo) { selTipo.required = false; selTipo.value = ''; }
+    if (selSub) { selSub.required = false; selSub.value = ''; }
     if (inputOtro) {
         inputOtro.classList.add('d-none');
         inputOtro.required = false;
@@ -669,40 +675,49 @@ document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
 // Mostrar campos químicos solo si se elige "Quimico"
 document.getElementById('prod-categoria').addEventListener('change', function() {
     const seccionQuimicos = document.getElementById('seccion-quimicos');
+    const selTipo = document.getElementById('prod-tipo-quimico');
+    const selSub = document.getElementById('prod-subcategoria');
+    const inputOtro = document.getElementById('prod-tipo-quimico-otro');
     
     if (this.value === 'Quimico') {
         seccionQuimicos.classList.remove('d-none'); // Muestra el cuadro gris
+        if (selTipo) selTipo.required = true;
+        if (selSub) selSub.required = true;
     } else {
         seccionQuimicos.classList.add('d-none'); // Lo oculta
         // Limpiamos los campos por si el usuario se equivocó y los había llenado
-        document.getElementById('prod-tipo-quimico').value = '';
-        const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+        if (selTipo) { selTipo.required = false; selTipo.value = ''; }
+        if (selSub) { selSub.required = false; selSub.value = ''; }
         if (inputOtro) {
             inputOtro.value = '';
             inputOtro.classList.add('d-none');
             inputOtro.required = false;
         }
-        document.getElementById('prod-subcategoria').value = '';
         document.getElementById('prod-ingrediente').value = '';
         document.getElementById('prod-registro').value = '';
     }
 });
 
+// Función global para alternar input libre de tipo químico
+window.toggleCampoTipoQuimico = function(val) {
+    const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+    if (!inputOtro) return;
+    if (val === 'Otro') {
+        inputOtro.classList.remove('d-none');
+        inputOtro.required = true;
+        inputOtro.focus();
+    } else {
+        inputOtro.classList.add('d-none');
+        inputOtro.required = false;
+        inputOtro.value = '';
+    }
+};
+
 // Toggle input libre cuando se selecciona 'Otro' en tipo de químico
 const selTipoQuimico = document.getElementById('prod-tipo-quimico');
 if (selTipoQuimico) {
     selTipoQuimico.addEventListener('change', function() {
-        const inputOtro = document.getElementById('prod-tipo-quimico-otro');
-        if (!inputOtro) return;
-        if (this.value === 'Otro') {
-            inputOtro.classList.remove('d-none');
-            inputOtro.required = true;
-            inputOtro.focus();
-        } else {
-            inputOtro.classList.add('d-none');
-            inputOtro.required = false;
-            inputOtro.value = '';
-        }
+        window.toggleCampoTipoQuimico(this.value);
     });
 }
 
@@ -710,13 +725,37 @@ if (selTipoQuimico) {
 document.getElementById('form-nuevo-producto').addEventListener('submit', async function(e) {
     e.preventDefault(); // Evita que la página se recargue
 
+    const categoria = document.getElementById('prod-categoria').value;
     let tipoQuimico = null;
-    if (document.getElementById('prod-categoria').value === 'Quimico') {
-        const valTipo = document.getElementById('prod-tipo-quimico').value;
+    let subcategoria = null;
+
+    if (categoria === 'Quimico') {
+        const selTipo = document.getElementById('prod-tipo-quimico');
+        const valTipo = selTipo ? selTipo.value : '';
+        if (!valTipo) {
+            alert("Por favor, selecciona el Tipo de Químico (Plaguicida, Rodenticida, etc.).");
+            if (selTipo) selTipo.focus();
+            return;
+        }
+
         if (valTipo === 'Otro') {
-            tipoQuimico = (document.getElementById('prod-tipo-quimico-otro').value || '').trim() || 'Otro';
+            const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+            tipoQuimico = (inputOtro ? inputOtro.value : '').trim();
+            if (!tipoQuimico) {
+                alert("Por favor, especifica cuál es el tipo de químico en el campo de texto.");
+                if (inputOtro) inputOtro.focus();
+                return;
+            }
         } else {
-            tipoQuimico = valTipo || null;
+            tipoQuimico = valTipo;
+        }
+
+        const selSubcat = document.getElementById('prod-subcategoria');
+        subcategoria = selSubcat ? selSubcat.value : '';
+        if (!subcategoria) {
+            alert("Por favor, selecciona la Subcategoría (Banda toxicológica) del producto químico.");
+            if (selSubcat) selSubcat.focus();
+            return;
         }
     }
 
@@ -724,14 +763,14 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
     const nuevoProducto = {
         nombre_comercial: document.getElementById('prod-nombre').value,
         clave_producto: document.getElementById('prod-clave').value,
-        categoria: document.getElementById('prod-categoria').value,
+        categoria: categoria,
         unidad_medida: document.getElementById('prod-unidad').value,
         capacidad_presentacion: document.getElementById('prod-presentacion').value,
         stock_minimo: document.getElementById('prod-stock-min').value,
         
         // Estos campos solo tendrán valor si es Químico, si no, se enviarán vacíos
         tipo_quimico: tipoQuimico,
-        subcategoria: document.getElementById('prod-subcategoria').value || null,
+        subcategoria: subcategoria || null,
         ingrediente_activo: document.getElementById('prod-ingrediente').value || null,
         registro_sanitario: document.getElementById('prod-registro').value || null
     };
