@@ -467,7 +467,7 @@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="prod-tipo-quimico" class="form-label fw-bold">Tipo de Químico</label>
-                                    <select class="form-select" id="prod-tipo-quimico">
+                                    <select class="form-select" id="prod-tipo-quimico" onchange="toggleCampoTipoQuimico(this.value)">
                                         <option value="">Seleccione...</option>
                                         <option value="Plaguicida">Plaguicida</option>
                                         <option value="Rodenticida">Rodenticida</option>
@@ -524,9 +524,22 @@
     <!-- ========================================== -->
     <!-- SCRIPTS                                    -->
     <!-- ========================================== -->
+    <script>
+        function toggleCampoTipoQuimico(val) {
+            const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+            if (!inputOtro) return;
+            if (val === 'Otro') {
+                inputOtro.classList.remove('d-none');
+                inputOtro.focus();
+            } else {
+                inputOtro.classList.add('d-none');
+                inputOtro.value = '';
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../config.js"></script>
-    <script src="panelprincipal.js"></script>
+    <script src="panelprincipal.js?v=20261023_02"></script>
 
 </body>
 
