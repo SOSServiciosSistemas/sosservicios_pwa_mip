@@ -993,11 +993,15 @@ function filtrarRutasAdmin() {
             badgeEstatus = '<span class="badge bg-success">✅ Liquidada</span>';
         }
 
-        // CONDICIONES PARA REABRIR:
-        // 1. Debe ser de hoy (b.es_hoy === true)
-        // 2. Debe estar Cerrada_Ruta (no En_Ruta ni Entregada)
+        // Determinar si la jornada corresponde al día de hoy
+        const hoyISO = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+        const fechaJornadaISO = (b.fecha_jornada || '').substring(0, 10);
+        const esHoy = Boolean(b.es_hoy) || (fechaJornadaISO === hoyISO);
+
+        // CONDICIÓN PARA REABRIR:
+        // Debe estar Cerrada_Ruta (cerrada por el técnico pero no liquidada/entregada a Mesa de Control)
         let botonReabrir = '';
-        if (b.es_hoy && b.estatus === 'Cerrada_Ruta') {
+        if (b.estatus === 'Cerrada_Ruta') {
             botonReabrir = `
                 <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm me-1 mb-1" 
                         onclick="reabrirRuta(${b.id_bitacora}, '${escape(b.tecnico)}')">
@@ -1011,7 +1015,7 @@ function filtrarRutasAdmin() {
                 <td class="fw-bold">#${b.id_bitacora}</td>
                 <td>
                     <span class="text-capitalize">${fechaTxt}</span>
-                    ${b.es_hoy ? '<br><span class="badge bg-info text-dark">Hoy</span>' : ''}
+                    ${esHoy ? '<br><span class="badge bg-info text-dark">Hoy</span>' : ''}
                 </td>
                 <td class="fw-bold text-primary">${b.tecnico}</td>
                 <td>${kmTexto}</td>
@@ -1035,7 +1039,7 @@ function filtrarRutasAdmin() {
 
 async function reabrirRuta(idBitacora, tecnicoEscaped) {
     const tecnico = unescape(tecnicoEscaped);
-    const confirmacion = confirm(`¿Estás seguro de REABRIR la ruta del técnico ${tecnico} (Folio #${idBitacora})?\n\nAl reabrirla:\n- El técnico volverá a tener su ruta abierta del día de hoy.\n- Podrá ver su agenda y registrar los nuevos servicios imprevistos.\n- Al finalizar la jornada deberá registrar nuevamente su KM final y su contraseña/firma para cerrarla.`);
+    const confirmacion = confirm(`¿Estás seguro de REABRIR la ruta del técnico ${tecnico} (Folio #${idBitacora})?\n\nAl reabrirla:\n- El técnico volverá a tener su ruta abierta.\n- Podrá ver su agenda y registrar los nuevos servicios imprevistos.\n- Al finalizar la jornada deberá registrar nuevamente su KM final y su contraseña/firma para cerrarla.`);
     if (!confirmacion) return;
 
     try {
@@ -1043,6 +1047,12 @@ async function reabrirRuta(idBitacora, tecnicoEscaped) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
+
+        if (respuesta.status === 404) {
+            alert('⚠️ El servidor de SOS Servicios aún no tiene cargada la nueva versión del backend (Error 404).\n\nPor favor realiza "git pull" y reinicia el backend en el servidor para habilitar el endpoint de reapertura.');
+            return;
+        }
+
         const datos = await respuesta.json();
 
         if (datos.exito) {
