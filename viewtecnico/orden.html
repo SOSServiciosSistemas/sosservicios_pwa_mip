@@ -72,7 +72,19 @@
                     const telefono = orden.telefono && orden.telefono.length > 0 ? orden.telefono[0] : 'No registrado';
                     
                     // Validaciones de fecha anterior y folio compuesto
-                    const fechaAnterior = orden.fecha_servicio_anterior ? new Date(orden.fecha_servicio_anterior).toLocaleDateString() : 'Primer servicio';
+                    let fechaAnterior = 'Primer servicio';
+                    if (orden.fecha_servicio_anterior) {
+                        const fStr = String(orden.fecha_servicio_anterior);
+                        if (fStr.length >= 10 && fStr.includes('-')) {
+                            const partes = fStr.substring(0, 10).split('-');
+                            fechaAnterior = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                        } else {
+                            const d = new Date(orden.fecha_servicio_anterior);
+                            fechaAnterior = !isNaN(d.getTime()) ? d.toLocaleDateString('es-MX') : 'Primer servicio';
+                        }
+                    } else if (parseInt(orden.num_tratamiento) > 1) {
+                        fechaAnterior = 'Sin registro previo';
+                    }
                     const folioCompleto = orden.letra_orden ? `${orden.id_orden}-${orden.letra_orden}` : orden.id_orden;
                     
                     // Lista de plagas comunes para generar los checkboxes visuales

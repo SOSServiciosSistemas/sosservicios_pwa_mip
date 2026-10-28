@@ -973,7 +973,19 @@ window.abrirVisorReporte = async function(idOrden) {
 
             const fechaServ = new Date(o.fecha_programada).toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit', year: 'numeric'});
             const horaInicio = r.hora_inicio ? new Date(r.hora_inicio).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit', hour12:true}) : '---';
-            const fechaAnt = o.fecha_servicio_anterior ? new Date(o.fecha_servicio_anterior).toLocaleDateString('es-ES') : '---';
+            let fechaAnt = (parseInt(o.num_tratamiento) > 1) ? 'Sin registro previo' : '---';
+            if (o.fecha_servicio_anterior) {
+                const fStr = String(o.fecha_servicio_anterior);
+                if (fStr.length >= 10 && fStr.includes('-')) {
+                    const partes = fStr.substring(0, 10).split('-');
+                    fechaAnt = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                } else {
+                    const d = new Date(o.fecha_servicio_anterior);
+                    fechaAnt = !isNaN(d.getTime()) ? d.toLocaleDateString('es-ES') : '---';
+                }
+            } else if (parseInt(o.num_tratamiento) <= 1) {
+                fechaAnt = 'Primer servicio';
+            }
             const telCliente = o.telefono && o.telefono.length > 0 ? o.telefono[0] : '';
             const costoFormat = o.ingresos_cobrados ? parseFloat(o.ingresos_cobrados).toFixed(0) : '0';
 
