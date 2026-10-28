@@ -999,9 +999,9 @@ function filtrarRutasAdmin() {
         const esHoy = Boolean(b.es_hoy) || (fechaJornadaISO === hoyISO);
 
         // CONDICIÓN PARA REABRIR:
-        // Debe estar Cerrada_Ruta (cerrada por el técnico pero no liquidada/entregada a Mesa de Control)
+        // Solo rutas correspondientes al día de hoy que estén en Cerrada_Ruta (no liquidadas por Mesa de Control)
         let botonReabrir = '';
-        if (b.estatus === 'Cerrada_Ruta') {
+        if (esHoy && b.estatus === 'Cerrada_Ruta') {
             botonReabrir = `
                 <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm me-1 mb-1" 
                         onclick="reabrirRuta(${b.id_bitacora}, '${escape(b.tecnico)}')">
