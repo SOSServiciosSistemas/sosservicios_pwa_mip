@@ -746,8 +746,19 @@ window.cargarHistorial = async function() {
                 const mesOculto = dateObj.getFullYear() + "-" + (dateObj.getMonth() + 1).toString().padStart(2, '0');
 
                 let botonesAccion = '';
+                const esInspeccion = (orden.tipo_servicio || '').toLowerCase().includes('inspecc');
                 if (orden.estatus === 'Completado') {
-                    botonesAccion = `<br><button class="btn btn-sm btn-outline-info fw-bold mt-2" onclick="abrirVisorReporte(${orden.id_orden})">📄 Ver Reporte</button>`;
+                    if (esInspeccion) {
+                        botonesAccion = `
+                            <br>
+                            <div class="btn-group mt-2">
+                                <a class="btn btn-sm btn-outline-primary fw-bold" href="../documentosclientes/inspeccion_diagnostico.html?folio=${orden.id_orden}" target="_blank" title="Inspección y Diagnóstico">📋 Inspección</a>
+                                <a class="btn btn-sm btn-outline-success fw-bold" href="../documentosclientes/recomendaciones_seguimiento.html?folio=${orden.id_orden}" target="_blank" title="Recomendaciones y Seguimiento">📄 Seguimiento</a>
+                            </div>
+                        `;
+                    } else {
+                        botonesAccion = `<br><button class="btn btn-sm btn-outline-info fw-bold mt-2" onclick="abrirVisorReporte(${orden.id_orden})">📄 Ver Reporte</button>`;
+                    }
                 } else {
                     botonesAccion = `<br><button class="btn btn-sm btn-outline-secondary fw-bold mt-2" onclick="abrirModalEditarOrden(${orden.id_orden})">✏️ Editar Datos</button>`;
                 }

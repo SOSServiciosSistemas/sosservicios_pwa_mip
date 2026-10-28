@@ -34,10 +34,12 @@
             </div>
         </div>
 
-        <!-- El botón que lo lleva a llenar los químicos al finalizar -->
-        <button id="btn-servicio-realizado" class="btn btn-success w-100 fw-bold py-3 mt-4 shadow-sm">
-            ✓ Servicio Realizado (Llenar Reporte)
-        </button>
+        <!-- Acciones dinámicas según el tipo de servicio y estatus -->
+        <div id="contenedor-acciones-orden" class="mt-4">
+            <button id="btn-servicio-realizado" class="btn btn-success w-100 fw-bold py-3 shadow-sm" disabled>
+                Cargando...
+            </button>
+        </div>
     </div>
 
     <script src="../config.js"></script>
@@ -54,19 +56,55 @@
                 return;
             }
 
-            // Configuramos el botón final para que lo mande al formulario de químicos
-            document.getElementById('btn-servicio-realizado').onclick = () => {
-                window.location.href = `reporte.html?folio=${folio}`;
-            };
-
             try {
                 // Hacemos la consulta a tu servidor Node.js
-
                 const respuesta = await fetch(`${BASE_URL}/api/orden/${folio}`);
                 const datos = await respuesta.json();
 
                 if(datos.exito) {
                     const orden = datos.orden;
+                    const esInspeccion = (orden.tipo_servicio || '').toLowerCase().includes('inspecc');
+                    const contenedorAcciones = document.getElementById('contenedor-acciones-orden');
+
+                    if (orden.estatus === 'Completado' || orden.estatus === 'Realizado') {
+                        if (esInspeccion) {
+                            contenedorAcciones.innerHTML = `
+                                <div class="alert alert-success text-center py-2 mb-3 fw-bold">
+                                    ✔ Inspección Realizada y Registrada
+                                </div>
+                                <a href="../documentosclientes/inspeccion_diagnostico.html?folio=${folio}" class="btn btn-primary w-100 fw-bold py-3 mb-2 shadow-sm" style="background-color: #0b5394; border-color: #0b5394;">
+                                    📋 Ver Inspección y Diagnóstico (Interno)
+                                </a>
+                                <a href="../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}" class="btn btn-outline-success w-100 fw-bold py-3 shadow-sm">
+                                    📄 Ver Recomendaciones y Seguimiento (Cliente)
+                                </a>
+                            `;
+                        } else {
+                            contenedorAcciones.innerHTML = `
+                                <div class="alert alert-success text-center py-2 mb-3 fw-bold">
+                                    ✔ Servicio Completado
+                                </div>
+                                <a href="../documentosclientes/reportecliente.html?folio=${folio}" class="btn btn-success w-100 fw-bold py-3 shadow-sm">
+                                    📄 Ver Reporte de Servicio Firmado
+                                </a>
+                            `;
+                        }
+                    } else {
+                        if (esInspeccion) {
+                            contenedorAcciones.innerHTML = `
+                                <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='inspeccion.html?folio=${folio}'" style="background-color: #0b5394; border-color: #0b5394;">
+                                    🔍 Inspección Realizada (Llenar Diagnóstico)
+                                </button>
+                            `;
+                        } else {
+                            contenedorAcciones.innerHTML = `
+                                <button class="btn btn-success w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='reporte.html?folio=${folio}'">
+                                    ✓ Servicio Realizado (Llenar Reporte)
+                                </button>
+                            `;
+                        }
+                    }
+
                     const fecha = new Date(orden.fecha_programada).toLocaleDateString();
                     const hora = new Date(orden.fecha_programada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     const telefono = orden.telefono && orden.telefono.length > 0 ? orden.telefono[0] : 'No registrado';

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspección y Diagnóstico de Presupuesto - SOS Servicios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #525659;
+            padding: 20px;
+            font-size: 0.68rem;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+        }
+
+        .hoja-impresion {
+            background: white;
+            width: 100%;
+            max-width: 21.5cm;
+            min-height: 27.5cm;
+            margin: 0 auto;
+            padding: 0.6cm 0.8cm;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .tabla-iydp {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.62rem;
+        }
+
+        .tabla-iydp th,
+        .tabla-iydp td {
+            border: 1px solid #000;
+            padding: 2px 3px;
+            vertical-align: middle;
+        }
+
+        .bg-negro-tit {
+            background-color: #2c3e50 !important;
+            color: #fff !important;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.68rem;
+            letter-spacing: 0.5px;
+        }
+
+        .bg-gris-sub {
+            background-color: #eaecee !important;
+            font-weight: bold;
+        }
+
+        .col-plaga {
+            width: 22px;
+            text-align: center;
+            font-weight: bold;
+            padding: 1px !important;
+            font-size: 0.58rem;
+        }
+
+        .caja-check {
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            border: 1.5px solid #000;
+            margin-right: 3px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 9px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .linea-texto {
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            min-height: 14px;
+        }
+
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .hoja-impresion {
+                box-shadow: none;
+                margin: 0;
+                padding: 0.4cm 0.6cm;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .no-imprimir {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Barra de Herramientas Superior (No se imprime) -->
+    <div class="no-imprimir text-center mb-3">
+        <button onclick="window.print()" class="btn btn-primary fw-bold shadow me-2">
+            <i class="fas fa-print me-1"></i> Imprimir / Guardar PDF
+        </button>
+        <button onclick="descargarPDF()" class="btn btn-success fw-bold shadow me-2">
+            <i class="fas fa-download me-1"></i> Descargar PDF Directo
+        </button>
+        <a id="btn-ir-recomendaciones" href="#" class="btn btn-outline-light fw-bold shadow">
+            <i class="fas fa-clipboard-list me-1"></i> Ver Hoja de Recomendaciones
+        </a>
+    </div>
+
+    <!-- DOCUMENTO OFICIAL A IMPRIMIR -->
+    <div class="hoja-impresion" id="documento-inspeccion">
+
+        <!-- ENCABEZADO -->
+        <table style="width: 100%; border: none; margin-bottom: 8px;">
+            <tr>
+                <td style="width: 22%; border: none; vertical-align: top; text-align: left;">
+                    <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-width: 130px; height: auto;">
+                    <div style="font-size: 0.58rem; color: #1a5276; font-weight: bold; margin-top: 2px;">
+                        www.sosservicios.com.mx
+                    </div>
+                </td>
+                <td style="width: 48%; border: none; vertical-align: middle; text-align: center;">
+                    <h5 class="fw-bold m-0" style="font-size: 0.95rem; letter-spacing: 0.3px;">
+                        INSPECCIÓN Y DIAGNÓSTICO DE PRESUPUESTO
+                    </h5>
+                    <div class="fw-bold text-danger mt-1" style="font-size: 0.85rem;" id="rep-subfolio">
+                        IYDP.- 000
+                    </div>
+                </td>
+                <td style="width: 30%; border: none; vertical-align: top; text-align: right; font-size: 0.58rem; line-height: 1.25;">
+                    <strong style="font-size: 0.65rem;">SOS MANEJO INTEGRAL DE PLAGAS</strong><br>
+                    LIC. SANITARIA DE LA S.S.A. 07-11A173<br>
+                    Av. Pradera No. 2716 Col. Parques del Sur<br>
+                    León, Gto, México.<br>
+                    Tel. +52 477 363 95 30 / +52 477 502 09 44
+                </td>
+            </tr>
+        </table>
+
+        <!-- INFORMACIÓN DEL CLIENTE Y FECHA/HORAS -->
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <!-- Caja Información del Cliente -->
+            <div style="flex: 1;">
+                <table class="tabla-iydp" style="height: 100%;">
+                    <thead>
+                        <tr>
+                            <th colspan="2" class="bg-negro-tit">INFORMACION DEL CLIENTE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width: 22%; font-weight: bold; background-color: #f8f9f9;">Nombre</td>
+                            <td id="info-cliente" class="fw-bold">---</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8f9f9;">Dirección</td>
+                            <td id="info-direccion">---</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8f9f9;">Tel.</td>
+                            <td id="info-tel">---</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8f9f9;">Contacto</td>
+                            <td id="info-contacto">---</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Caja Fecha y Horas -->
+            <div style="width: 32%;">
+                <table class="tabla-iydp" style="height: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 45%; font-weight: bold; background-color: #f8f9f9;">FECHA:</td>
+                            <td id="info-fecha" class="text-center fw-bold">--/--/----</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8f9f9;">HORA DE ENTRADA:</td>
+                            <td id="info-hora-entrada" class="text-center">--:--</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; background-color: #f8f9f9;">HORA DE SALIDA:</td>
+                            <td id="info-hora-salida" class="text-center">--:--</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TABLA PRINCIPAL: ÁREAS Y PLAGAS ENCONTRADAS -->
+        <table class="tabla-iydp mb-2" id="tabla-areas-plagas">
+            <thead>
+                <tr class="bg-gris-sub text-center" style="font-size: 0.6rem;">
+                    <th rowspan="2" style="width: 23%; vertical-align: middle;">
+                        <div style="display: flex; justify-content: space-between; padding: 0 4px; font-weight: bold;">
+                            <span>ÁREAS</span>
+                            <span style="font-size: 0.52rem; color: #555;">PLAGAS ➔</span>
+                        </div>
+                    </th>
+                    <th colspan="14" style="padding: 1px;">PLAGAS ENCONTRADAS</th>
+                    <th rowspan="2" class="col-plaga" style="width: 26px; vertical-align: middle;" title="Grado de Infestación">GI</th>
+                    <th rowspan="2" style="width: 38%; vertical-align: middle;">OBSERVACIONES/ ACCIONES CORRECTIVAS</th>
+                </tr>
+                <tr class="bg-gris-sub text-center" style="font-size: 0.55rem;">
+                    <th class="col-plaga" title="Cucaracha Alemana">BG</th>
+                    <th class="col-plaga" title="Cucaracha Americana">PA</th>
+                    <th class="col-plaga" title="Tijerilla">T</th>
+                    <th class="col-plaga" title="Araña">A</th>
+                    <th class="col-plaga" title="Hormiga">H</th>
+                    <th class="col-plaga" title="Grillo">G</th>
+                    <th class="col-plaga" title="Cochinilla">C</th>
+                    <th class="col-plaga" title="Alacrán">AL</th>
+                    <th class="col-plaga" title="Plaga de jardín">PJ</th>
+                    <th class="col-plaga" title="Abejas">AB</th>
+                    <th class="col-plaga" title="Plaga de granos almacenados">PG</th>
+                    <th class="col-plaga" title="Otros">O</th>
+                    <th class="col-plaga" title="Chinche de cama">CC</th>
+                    <th class="col-plaga" title="Roedores">R</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpo-tabla-areas">
+                <!-- Se llena dinámicamente con JS -->
+            </tbody>
+        </table>
+
+        <!-- BLOQUE DE EVALUACIÓN Y CONDICIONES -->
+        <table class="tabla-iydp mb-2">
+            <tbody>
+                <!-- Condiciones de Higiene -->
+                <tr>
+                    <td style="width: 25%; font-weight: bold; background-color: #f8f9f9;">Condiciones de Higiene:</td>
+                    <td style="width: 35%;">
+                        <span class="caja-check" id="chk-hig-b"></span> B
+                        <span class="caja-check ms-3" id="chk-hig-r"></span> R
+                        <span class="caja-check ms-3" id="chk-hig-m"></span> M
+                    </td>
+                    <td style="font-size: 0.58rem; color: #444;">
+                        <strong>B)</strong> Bueno &nbsp;&nbsp; <strong>R)</strong> Regular &nbsp;&nbsp; <strong>M)</strong> Malo
+                    </td>
+                </tr>
+
+                <!-- Tratamiento propuesto -->
+                <tr>
+                    <td style="font-weight: bold; background-color: #f8f9f9;">Tratamiento propuesto:</td>
+                    <td>
+                        <span class="caja-check" id="chk-trat-p"></span> P
+                        <span class="caja-check ms-3" id="chk-trat-c"></span> C
+                        <span class="ms-3">¿Cuántas aplicaciones?</span>
+                        <strong class="linea-texto text-center ms-1" style="width: 35px;" id="val-cuantas-app">-</strong>
+                    </td>
+                    <td style="font-size: 0.58rem; color: #444;">
+                        <strong>P)</strong> Preventivo &nbsp;&nbsp; <strong>C)</strong> Correctivo
+                    </td>
+                </tr>
+
+                <!-- Acciones Correctivas Requeridas -->
+                <tr>
+                    <td colspan="3" style="padding: 4px;">
+                        <strong style="display: block; margin-bottom: 2px;">Acciones Correctivas Requeridas:</strong>
+                        <div id="val-acciones-correctivas" style="min-height: 48px; font-size: 0.65rem; white-space: pre-wrap; line-height: 1.35; padding: 2px 4px; background-color: #fff;">
+                            Sin observaciones registradas.
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Tiempo requerido -->
+                <tr>
+                    <td style="font-weight: bold; background-color: #f8f9f9;">Tiempo requerido para realizar el Servicio:</td>
+                    <td colspan="2" id="val-tiempo-requerido" class="fw-bold">---</td>
+                </tr>
+
+                <!-- Tratamiento y costo -->
+                <tr>
+                    <td style="font-weight: bold; background-color: #f8f9f9;">Tratamiento y costo:</td>
+                    <td colspan="2" id="val-tratamiento-costo" class="fw-bold">---</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SIMBOLOGÍA Y CLAVES -->
+        <div style="font-size: 0.52rem; line-height: 1.25; margin-bottom: 8px; border: 1px solid #ccc; padding: 4px; background-color: #fafafa;">
+            <strong>Tipo de Plaga:</strong> BG- C.Alemana, PA- C. Americana, T-Tijerilla, A-Araña, H-Hormiga, G-Grillo, C-Cochinilla, AL-Alacrán, PJ-Plaga de jardín, AB-Abejas, PG-Plaga de granos almacenados, O-Otros, CC-Chinche de cama, R-Roedores.<br>
+            <strong>GI) Grado de Infestación:</strong> &nbsp;&nbsp; <strong>0</strong> N/A &nbsp;&nbsp;&nbsp;&nbsp; <strong>1</strong> Leve &nbsp;&nbsp;&nbsp;&nbsp; <strong>2</strong> Moderado &nbsp;&nbsp;&nbsp;&nbsp; <strong>3</strong> Alto
+        </div>
+
+        <!-- PIE DE PÁGINA Y FIRMA DEL INSPECTOR (Sin firma del cliente) -->
+        <table style="width: 100%; border: none; margin-top: 10px;">
+            <tr>
+                <td style="width: 45%; border: none; vertical-align: top; font-size: 0.58rem;">
+                    <div class="fw-bold mb-2">Este documento NO ampara el pago del servicio. Exija su factura</div>
+                    <div class="mt-2">
+                        <strong>Próxima Visita:</strong> &nbsp;&nbsp;
+                        <span class="caja-check" id="chk-prox-si"></span> Sí &nbsp;&nbsp;
+                        <span class="caja-check ms-2" id="chk-prox-no"></span> No
+                    </div>
+                    <div class="mt-1">
+                        <strong>Fecha Próxima:</strong>
+                        <span class="linea-texto text-center ms-1 fw-bold" style="width: 100px;" id="val-fecha-proxima">---</span>
+                    </div>
+                </td>
+                <td style="width: 40%; border: none; vertical-align: bottom; text-align: center;">
+                    <!-- Imagen de la firma del técnico inspector -->
+                    <div style="height: 50px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 2px;">
+                        <img id="img-firma-inspector" src="" alt="Firma Inspector" style="max-height: 50px; max-width: 180px; object-fit: contain; display: none;">
+                    </div>
+                    <div style="border-bottom: 1px solid #000; width: 85%; margin: 0 auto 3px auto;"></div>
+                    <strong style="font-size: 0.65rem;">Firma del Inspector</strong>
+                    <div id="val-nombre-inspector" style="font-size: 0.58rem; color: #555;">Técnico Especialista</div>
+                </td>
+                <td style="width: 15%; border: none; vertical-align: bottom; text-align: right; font-size: 0.55rem; color: #555;">
+                    <strong>V-003-2020</strong>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="../config.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const idOrden = urlParams.get('folio');
+
+        const LISTA_CLAVES_PLAGAS = ['BG', 'PA', 'T', 'A', 'H', 'G', 'C', 'AL', 'PJ', 'AB', 'PG', 'O', 'CC', 'R'];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!idOrden) {
+                alert("No se especificó el folio de la orden.");
+                return;
+            }
+
+            // Enlace al segundo documento (Recomendaciones y seguimiento)
+            const linkRecom = document.getElementById('btn-ir-recomendaciones');
+            if (linkRecom) linkRecom.href = `recomendaciones_seguimiento.html?folio=${idOrden}`;
+
+            await cargarDatosInspeccion(idOrden);
+        });
+
+        async function cargarDatosInspeccion(id) {
+            try {
+                // Obtener orden y reporte de inspección
+                const res = await fetch(`${BASE_URL}/api/ordenes/${id}/reporte-final`);
+                const datos = await res.json();
+
+                if (!datos.exito || !datos.orden) {
+                    alert("No se encontró la información de la inspección.");
+                    return;
+                }
+
+                const o = datos.orden;
+                const d = o.detalles_completos || {};
+
+                // Subfolio IYDP
+                const padId = String(o.id_orden).padStart(3, '0');
+                document.getElementById('rep-subfolio').innerText = `IYDP.- ${padId}`;
+
+                // Información del Cliente
+                document.getElementById('info-cliente').innerText = (o.nombre_cliente || '').toUpperCase();
+                const dir = `${o.direccion_completa || ''} ${o.colonia ? ', Col. ' + o.colonia : ''} ${o.ciudad ? ', ' + o.ciudad : ''}`;
+                document.getElementById('info-direccion').innerText = dir.toUpperCase();
+                const tel = Array.isArray(o.telefono) ? o.telefono.join(' / ') : (o.telefono || '---');
+                document.getElementById('info-tel').innerText = tel;
+                document.getElementById('info-contacto').innerText = (o.persona_contacto || o.nombre_cliente || '---').toUpperCase();
+
+                // Fecha y Horas
+                const fServ = o.fecha_servicio ? new Date(o.fecha_servicio) : new Date();
+                document.getElementById('info-fecha').innerText = fServ.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                const formatH = (hStr) => {
+                    if (!hStr) return '--:--';
+                    const dt = new Date(hStr);
+                    if (isNaN(dt.getTime())) return hStr;
+                    return dt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: true });
+                };
+                document.getElementById('info-hora-entrada').innerText = formatH(o.hora_llegada || d.hora_entrada);
+                document.getElementById('info-hora-salida').innerText = formatH(o.hora_salida || d.hora_salida);
+
+                // Tabla de Áreas y Plagas
+                const tbody = document.getElementById('cuerpo-tabla-areas');
+                tbody.innerHTML = '';
+                const areasRegistradas = d.tabla_areas || [];
+                const maxFilasMinimas = 10;
+                const totalFilas = Math.max(areasRegistradas.length, maxFilasMinimas);
+
+                for (let i = 0; i < totalFilas; i++) {
+                    const item = areasRegistradas[i] || null;
+                    const nombreArea = item ? (item.area || '') : '';
+                    const plagasItem = item ? (item.plagas || []) : [];
+                    const giVal = item ? (item.grado_infestacion !== undefined ? item.grado_infestacion : '') : '';
+                    const obsArea = item ? (item.observaciones || '') : '';
+
+                    let celdasPlagas = '';
+                    LISTA_CLAVES_PLAGAS.forEach(c => {
+                        const tienePlaga = plagasItem.includes(c);
+                        celdasPlagas += `<td class="col-plaga">${tienePlaga ? '<strong>X</strong>' : ''}</td>`;
+                    });
+
+                    const tr = document.createElement('tr');
+                    tr.style.height = '18px';
+                    tr.innerHTML = `
+                        <td style="font-weight: 500;">${nombreArea}</td>
+                        ${celdasPlagas}
+                        <td class="col-plaga fw-bold text-center">${giVal !== '' ? giVal : ''}</td>
+                        <td style="font-size: 0.58rem;">${obsArea}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+
+                // Condiciones de Higiene
+                const hig = (d.condiciones_higiene || '').toUpperCase();
+                if (hig === 'B') document.getElementById('chk-hig-b').innerText = 'X';
+                else if (hig === 'R') document.getElementById('chk-hig-r').innerText = 'X';
+                else if (hig === 'M') document.getElementById('chk-hig-m').innerText = 'X';
+
+                // Tratamiento Propuesto
+                const trat = (d.tratamiento_propuesto || '').toUpperCase();
+                if (trat === 'P') document.getElementById('chk-trat-p').innerText = 'X';
+                else if (trat === 'C') document.getElementById('chk-trat-c').innerText = 'X';
+                document.getElementById('val-cuantas-app').innerText = d.cuantas_aplicaciones || '-';
+
+                // Acciones Correctivas
+                document.getElementById('val-acciones-correctivas').innerText = d.acciones_correctivas || o.observaciones_mesa || 'Sin observaciones registradas.';
+
+                // Tiempo requerido y Tratamiento y costo
+                document.getElementById('val-tiempo-requerido').innerText = d.tiempo_requerido || '---';
+                document.getElementById('val-tratamiento-costo').innerText = d.tratamiento_costo || (o.costo ? `$${parseFloat(o.costo).toFixed(2)}` : '---');
+
+                // Próxima Visita
+                const prox = (d.proxima_visita || '').toUpperCase();
+                if (prox === 'SI' || prox === 'SÍ' || d.fecha_proxima) {
+                    document.getElementById('chk-prox-si').innerText = 'X';
+                } else {
+                    document.getElementById('chk-prox-no').innerText = 'X';
+                }
+                document.getElementById('val-fecha-proxima').innerText = d.fecha_proxima || '---';
+
+                // Firma del Inspector (Técnico)
+                const firmaTec = d.firma_inspector || o.firma_tecnico;
+                if (firmaTec) {
+                    const imgFirma = document.getElementById('img-firma-inspector');
+                    imgFirma.src = firmaTec;
+                    imgFirma.style.display = 'block';
+                }
+                if (o.nombre_tecnico) {
+                    document.getElementById('val-nombre-inspector').innerText = o.nombre_tecnico;
+                }
+
+            } catch (err) {
+                console.error("Error al cargar inspección:", err);
+                alert("Error al obtener los datos de la inspección.");
+            }
+        }
+
+        function descargarPDF() {
+            const elemento = document.getElementById('documento-inspeccion');
+            const opt = {
+                margin: [5, 5, 5, 5],
+                filename: `Inspeccion_Diagnostico_Folio_${idOrden || 'S-N'}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(elemento).save();
+        }
+    </script>
+</body>
+
+</html>
