@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Cargar los datos iniciales de las 3 tablas
     cargarUsuarios();
     cargarClientes();
-    cargarProductos(); 
+    cargarProductos();
 
     // Inicializar lienzos de firma digital
     configurarCanvasFirma('canvas-firma-nuevo', 'btn-limpiar-firma-nuevo');
@@ -35,7 +35,7 @@ async function cargarUsuarios() {
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/usuarios');
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             listaUsuariosCache = datos.usuarios || [];
             renderizarUsuarios(listaUsuariosCache);
@@ -123,14 +123,14 @@ function renderizarUsuarios(usuarios) {
 }
 
 // Filtro rápido de usuarios por texto
-document.getElementById('filtro-usuarios')?.addEventListener('input', function() {
+document.getElementById('filtro-usuarios')?.addEventListener('input', function () {
     const termino = this.value.toLowerCase().trim();
     if (!termino) {
         renderizarUsuarios(listaUsuariosCache);
         return;
     }
 
-    const filtrados = listaUsuariosCache.filter(u => 
+    const filtrados = listaUsuariosCache.filter(u =>
         (u.nombre_completo && u.nombre_completo.toLowerCase().includes(termino)) ||
         (u.usuario && u.usuario.toLowerCase().includes(termino)) ||
         (u.rol && u.rol.toLowerCase().includes(termino))
@@ -149,7 +149,7 @@ async function cambiarEstatusUsuario(id, nuevoEstatus) {
             body: JSON.stringify({ activo: nuevoEstatus })
         });
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             cargarUsuarios(); // Recarga la tabla
         } else {
@@ -182,7 +182,7 @@ document.getElementById('btn-nuevo-usuario')?.addEventListener('click', () => {
 });
 
 // Envío del formulario de Nuevo Usuario
-document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async function(e) {
+document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const alertaError = document.getElementById('user-error-alert');
@@ -278,7 +278,7 @@ document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async 
 // ----------------------------------------------------
 // Modal y Cambio de Contraseña de Usuario
 // ----------------------------------------------------
-window.abrirModalPassword = function(idUsuario, nombreCompleto) {
+window.abrirModalPassword = function (idUsuario, nombreCompleto) {
     const modalEl = document.getElementById('modalCambiarPassword');
     if (!modalEl) return;
 
@@ -296,7 +296,7 @@ window.abrirModalPassword = function(idUsuario, nombreCompleto) {
     modal.show();
 };
 
-document.getElementById('form-cambiar-password')?.addEventListener('submit', async function(e) {
+document.getElementById('form-cambiar-password')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const alertaError = document.getElementById('reset-error-alert');
@@ -356,7 +356,7 @@ document.getElementById('form-cambiar-password')?.addEventListener('submit', asy
 // ----------------------------------------------------
 // Modal y Actualización de Firma Oficial Digital
 // ----------------------------------------------------
-window.abrirModalFirma = function(idUsuario, nombreCompleto, firmaActual) {
+window.abrirModalFirma = function (idUsuario, nombreCompleto, firmaActual) {
     const modalEl = document.getElementById('modalActualizarFirma');
     if (!modalEl) return;
 
@@ -386,7 +386,7 @@ window.abrirModalFirma = function(idUsuario, nombreCompleto, firmaActual) {
     modal.show();
 };
 
-document.getElementById('form-actualizar-firma')?.addEventListener('submit', async function(e) {
+document.getElementById('form-actualizar-firma')?.addEventListener('submit', async function (e) {
     e.preventDefault();
 
     const alertaError = document.getElementById('firma-error-alert');
@@ -535,11 +535,11 @@ async function cargarClientes() {
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/clientes');
         const datos = await respuesta.json();
-        
-        const tbody = document.getElementById('tabla-clientes');
-        tbody.innerHTML = ''; 
 
-        if(datos.exito) {
+        const tbody = document.getElementById('tabla-clientes');
+        tbody.innerHTML = '';
+
+        if (datos.exito) {
             datos.clientes.forEach(cliente => {
                 const fila = `
                     <tr>
@@ -567,7 +567,7 @@ async function cargarClientes() {
 }
 
 async function cambiarEstatusCliente(id, nuevoEstatus) {
-    if(!confirm(`¿Estás seguro de cambiar el estatus de este cliente?`)) return;
+    if (!confirm(`¿Estás seguro de cambiar el estatus de este cliente?`)) return;
 
     try {
         const respuesta = await fetch(BASE_URL + `/api/admin/clientes/${id}/estatus`, {
@@ -576,8 +576,8 @@ async function cambiarEstatusCliente(id, nuevoEstatus) {
             body: JSON.stringify({ activo: nuevoEstatus })
         });
         const datos = await respuesta.json();
-        
-        if(datos.exito) {
+
+        if (datos.exito) {
             cargarClientes(); // Recarga la tabla
         } else {
             alert("Error: " + datos.error);
@@ -594,11 +594,11 @@ async function cargarProductos() {
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/productos');
         const datos = await respuesta.json();
-        
-        const tbody = document.getElementById('tabla-productos');
-        tbody.innerHTML = ''; 
 
-        if(datos.exito) {
+        const tbody = document.getElementById('tabla-productos');
+        tbody.innerHTML = '';
+
+        if (datos.exito) {
             datos.productos.forEach(producto => {
                 const tipoTexto = producto.tipo_quimico || (producto.categoria === 'Quimico' ? 'Químico' : (producto.categoria || 'N/A'));
                 const fila = `
@@ -628,7 +628,7 @@ async function cargarProductos() {
 }
 
 async function cambiarEstatusProducto(id, nuevoEstatus) {
-    if(!confirm(`¿Estás seguro de cambiar el estatus de este producto?`)) return;
+    if (!confirm(`¿Estás seguro de cambiar el estatus de este producto?`)) return;
 
     try {
         const respuesta = await fetch(BASE_URL + `/api/admin/productos/${id}/estatus`, {
@@ -637,8 +637,8 @@ async function cambiarEstatusProducto(id, nuevoEstatus) {
             body: JSON.stringify({ activo: nuevoEstatus })
         });
         const datos = await respuesta.json();
-        
-        if(datos.exito) {
+
+        if (datos.exito) {
             cargarProductos(); // Recarga la tabla
         } else {
             alert("Error: " + datos.error);
@@ -657,11 +657,11 @@ document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
     const modal = new bootstrap.Modal(document.getElementById('modalNuevoProducto'));
     document.getElementById('form-nuevo-producto').reset(); // Limpia el formulario
     document.getElementById('seccion-quimicos').classList.add('d-none'); // Oculta sección química por defecto
-    
+
     const selTipo = document.getElementById('prod-tipo-quimico');
     const selSub = document.getElementById('prod-subcategoria');
     const inputOtro = document.getElementById('prod-tipo-quimico-otro');
-    
+
     if (selTipo) { selTipo.required = false; selTipo.value = ''; }
     if (selSub) { selSub.required = false; selSub.value = ''; }
     if (inputOtro) {
@@ -673,12 +673,12 @@ document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
 });
 
 // Mostrar campos químicos solo si se elige "Quimico"
-document.getElementById('prod-categoria').addEventListener('change', function() {
+document.getElementById('prod-categoria').addEventListener('change', function () {
     const seccionQuimicos = document.getElementById('seccion-quimicos');
     const selTipo = document.getElementById('prod-tipo-quimico');
     const selSub = document.getElementById('prod-subcategoria');
     const inputOtro = document.getElementById('prod-tipo-quimico-otro');
-    
+
     if (this.value === 'Quimico') {
         seccionQuimicos.classList.remove('d-none'); // Muestra el cuadro gris
         if (selTipo) selTipo.required = true;
@@ -699,7 +699,7 @@ document.getElementById('prod-categoria').addEventListener('change', function() 
 });
 
 // Función global para alternar input libre de tipo químico
-window.toggleCampoTipoQuimico = function(val) {
+window.toggleCampoTipoQuimico = function (val) {
     const inputOtro = document.getElementById('prod-tipo-quimico-otro');
     if (!inputOtro) return;
     if (val === 'Otro') {
@@ -716,13 +716,13 @@ window.toggleCampoTipoQuimico = function(val) {
 // Toggle input libre cuando se selecciona 'Otro' en tipo de químico
 const selTipoQuimico = document.getElementById('prod-tipo-quimico');
 if (selTipoQuimico) {
-    selTipoQuimico.addEventListener('change', function() {
+    selTipoQuimico.addEventListener('change', function () {
         window.toggleCampoTipoQuimico(this.value);
     });
 }
 
 // Guardar el nuevo producto en la base de datos
-document.getElementById('form-nuevo-producto').addEventListener('submit', async function(e) {
+document.getElementById('form-nuevo-producto').addEventListener('submit', async function (e) {
     e.preventDefault(); // Evita que la página se recargue
 
     const categoria = document.getElementById('prod-categoria').value;
@@ -767,7 +767,7 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
         unidad_medida: document.getElementById('prod-unidad').value,
         capacidad_presentacion: document.getElementById('prod-presentacion').value,
         stock_minimo: document.getElementById('prod-stock-min').value,
-        
+
         // Estos campos solo tendrán valor si es Químico, si no, se enviarán vacíos
         tipo_quimico: tipoQuimico,
         subcategoria: subcategoria || null,
@@ -789,7 +789,7 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
             const modalEl = document.getElementById('modalNuevoProducto');
             const modal = bootstrap.Modal.getInstance(modalEl);
             modal.hide();
-            
+
             // Recargamos la tabla para que aparezca el nuevo registro
             cargarProductos();
             alert("¡Producto registrado con éxito!");
@@ -806,18 +806,18 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
 // HISTORIAL Y AUDITORÍA DE INVENTARIO (ADMINISTRADOR)
 // =====================================================================
 
-window.cargarHistorialInventario = async function(forzarFechas = false) {
+window.cargarHistorialInventario = async function (forzarFechas = false) {
     const tbody = document.getElementById('tabla-historial-inventario');
     tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Consultando a la base de datos...</td></tr>';
 
     try {
         let url = BASE_URL + '/api/inventario/historial';
-        
+
         // Si se activó la búsqueda por fechas, agregamos los datos a la URL
         if (forzarFechas) {
             const fechaInicio = document.getElementById('filtro-fecha-inicio').value;
             const fechaFin = document.getElementById('filtro-fecha-fin').value;
-            
+
             if (!fechaInicio || !fechaFin) {
                 alert("Por favor, selecciona tanto la fecha de inicio como la fecha fin.");
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Esperando selección de fechas...</td></tr>';
@@ -836,10 +836,10 @@ window.cargarHistorialInventario = async function(forzarFechas = false) {
             }
 
             tbody.innerHTML = '';
-            
+
             datos.historial.forEach(mov => {
-                const fecha = new Date(mov.fecha_movimiento).toLocaleString('es-MX', { 
-                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+                const fecha = new Date(mov.fecha_movimiento).toLocaleString('es-MX', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
 
                 let colorBadge = 'bg-secondary';
@@ -862,7 +862,7 @@ window.cargarHistorialInventario = async function(forzarFechas = false) {
                 `;
                 tbody.innerHTML += fila;
             });
-            
+
             // Volvemos a aplicar los filtros rápidos de texto por si quedaron escritos
             aplicarFiltrosHistorial();
         } else {
@@ -898,7 +898,7 @@ document.getElementById('historial-tab')?.addEventListener('shown.bs.tab', funct
 function aplicarFiltrosHistorial() {
     const textoBuscar = document.getElementById('filtro-texto-historial').value.toLowerCase();
     const tipoBuscar = document.getElementById('filtro-tipo-historial').value;
-    
+
     // Tomamos todas las filas que creamos
     const filas = document.querySelectorAll('.fila-historial');
 
@@ -971,7 +971,7 @@ function filtrarRutasAdmin() {
         const fechaDate = new Date(b.fecha_jornada);
         const fechaAjustada = new Date(fechaDate.getTime() + (fechaDate.getTimezoneOffset() * 60000));
         const fechaTxt = fechaAjustada.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' });
-        
+
         let kmTexto = '<span class="text-muted">Sin datos</span>';
         if (b.km_inicial !== null && b.km_inicial !== undefined) {
             if (b.km_final !== null && b.km_final !== undefined) {
@@ -993,15 +993,11 @@ function filtrarRutasAdmin() {
             badgeEstatus = '<span class="badge bg-success">✅ Liquidada</span>';
         }
 
-        // Determinar si la jornada corresponde al día de hoy
-        const hoyISO = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
-        const fechaJornadaISO = (b.fecha_jornada || '').substring(0, 10);
-        const esHoy = Boolean(b.es_hoy) || (fechaJornadaISO === hoyISO);
-
-        // CONDICIÓN PARA REABRIR:
-        // Solo rutas correspondientes al día de hoy que estén en Cerrada_Ruta (no liquidadas por Mesa de Control)
+        // CONDICIONES PARA REABRIR:
+        // 1. Debe ser de hoy (b.es_hoy === true)
+        // 2. Debe estar Cerrada_Ruta (no En_Ruta ni Entregada)
         let botonReabrir = '';
-        if (esHoy && b.estatus === 'Cerrada_Ruta') {
+        if (b.es_hoy && b.estatus === 'Cerrada_Ruta') {
             botonReabrir = `
                 <button class="btn btn-warning btn-sm fw-bold text-dark shadow-sm me-1 mb-1" 
                         onclick="reabrirRuta(${b.id_bitacora}, '${escape(b.tecnico)}')">
@@ -1015,7 +1011,7 @@ function filtrarRutasAdmin() {
                 <td class="fw-bold">#${b.id_bitacora}</td>
                 <td>
                     <span class="text-capitalize">${fechaTxt}</span>
-                    ${esHoy ? '<br><span class="badge bg-info text-dark">Hoy</span>' : ''}
+                    ${b.es_hoy ? '<br><span class="badge bg-info text-dark">Hoy</span>' : ''}
                 </td>
                 <td class="fw-bold text-primary">${b.tecnico}</td>
                 <td>${kmTexto}</td>
@@ -1039,7 +1035,7 @@ function filtrarRutasAdmin() {
 
 async function reabrirRuta(idBitacora, tecnicoEscaped) {
     const tecnico = unescape(tecnicoEscaped);
-    const confirmacion = confirm(`¿Estás seguro de REABRIR la ruta del técnico ${tecnico} (Folio #${idBitacora})?\n\nAl reabrirla:\n- El técnico volverá a tener su ruta abierta.\n- Podrá ver su agenda y registrar los nuevos servicios imprevistos.\n- Al finalizar la jornada deberá registrar nuevamente su KM final y su contraseña/firma para cerrarla.`);
+    const confirmacion = confirm(`¿Estás seguro de REABRIR la ruta del técnico ${tecnico} (Folio #${idBitacora})?\n\nAl reabrirla:\n- El técnico volverá a tener su ruta abierta del día de hoy.\n- Podrá ver su agenda y registrar los nuevos servicios imprevistos.\n- Al finalizar la jornada deberá registrar nuevamente su KM final y su contraseña/firma para cerrarla.`);
     if (!confirmacion) return;
 
     try {
@@ -1047,12 +1043,6 @@ async function reabrirRuta(idBitacora, tecnicoEscaped) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
-
-        if (respuesta.status === 404) {
-            alert('⚠️ El servidor de SOS Servicios aún no tiene cargada la nueva versión del backend (Error 404).\n\nPor favor realiza "git pull" y reinicia el backend en el servidor para habilitar el endpoint de reapertura.');
-            return;
-        }
-
         const datos = await respuesta.json();
 
         if (datos.exito) {

@@ -1,57 +1,127 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Servicio - SOS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Librería para iconos (lápiz, carga, etc) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Librerías para Firma y PDF -->
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
+
     <style>
-        body { background-color: #f0f0f0; padding: 20px; font-size: 0.7rem; font-family: Arial, sans-serif; }
-        .hoja-impresion { 
-            background: white; 
-            width: 100%; 
-            max-width: 20.5cm; 
-            margin: 0 auto; 
-            padding: 0.1cm 0.5cm; 
-            box-sizing: border-box; /* Crucial: evita que el padding ensanche la hoja */
+        body {
+            background-color: #f0f0f0;
+            padding: 20px;
+            font-size: 0.7rem;
+            font-family: Arial, sans-serif;
+        }
+
+        .hoja-impresion {
+            background: white;
+            width: 100%;
+            max-width: 20.5cm;
+            margin: 0 auto;
+            padding: 0.1cm 0.5cm;
+            box-sizing: border-box;
+            /* Crucial: evita que el padding ensanche la hoja */
             position: relative;
         }
-        
+
         /* Estilos del formato oficial */
-        .tabla-oficial { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 0.65rem; }
-        .tabla-oficial th, .tabla-oficial td { border: 1px solid #000; padding: 3px; vertical-align: middle; }
-        .bg-gris { background-color: #d9d9d9 !important; font-weight: bold; text-align: center; }
-        .borde-inferior { border-bottom: 1px solid #000; display: inline-block; min-height: 15px; }
-        .caja-check { display: inline-block; width: 12px; height: 12px; border: 1px solid #000; margin-right: 5px; vertical-align: middle; }
-        
-        .seccion-datos { display: flex; flex-wrap: wrap; font-size: 0.7rem; margin-bottom: 5px; }
-        .campo { display: flex; align-items: flex-end; margin-bottom: 4px; }
-        .campo-label { white-space: nowrap; margin-right: 5px; }
-        .campo-valor { flex-grow: 1; border-bottom: 1px solid #000; min-height: 14px; }
-        
+        .tabla-oficial {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+            font-size: 0.65rem;
+        }
+
+        .tabla-oficial th,
+        .tabla-oficial td {
+            border: 1px solid #000;
+            padding: 3px;
+            vertical-align: middle;
+        }
+
+        .bg-gris {
+            background-color: #d9d9d9 !important;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .borde-inferior {
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            min-height: 15px;
+        }
+
+        .caja-check {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        .seccion-datos {
+            display: flex;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+            margin-bottom: 5px;
+        }
+
+        .campo {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 4px;
+        }
+
+        .campo-label {
+            white-space: nowrap;
+            margin-right: 5px;
+        }
+
+        .campo-valor {
+            flex-grow: 1;
+            border-bottom: 1px solid #000;
+            min-height: 14px;
+        }
+
         @media print {
-            body { background-color: white; padding: 0; }
-            .hoja-impresion { box-shadow: none; margin: 0; padding: 0; width: 100%; }
-            .no-imprimir { display: none !important; }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+
+            .hoja-impresion {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+
+            .no-imprimir {
+                display: none !important;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<!-- EL DOCUMENTO PDF (Formato Oficial SOS) -->
+    <!-- EL DOCUMENTO PDF (Formato Oficial SOS) -->
     <div class="hoja-impresion" id="documento-reporte">
-        
+
         <!-- Encabezado -->
         <div class="d-flex justify-content-between align-items-center mb-2">
             <div style="width: 25%; text-align: center;">
-            <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-width: 90%; max-height: 50px; object-fit: contain; margin-bottom: 2px;">
+                <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS"
+                    style="max-width: 90%; max-height: 50px; object-fit: contain; margin-bottom: 2px;">
             </div>
             <div style="width: 45%; text-align: center; font-size: 0.65rem;">
                 <strong>SOS Manejo Integral de Plagas</strong><br>
@@ -63,14 +133,14 @@
             </div>
             <div style="width: 30%; text-align: right;">
                 <div class="d-flex align-items-end justify-content-end mb-2" style="font-size: 0.75rem;">
-                    <span class="me-2">FECHA:</span> 
+                    <span class="me-2">FECHA:</span>
                     <span id="rep-fecha" class="borde-inferior" style="width: 60%;"></span>
                 </div>
                 <h3 class="text-danger fw-bold m-0">FOLIO</h3>
                 <h4 class="text-danger fw-bold m-0" id="rep-folio"></h4>
             </div>
         </div>
-        
+
         <!-- Bloque del Título (Ocupa el 100% del ancho) -->
         <div class="w-100 mb-2">
             <div class="bg-gris border border-dark p-1 text-center"
@@ -78,9 +148,10 @@
                 REPORTE DE SERVICIO
             </div>
         </div>
-        
+
         <!-- Bloque de Checkboxes en Horizontal (De lado a lado de la hoja) -->
-        <div class="d-flex justify-content-between align-items-center w-100 mb-3" style="font-size: 0.65rem; padding: 0 5px;">
+        <div class="d-flex justify-content-between align-items-center w-100 mb-3"
+            style="font-size: 0.65rem; padding: 0 5px;">
             <div><span class="caja-check"></span> Aplicación</div>&nbsp;
             <div><span class="caja-check"></span> Inspección</div>&nbsp;
             <div><span class="caja-check"></span> Mantenimiento</div>&nbsp;
@@ -94,15 +165,24 @@
 
         <!-- Datos del Cliente -->
         <div class="seccion-datos">
-            <div class="campo" style="width: 100%;"><span class="campo-label">Nombre del Cliente:</span><span class="campo-valor" id="rep-cliente"></span></div>
-            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Domicilio:</span><span class="campo-valor" id="rep-domicilio"></span></div>
-            <div class="campo" style="width: 40%;"><span class="campo-label">Teléfonos:</span><span class="campo-valor" id="rep-telefonos"></span></div>
-            <div class="campo" style="width: 45%; padding-right: 5px;"><span class="campo-label">Giro del Cliente:</span><span class="campo-valor" id="rep-giro"></span></div>
-            <div class="campo" style="width: 25%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span class="campo-valor" id="rep-ciudad"></span></div>
-            <div class="campo" style="width: 15%; padding-right: 5px;"><span class="campo-label">Hora de Entrada:</span><span class="campo-valor text-center" id="rep-hora-ent"></span></div>
-            <div class="campo" style="width: 15%;"><span class="campo-label">Hora de Salida:</span><span class="campo-valor text-center" id="rep-hora-sal"></span></div>
-            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span class="campo-valor" id="rep-contacto"></span></div>
-            <div class="campo" style="width: 40%;"><span class="campo-label">Hora de ingreso a áreas tratadas:</span><span class="campo-valor text-center" id="rep-hora-reingreso"></span></div>
+            <div class="campo" style="width: 100%;"><span class="campo-label">Nombre del Cliente:</span><span
+                    class="campo-valor" id="rep-cliente"></span></div>
+            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Domicilio:</span><span
+                    class="campo-valor" id="rep-domicilio"></span></div>
+            <div class="campo" style="width: 40%;"><span class="campo-label">Teléfonos:</span><span class="campo-valor"
+                    id="rep-telefonos"></span></div>
+            <div class="campo" style="width: 45%; padding-right: 5px;"><span class="campo-label">Giro del
+                    Cliente:</span><span class="campo-valor" id="rep-giro"></span></div>
+            <div class="campo" style="width: 25%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span
+                    class="campo-valor" id="rep-ciudad"></span></div>
+            <div class="campo" style="width: 15%; padding-right: 5px;"><span class="campo-label">Hora de
+                    Entrada:</span><span class="campo-valor text-center" id="rep-hora-ent"></span></div>
+            <div class="campo" style="width: 15%;"><span class="campo-label">Hora de Salida:</span><span
+                    class="campo-valor text-center" id="rep-hora-sal"></span></div>
+            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span
+                    class="campo-valor" id="rep-contacto"></span></div>
+            <div class="campo" style="width: 40%;"><span class="campo-label">Hora de ingreso a áreas
+                    tratadas:</span><span class="campo-valor text-center" id="rep-hora-reingreso"></span></div>
         </div>
 
         <!-- Detalle de Producto -->
@@ -110,7 +190,9 @@
             <div style="width: 75%; padding-right: 5px;">
                 <table class="tabla-oficial">
                     <thead>
-                        <tr><th colspan="4" class="bg-gris">DETALLE DE PRODUCTO A UTILIZAR</th></tr>
+                        <tr>
+                            <th colspan="4" class="bg-gris">DETALLE DE PRODUCTO A UTILIZAR</th>
+                        </tr>
                         <tr class="bg-gris">
                             <th style="width: 5%;">TIPO</th>
                             <th style="width: 45%;">INGREDIENTE ACTIVO</th>
@@ -123,9 +205,10 @@
                     </tbody>
                 </table>
             </div>
-            
+
         </div>
-        <div style="font-size: 0.5rem; margin-top: -5px; margin-bottom: 5px;">NOTA: PARA MAYOR INFORMACIÓN CONSULTA LA ETIQUETA</div>
+        <div style="font-size: 0.5rem; margin-top: -5px; margin-bottom: 5px;">NOTA: PARA MAYOR INFORMACIÓN CONSULTA LA
+            ETIQUETA</div>
 
         <!-- Áreas Tratadas -->
         <table class="tabla-oficial">
@@ -153,16 +236,27 @@
         <table class="tabla-oficial" style="margin-top: -5px;">
             <tr class="bg-gris">
                 <td style="width: 25%;">* GRADO GENERAL DE INFESTACIÓN</td>
-                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-alto" style="line-height: 10px;"></span> A) ALTO</td>
-                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-moderado" style="line-height: 10px;"></span> B) MODERADO</td>
-                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-bajo" style="line-height: 10px;"></span> C) BAJO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-alto"
+                        style="line-height: 10px;"></span> A) ALTO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-moderado"
+                        style="line-height: 10px;"></span> B) MODERADO</td>
+                <td style="width: 25%;"><span class="caja-check text-center fw-bold" id="chk-bajo"
+                        style="line-height: 10px;"></span> C) BAJO</td>
             </tr>
-            <tr><td colspan="4" class="bg-gris">DETALLES DEL SERVICIO</td></tr>
+            <tr>
+                <td colspan="4" class="bg-gris">DETALLES DEL SERVICIO</td>
+            </tr>
             <!-- Reducimos height a 25px -->
-            <tr><td colspan="4" style="height: 25px; vertical-align: top;" id="rep-acciones"></td></tr>
-            <tr><td colspan="4" class="bg-gris">ÁREAS DE OPORTUNIDAD INDISPENSABLES A CORREGIR</td></tr>
+            <tr>
+                <td colspan="4" style="height: 25px; vertical-align: top;" id="rep-acciones"></td>
+            </tr>
+            <tr>
+                <td colspan="4" class="bg-gris">ÁREAS DE OPORTUNIDAD INDISPENSABLES A CORREGIR</td>
+            </tr>
             <!-- Reducimos height a 25px -->
-            <tr><td colspan="4" style="height: 25px; vertical-align: top;" id="rep-seguimiento"></td></tr>
+            <tr>
+                <td colspan="4" style="height: 25px; vertical-align: top;" id="rep-seguimiento"></td>
+            </tr>
         </table>
 
         <!-- Tratamiento y Firmas -->
@@ -170,14 +264,21 @@
             <div style="width: 65%; border-right: 1px solid #000;">
                 <div class="bg-gris p-1" style="border-bottom: 1px solid #000;">TRATAMIENTO</div>
                 <!-- Redujimos el height a 35px para ahorrar espacio vertical -->
-                <div style="height: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
-                    TRATAMIENTO: <span class="borde-inferior text-center fw-bold mx-2" style="width: 15%;" id="rep-tratamiento-actual"></span> DE <span class="borde-inferior text-center fw-bold mx-2" style="width: 15%;" id="rep-tratamiento-total"></span>
+                <div
+                    style="height: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                    TRATAMIENTO: <span class="borde-inferior text-center fw-bold mx-2" style="width: 15%;"
+                        id="rep-tratamiento-actual"></span> DE <span class="borde-inferior text-center fw-bold mx-2"
+                        style="width: 15%;" id="rep-tratamiento-total"></span>
                 </div>
             </div>
             <div style="width: 35%; padding: 5px; font-size: 0.65rem;">
-                <div class="mb-1">COSTO DEL SERVICIO: $<span class="borde-inferior text-center fw-bold" style="width: 50%;" id="rep-costo"></span></div>
-                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold" style="width: 70%; font-size: 0.55rem;" id="rep-costo-letra"></span> )</div>
-                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check text-center fw-bold" id="chk-factura-si" style="line-height: 10px;"></span> NO <span class="caja-check text-center fw-bold" id="chk-factura-no" style="line-height: 10px;"></span></div>
+                <div class="mb-1">COSTO DEL SERVICIO: $<span class="borde-inferior text-center fw-bold"
+                        style="width: 50%;" id="rep-costo"></span></div>
+                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold"
+                        style="width: 70%; font-size: 0.55rem;" id="rep-costo-letra"></span> )</div>
+                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check text-center fw-bold" id="chk-factura-si"
+                        style="line-height: 10px;"></span> NO <span class="caja-check text-center fw-bold"
+                        id="chk-factura-no" style="line-height: 10px;"></span></div>
             </div>
         </div>
 
@@ -186,12 +287,14 @@
         <!-- Firmas (reducimos los márgenes mt-4 mb-2 a mt-2 mb-0) -->
         <div class="row text-center align-items-end mt-2 mb-0" style="font-size: 0.65rem;">
             <div class="col-6">
-                <img id="img-firma-cliente" src="" style="height: 55px; max-height: 55px; max-width: 85%; object-fit: contain; display: none; margin: 0 auto 2px auto;">
+                <img id="img-firma-cliente" src=""
+                    style="height: 55px; max-height: 55px; max-width: 85%; object-fit: contain; display: none; margin: 0 auto 2px auto;">
                 <div class="borde-inferior w-75 mx-auto mb-1 d-block" id="linea-firma-cliente"></div>
                 <div class="fw-bold">NOMBRE Y FIRMA DEL CLIENTE</div>
             </div>
             <div class="col-6">
-                <img id="img-firma-tecnico" src="" style="height: 55px; max-height: 55px; max-width: 85%; object-fit: contain; display: none; margin: 0 auto 2px auto;">
+                <img id="img-firma-tecnico" src=""
+                    style="height: 55px; max-height: 55px; max-width: 85%; object-fit: contain; display: none; margin: 0 auto 2px auto;">
                 <div class="borde-inferior w-75 mx-auto mb-1 d-block" id="rep-nombre-tecnico"></div>
                 <div class="fw-bold">NOMBRE Y FIRMA DEL TÉCNICO ESPECIALISTA</div>
             </div>
@@ -206,22 +309,26 @@
     </div>
 
     <!-- MODAL DE FIRMA A PANTALLA COMPLETA (Oculto por defecto) -->
-    <div id="modal-firma" class="d-none no-imprimir" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 9999; display: flex; flex-direction: column;">
-        
+    <div id="modal-firma" class="d-none no-imprimir"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 9999; display: flex; flex-direction: column;">
+
         <!-- Encabezado del modal -->
-        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow" style="flex-shrink: 0;">
+        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow"
+            style="flex-shrink: 0;">
             <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Gire para firmar</h6>
             <button id="btn-cerrar-firma" class="btn btn-danger btn-sm">Cancelar</button>
         </div>
-        
+
         <!-- Área del Canvas (min-height: 0 es crucial para que no empuje los botones hacia abajo) -->
-        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
+        <div
+            style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
             <canvas id="pizarra-firma" style="width: 100%; height: 100%; touch-action: none;"></canvas>
         </div>
-        
+
         <!-- Botones de acción del modal -->
         <!-- env(safe-area-inset-bottom) protege los botones de la barrita negra inferior de los iPhone -->
-        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg" style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
+        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg"
+            style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
             <button id="btn-borrar-firma" class="btn btn-warning fw-bold shadow-sm">
                 <i class="fas fa-eraser"></i> Borrar
             </button>

@@ -16,12 +16,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Personaliza el encabezado con el nombre del técnico
     document.getElementById('nombre-tecnico-nav').innerText = `Técnico: ${nombreUsuario}`;
-    
+
     const fechaHoy = new Date();
     const opcionesFecha = { weekday: 'long', day: 'numeric', month: 'long' };
     textoFechaHoy = fechaHoy.toLocaleDateString('es-MX', opcionesFecha);
     textoFechaHoy = textoFechaHoy.charAt(0).toUpperCase() + textoFechaHoy.slice(1);
-    
+
     const tituloAgenda = document.getElementById('titulo-agenda');
     if (tituloAgenda) tituloAgenda.innerText = `Agenda: ${textoFechaHoy}`;
 
@@ -41,7 +41,7 @@ async function verificarBitacora(idUsuario) {
 
         if (datos.exito && datos.bitacora) {
             idBitacoraDiaria = datos.bitacora.id_bitacora;
-            
+
             // Asegura la conversión a número para validaciones posteriores
             kmInicialDia = parseFloat(datos.bitacora.km_inicial);
 
@@ -113,7 +113,7 @@ async function verificarBitacora(idUsuario) {
             esCierreRutaAnterior = false;
             document.getElementById('barra-bitacora').style.display = 'none';
             document.getElementById('contenedor-planeador').style.display = 'none';
-            document.getElementById('contenedor-agenda').innerHTML = ''; 
+            document.getElementById('contenedor-agenda').innerHTML = '';
             document.getElementById('contenedor-agenda').style.display = 'block';
 
             const tituloAgenda = document.getElementById('titulo-agenda');
@@ -154,17 +154,17 @@ document.getElementById('form-apertura-jornada').addEventListener('submit', asyn
             body: JSON.stringify(datosApertura)
         });
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             idBitacoraDiaria = datos.id_bitacora;
-            
+
             // Actualiza la variable en memoria al instante para el candado del kilometraje
             kmInicialDia = parseFloat(document.getElementById('aj-km-inicial').value);
-            
+
             const modalElement = document.getElementById('modalAperturaJornada');
             const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) modal.hide();
-            
+
             // Dibuja la agenda y muestra la barra inferior tras completar el registro
             document.getElementById('contenedor-agenda').style.display = 'block';
             document.getElementById('barra-bitacora').style.display = 'flex';
@@ -189,10 +189,10 @@ async function cargarAgendaTecnico(idUsuario) {
         const datos = await respuesta.json();
 
         if (datos.exito && datos.agenda.length > 0) {
-            contenedorAgenda.innerHTML = ''; 
-            
+            contenedorAgenda.innerHTML = '';
+
             datos.agenda.forEach(orden => {
-                const hora = new Date(orden.fecha_programada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const hora = new Date(orden.fecha_programada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const colorBorde = orden.estatus === 'Pendiente' ? 'border-secondary' : 'border-primary';
                 const colorBoton = orden.estatus === 'Pendiente' ? 'btn-secondary' : 'btn-primary';
                 const textoBoton = orden.estatus === 'Pendiente' ? '🔒 Pendiente de Confirmar' : 'Ver Orden';
@@ -226,14 +226,14 @@ async function cargarAgendaTecnico(idUsuario) {
 
 // ================= LÓGICA DE ACTIVIDADES EXTRA =================
 // Prepara y muestra el formulario de actividades no planeadas
-window.abrirModalActividad = function() {
+window.abrirModalActividad = function () {
     document.getElementById('form-actividad-extra').reset();
-    
+
     // Autocompleta el campo con la hora actual del sistema
     const ahora = new Date();
     const horaLocal = ahora.getHours().toString().padStart(2, '0') + ':' + ahora.getMinutes().toString().padStart(2, '0');
     document.getElementById('ae-hora').value = horaLocal;
-    
+
     new bootstrap.Modal(document.getElementById('modalActividadExtra')).show();
 };
 
@@ -263,7 +263,7 @@ document.getElementById('form-actividad-extra').addEventListener('submit', async
             body: JSON.stringify(datosActividad)
         });
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             bootstrap.Modal.getInstance(document.getElementById('modalActividadExtra')).hide();
             alert("✅ Registro guardado con éxito.");
@@ -279,13 +279,13 @@ document.getElementById('form-actividad-extra').addEventListener('submit', async
 
 // ================= LÓGICA DEL PLANEADOR DE ACTIVIDADES =================
 // Oculta la agenda y prepara la vista del Planeador Financiero
-window.abrirModalCierre = function() {
+window.abrirModalCierre = function () {
     document.getElementById('barra-bitacora').style.display = 'none';
     cargarPlaneador(false); // false = Indica modo de vista para el Técnico
 };
 
 // Restaura la vista de la agenda
-window.volverAgenda = function() {
+window.volverAgenda = function () {
     if (esCierreRutaAnterior) {
         alert("⚠️ No puedes volver a la agenda hasta que cierres y firmes la ruta del día anterior.");
         return;
@@ -303,13 +303,13 @@ async function cargarPlaneador(esModoMesaControl) {
     try {
         const respuesta = await fetch(BASE_URL + `/api/bitacoras/resumen/${idBitacoraDiaria}`);
         const datos = await respuesta.json();
-        
+
         let htmlTabla = '';
         let sumaCosto = 0, sumaIngreso = 0, sumaGasto = 0;
 
         // 1. Dibuja las filas de los Servicios Completados
         datos.servicios.forEach(srv => {
-            const hora = new Date(srv.fecha_programada).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const hora = new Date(srv.fecha_programada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const costo = parseFloat(srv.costo) || 0;
             const ingreso = parseFloat(srv.ingresos_cobrados) || 0;
             sumaCosto += costo; sumaIngreso += ingreso;
@@ -347,7 +347,7 @@ async function cargarPlaneador(esModoMesaControl) {
         document.getElementById('tot-costo').innerText = `$${sumaCosto.toFixed(2)}`;
         document.getElementById('tot-ingreso').innerText = `$${sumaIngreso.toFixed(2)}`;
         document.getElementById('tot-gasto').innerText = `$${sumaGasto.toFixed(2)}`;
-        
+
         totalEfectivoCalculado = sumaIngreso - sumaGasto;
         document.getElementById('gran-total-efectivo').innerText = `$${totalEfectivoCalculado.toFixed(2)}`;
 
@@ -356,7 +356,7 @@ async function cargarPlaneador(esModoMesaControl) {
             document.getElementById('btn-volver-agenda').style.display = 'none';
             document.getElementById('seccion-firma-tecnico').style.display = 'none';
             document.getElementById('seccion-firma-mesa').style.display = 'block';
-            
+
             // Renderiza la firma almacenada del técnico
             const firmas = datos.bitacora.firmas_cierre || {};
             document.getElementById('img-firma-tecnico').src = firmas.tecnico || '';
@@ -394,7 +394,7 @@ async function cargarUsuariosMesaControl() {
 // ================= FORMULARIOS DE CIERRE Y LIQUIDACIÓN =================
 document.getElementById('form-cierre-ruta').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const password = document.getElementById('cr-password-tecnico').value;
     if (!password) {
         alert("⚠️ Ingresa tu contraseña para verificar tu identidad y firmar.");
@@ -424,14 +424,14 @@ document.getElementById('form-cierre-ruta').addEventListener('submit', async (e)
             })
         });
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             document.getElementById('cr-password-tecnico').value = '';
             document.getElementById('cr-km-final').value = '';
 
             if (esCierreRutaAnterior) {
                 alert("✅ Ruta del día anterior cerrada y firmada exitosamente.\n\nA continuación realiza el chequeo de la camioneta para iniciar la ruta de tu nuevo día.");
-                
+
                 // Ocultar vista del planeador
                 document.getElementById('contenedor-planeador').style.display = 'none';
                 const bannerPendiente = document.getElementById('banner-cierre-anterior');
@@ -459,7 +459,7 @@ document.getElementById('form-cierre-ruta').addEventListener('submit', async (e)
 
 document.getElementById('form-liquidar-ruta').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     const idResponsable = document.getElementById('liq-usuario-mesa').value;
     const password = document.getElementById('liq-password-mesa').value;
 
@@ -488,11 +488,11 @@ document.getElementById('form-liquidar-ruta').addEventListener('submit', async (
             })
         });
         const datos = await respuesta.json();
-        
+
         if (datos.exito) {
             alert("✅ " + (datos.mensaje || "Liquidación completada y firmada exitosamente."));
             // Refresca la aplicación para renderizar la pantalla final de éxito
-            window.location.reload(); 
+            window.location.reload();
         } else {
             alert("❌ " + (datos.error || "Error al completar la liquidación."));
             btn.innerText = "🔐 Validar Contraseña y Liquidar"; btn.disabled = false;
@@ -509,10 +509,10 @@ function iniciarCanvas(idElemento) {
     const canvas = document.getElementById(idElemento);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
+
     // Aplica los estilos visuales del trazo
-    ctx.lineWidth = 3; 
-    ctx.lineCap = 'round'; 
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
     ctx.strokeStyle = '#000000';
     let dibujando = false;
 
@@ -524,17 +524,17 @@ function iniciarCanvas(idElemento) {
         return { x: clientX - rect.left, y: clientY - rect.top };
     };
 
-    const iniciar = (e) => { 
-        e.preventDefault(); dibujando = true; 
-        canvas.setAttribute('data-firmada', 'true'); 
-        const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); 
+    const iniciar = (e) => {
+        e.preventDefault(); dibujando = true;
+        canvas.setAttribute('data-firmada', 'true');
+        const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y);
     };
-    
-    const dibujar = (e) => { 
-        e.preventDefault(); if (!dibujando) return; 
-        const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); 
+
+    const dibujar = (e) => {
+        e.preventDefault(); if (!dibujando) return;
+        const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
     };
-    
+
     const detener = () => { dibujando = false; ctx.closePath(); };
 
     // Asigna los eventos correspondientes a mouse (PC) y touch (Móvil)
@@ -548,7 +548,7 @@ function iniciarCanvas(idElemento) {
 }
 
 // Restablece el lienzo eliminando cualquier trazo existente
-window.limpiarCanvas = function(idElemento) {
+window.limpiarCanvas = function (idElemento) {
     const canvas = document.getElementById(idElemento);
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -556,11 +556,11 @@ window.limpiarCanvas = function(idElemento) {
 };
 
 // ================= ACCIONES SECUNDARIAS =================
-window.abrirOrden = function(idOrden, estatus) {
+window.abrirOrden = function (idOrden, estatus) {
     if (estatus === 'Pendiente') {
         const modalBloqueo = new bootstrap.Modal(document.getElementById('modalBloqueo'));
         modalBloqueo.show();
-        return; 
+        return;
     }
     if (!localStorage.getItem('hora_inicio_' + idOrden)) {
         localStorage.setItem('hora_inicio_' + idOrden, new Date().toISOString());
@@ -571,7 +571,7 @@ window.abrirOrden = function(idOrden, estatus) {
 // ================= GESTIÓN DE MIS PLANEADORES (VISTA TÉCNICO) =================
 
 // Alterna la visibilidad entre la Agenda del día y el Historial de Planeadores
-window.toggleMisPlaneadores = function() {
+window.toggleMisPlaneadores = function () {
     const divAgenda = document.getElementById('contenedor-agenda');
     const divPlaneadores = document.getElementById('contenedor-mis-planeadores');
     const divLiquidacion = document.getElementById('contenedor-planeador');
@@ -584,7 +584,7 @@ window.toggleMisPlaneadores = function() {
         divLiquidacion.style.display = 'none';
         document.getElementById('barra-bitacora').style.display = 'none';
         divPlaneadores.style.display = 'block';
-        
+
         titulo.innerText = "Mis Planeadores";
         btn.innerText = "Volver a la Agenda";
         cargarListaPlaneadores();
@@ -595,7 +595,7 @@ window.toggleMisPlaneadores = function() {
 };
 
 // Descarga y dibuja las tarjetas del historial del técnico
-window.cargarListaPlaneadores = async function() {
+window.cargarListaPlaneadores = async function () {
     const idUsuario = localStorage.getItem('idUsuario');
     const contenedor = document.getElementById('lista-planeadores');
     document.getElementById('cargando-planeadores').style.display = 'block';
@@ -613,7 +613,7 @@ window.cargarListaPlaneadores = async function() {
                 const fechaDate = new Date(b.fecha_jornada);
                 const fechaAjustada = new Date(fechaDate.getTime() + (fechaDate.getTimezoneOffset() * 60000));
                 const fechaTxt = fechaAjustada.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
-                
+
                 let colorBorde = 'border-secondary';
                 let estatusHtml = '';
                 let btnAccion = '';
@@ -657,13 +657,13 @@ window.cargarListaPlaneadores = async function() {
 };
 
 // Inyecta el ID del planeador seleccionado y abre la vista de firmas de Mesa de Control
-window.prepararLiquidacion = function(idBitacoraSeleccionada) {
-    idBitacoraDiaria = idBitacoraSeleccionada; 
+window.prepararLiquidacion = function (idBitacoraSeleccionada) {
+    idBitacoraDiaria = idBitacoraSeleccionada;
     document.getElementById('contenedor-mis-planeadores').style.display = 'none';
-    cargarPlaneador(true); 
+    cargarPlaneador(true);
 };
 
-window.cerrarSesion = function() {
+window.cerrarSesion = function () {
     localStorage.clear();
     window.location.href = "../index.html";
 };
