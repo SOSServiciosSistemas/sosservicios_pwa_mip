@@ -12,7 +12,7 @@
     <style>
         body {
             background-color: #525659;
-            padding: 20px;
+            padding: 15px;
             font-size: 0.85rem;
             font-family: Arial, Helvetica, sans-serif;
             color: #000;
@@ -24,7 +24,7 @@
             max-width: 21.5cm;
             min-height: 27.5cm;
             margin: 0 auto;
-            padding: 1cm 1.2cm;
+            padding: 0.8cm 1cm;
             box-sizing: border-box;
             position: relative;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
@@ -38,7 +38,7 @@
         }
 
         .linea-campo {
-            border-bottom: 1px solid #000;
+            border-bottom: 1.5px solid #000;
             display: inline-block;
             min-height: 20px;
             vertical-align: bottom;
@@ -53,24 +53,25 @@
             background-image: repeating-linear-gradient(
                 to bottom,
                 transparent,
-                transparent 31px,
-                #222 31px,
-                #222 32px
+                transparent 29px,
+                #222 29px,
+                #222 30px
             );
-            line-height: 32px;
-            font-size: 0.85rem;
+            line-height: 30px;
+            font-size: 0.88rem;
             color: #111;
-            padding-top: 1px;
+            padding: 0 4px;
             white-space: pre-wrap;
             word-wrap: break-word;
             font-family: Arial, sans-serif;
+            border-bottom: 1px solid #222;
         }
 
         .caja-proximo-servicio {
             border: 2px solid #0b5394;
-            border-radius: 14px;
+            border-radius: 12px;
             width: 180px;
-            height: 65px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -78,15 +79,27 @@
             font-weight: bold;
             color: #000;
             background-color: #fff;
+            text-align: center;
+            padding: 4px;
         }
 
         .linea-firma {
             border-top: 1.5px solid #000;
-            width: 220px;
+            width: 230px;
             text-align: center;
             padding-top: 4px;
             font-weight: 500;
             font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .hoja-impresion {
+                padding: 0.5cm 0.6cm;
+            }
         }
 
         @media print {
@@ -98,7 +111,7 @@
             .hoja-impresion {
                 box-shadow: none;
                 margin: 0;
-                padding: 0.8cm 1cm;
+                padding: 0.6cm 0.8cm;
                 width: 100%;
                 max-width: 100%;
                 min-height: 100vh;
@@ -114,13 +127,16 @@
 <body>
 
     <!-- Barra de acciones flotante para imprimir / PDF -->
-    <div class="d-flex justify-content-center gap-2 mb-3 no-imprimir">
-        <button class="btn btn-primary btn-sm px-4 shadow-sm" onclick="window.print()">
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-3 no-imprimir">
+        <button class="btn btn-primary btn-sm px-3 shadow-sm" onclick="window.print()">
             <i class="fas fa-print me-1"></i> Imprimir Formato
         </button>
-        <button class="btn btn-danger btn-sm px-4 shadow-sm" onclick="descargarPDF()">
+        <button class="btn btn-danger btn-sm px-3 shadow-sm" onclick="descargarPDF()">
             <i class="fas fa-file-pdf me-1"></i> Descargar PDF
         </button>
+        <a id="btn-ir-diagnostico" href="#" class="btn btn-outline-light btn-sm px-3 shadow-sm">
+            <i class="fas fa-clipboard-check me-1"></i> Ver Diagnóstico (Interno)
+        </a>
         <button class="btn btn-secondary btn-sm px-3 shadow-sm" onclick="window.close()">
             <i class="fas fa-times me-1"></i> Cerrar
         </button>
@@ -130,54 +146,56 @@
     <div class="hoja-impresion" id="documento-impresion">
 
         <div>
-            <!-- ENCABEZADO CON LOGOS Y DATOS DE LA EMPRESA -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div style="width: 22%; text-align: left;">
-                    <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-height: 60px; object-fit: contain;">
-                </div>
-                <div style="width: 56%; text-align: center; font-size: 0.72rem; line-height: 1.35;">
-                    <div style="font-size: 0.9rem; font-weight: bold;">SOS Manejo Integrado de Plagas</div>
-                    <div>Av. Pradera #2716 col. Parques del sur, León Gto. México.</div>
-                    <div>Oficina: +52 4773639530, cel. 4772731907</div>
-                </div>
-                <div style="width: 22%; text-align: right;">
-                    <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-height: 60px; object-fit: contain;">
-                </div>
-            </div>
+            <!-- ENCABEZADO CON TABLA FIJA PARA EVITAR TRASLAPE EN CUALQUIER PANTALLA -->
+            <table style="width: 100%; border: none; margin-bottom: 10px; table-layout: fixed;">
+                <tr>
+                    <td style="width: 23%; border: none; vertical-align: middle; text-align: left;">
+                        <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-width: 100%; max-height: 52px; height: auto; object-fit: contain;">
+                    </td>
+                    <td style="width: 54%; border: none; vertical-align: middle; text-align: center; font-size: 0.68rem; line-height: 1.35;">
+                        <div style="font-size: 0.88rem; font-weight: bold; color: #000;">SOS Manejo Integrado de Plagas</div>
+                        <div style="color: #222;">Av. Pradera #2716 col. Parques del sur, León Gto. México.</div>
+                        <div style="color: #222;">Oficina: +52 4773639530, cel. 4772731907</div>
+                    </td>
+                    <td style="width: 23%; border: none; vertical-align: middle; text-align: right;">
+                        <img src="../img/logo-SOS-Plagas.webp" alt="Logo SOS" style="max-width: 100%; max-height: 52px; height: auto; object-fit: contain;">
+                    </td>
+                </tr>
+            </table>
 
             <!-- TÍTULO EN AZUL -->
             <div class="text-center mb-3">
-                <h4 class="color-azul-sos fw-bold m-0" style="letter-spacing: 0.5px; font-size: 1.15rem;">
+                <h4 class="color-azul-sos fw-bold m-0" style="letter-spacing: 0.5px; font-size: 1.05rem;">
                     OBSERVACIONES/RECOMENDACIONES/SEGUIMIENTO
                 </h4>
             </div>
 
             <!-- FECHA -->
             <div class="d-flex justify-content-end align-items-center mb-2" style="font-size: 0.85rem;">
-                <span class="fw-bold me-2">Fecha</span>
-                <span id="doc-fecha" class="linea-campo" style="width: 210px; text-align: center;"></span>
+                <span class="fw-bold me-2">Fecha:</span>
+                <span id="doc-fecha" class="linea-campo" style="width: 180px; text-align: center;"></span>
             </div>
 
             <!-- NOMBRE / DEPARTAMENTO -->
             <div class="d-flex align-items-center mb-2" style="font-size: 0.85rem;">
-                <span class="fw-bold me-2" style="white-space: nowrap;">Nombre/ Departamento</span>
+                <span class="fw-bold me-2" style="white-space: nowrap;">Nombre/ Departamento:</span>
                 <span id="doc-nombre" class="linea-campo w-100"></span>
             </div>
 
             <!-- CONTROL DE PLAGAS Y PLAGA -->
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="color-azul-sos fw-bold" style="font-size: 1.05rem; letter-spacing: 0.5px;">
+                <span class="color-azul-sos fw-bold" style="font-size: 1rem; letter-spacing: 0.5px; white-space: nowrap;">
                     CONTROL DE PLAGAS
                 </span>
-                <div class="d-flex align-items-center" style="width: 58%; font-size: 0.85rem;">
+                <div class="d-flex align-items-center" style="width: 60%; font-size: 0.85rem;">
                     <span class="fw-bold me-2">Plaga:</span>
                     <span id="doc-plaga" class="linea-campo w-100"></span>
                 </div>
             </div>
 
             <!-- TEXTO DECLARATORIO -->
-            <div class="text-center my-3 px-2" style="font-size: 0.82rem; font-weight: 500; line-height: 1.45;">
-                De acuerdo al reporte de servicio n° <span id="doc-folio" style="border-bottom: 1.5px solid #000; font-weight: bold; padding: 0 15px;"></span> se indican las siguientes recomendaciones a realizar a sabiendas que de no seguirse de forma puntual el éxito del tratamiento no puede garantizarse.
+            <div class="text-center my-3 px-1" style="font-size: 0.82rem; font-weight: 500; line-height: 1.45;">
+                De acuerdo al reporte de servicio n° <span id="doc-folio" style="border-bottom: 1.5px solid #000; font-weight: bold; padding: 0 14px;"></span> se indican las siguientes recomendaciones a realizar a sabiendas que de no seguirse de forma puntual el éxito del tratamiento no puede garantizarse.
             </div>
 
             <!-- LÍNEAS RAYADAS CON EL TEXTO DE RECOMENDACIONES -->
@@ -201,7 +219,7 @@
             <!-- FIRMA DEL CLIENTE -->
             <div class="d-flex flex-column align-items-center">
                 <div style="height: 60px; display: flex; align-items: flex-end; margin-bottom: 2px;">
-                    <img id="img-firma-cliente" src="" alt="Firma" style="max-height: 55px; max-width: 200px; display: none;">
+                    <img id="img-firma-cliente" src="" alt="Firma" style="max-height: 55px; max-width: 210px; object-fit: contain; display: none;">
                 </div>
                 <div class="linea-firma">
                     Firma de cliente
@@ -210,6 +228,9 @@
         </div>
 
     </div>
+
+    <!-- CONFIGURACIÓN CENTRAL DE LA APP (BASE_URL) -->
+    <script src="../config.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -221,8 +242,14 @@
                 return;
             }
 
+            // Enlace de vuelta al formato de diagnóstico
+            const linkDiag = document.getElementById('btn-ir-diagnostico');
+            if (linkDiag) {
+                linkDiag.href = `inspeccion_diagnostico.html?folio=${folio}`;
+            }
+
             try {
-                const res = await fetch(`/api/ordenes/${folio}/reporte-final`);
+                const res = await fetch(`${BASE_URL}/api/ordenes/${folio}/reporte-final`);
                 const data = await res.json();
 
                 if (!data.exito || !data.orden) {
@@ -233,48 +260,76 @@
                 const orden = data.orden;
                 const detalles = orden.detalles_completos || {};
 
-                // 1. Folio
-                document.getElementById('doc-folio').textContent = orden.folio_servicio || folio;
+                // 1. Folio (con relleno a 3 dígitos ej. 054)
+                const padId = String(orden.id_orden || folio).padStart(3, '0');
+                document.getElementById('doc-folio').textContent = padId;
 
                 // 2. Fecha
-                let fechaStr = '';
-                if (detalles.fecha_servicio) {
-                    fechaStr = detalles.fecha_servicio;
-                } else if (orden.fecha_creacion) {
-                    const d = new Date(orden.fecha_creacion);
-                    fechaStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                let fechaFormateada = '';
+                const fechaRaw = detalles.fecha_servicio || orden.fecha_servicio || orden.fecha_programada;
+                if (fechaRaw) {
+                    const d = new Date(fechaRaw);
+                    if (!isNaN(d.getTime())) {
+                        fechaFormateada = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                    } else {
+                        fechaFormateada = String(fechaRaw);
+                    }
+                } else {
+                    const hoy = new Date();
+                    fechaFormateada = `${String(hoy.getDate()).padStart(2, '0')}/${String(hoy.getMonth() + 1).padStart(2, '0')}/${hoy.getFullYear()}`;
                 }
-                document.getElementById('doc-fecha').textContent = fechaStr;
+                document.getElementById('doc-fecha').textContent = fechaFormateada;
 
                 // 3. Nombre / Departamento
-                let nombreDept = orden.nombre_cliente || '';
-                if (detalles.contacto) {
-                    nombreDept += ` / ${detalles.contacto}`;
-                } else if (orden.sucursal) {
-                    nombreDept += ` / ${orden.sucursal}`;
+                let nombreDept = (orden.nombre_cliente || '').toUpperCase();
+                if (detalles.contacto && detalles.contacto.toUpperCase() !== nombreDept) {
+                    nombreDept += ` / ${detalles.contacto.toUpperCase()}`;
+                } else if (orden.persona_contacto && orden.persona_contacto.toUpperCase() !== nombreDept) {
+                    nombreDept += ` / ${orden.persona_contacto.toUpperCase()}`;
                 }
                 document.getElementById('doc-nombre').textContent = nombreDept;
 
-                // 4. Plaga
+                // 4. Plagas encontradas
                 let plagaStr = '';
-                if (detalles.plagas_detectadas_texto) {
+                if (detalles.plagas_detectadas_texto && detalles.plagas_detectadas_texto.trim() !== '') {
                     plagaStr = detalles.plagas_detectadas_texto;
                 } else if (detalles.plaga) {
                     plagaStr = detalles.plaga;
-                } else if (orden.plagas_objetivo) {
-                    plagaStr = orden.plagas_objetivo;
+                } else if (detalles.tabla_areas && Array.isArray(detalles.tabla_areas)) {
+                    // Extraer plagas de las áreas
+                    const setP = new Set();
+                    detalles.tabla_areas.forEach(a => {
+                        if (Array.isArray(a.plagas)) {
+                            a.plagas.forEach(p => setP.add(p));
+                        }
+                    });
+                    if (setP.size > 0) {
+                        plagaStr = Array.from(setP).join(', ');
+                    }
                 }
-                document.getElementById('doc-plaga').textContent = plagaStr;
+                if (!plagaStr && orden.plagas_a_tratar) {
+                    const arrPlagas = typeof orden.plagas_a_tratar === 'string' ? JSON.parse(orden.plagas_a_tratar) : orden.plagas_a_tratar;
+                    if (Array.isArray(arrPlagas) && arrPlagas.length > 0) {
+                        plagaStr = arrPlagas.join(', ');
+                    }
+                }
+                document.getElementById('doc-plaga').textContent = plagaStr || 'Control Integral';
 
                 // 5. Recomendaciones / Acciones correctivas requeridas
-                const textoAcciones = detalles.acciones_correctivas || detalles.acciones_correctivas_requeridas || detalles.recomendaciones || '';
+                const textoAcciones = detalles.acciones_correctivas || detalles.acciones_correctivas_requeridas || detalles.recomendaciones || orden.observaciones_mesa || '';
                 document.getElementById('doc-recomendaciones').textContent = textoAcciones;
 
                 // 6. Próximo servicio
-                if (detalles.proxima_visita && (detalles.proxima_visita === 'Si' || detalles.proxima_visita === true || detalles.proxima_visita === 'SI')) {
-                    document.getElementById('doc-proximo-servicio').textContent = detalles.fecha_proxima || 'Programado';
-                } else if (detalles.fecha_proxima) {
-                    document.getElementById('doc-proximo-servicio').textContent = detalles.fecha_proxima;
+                const prox = (detalles.proxima_visita || '').toUpperCase();
+                if (prox === 'SI' || prox === 'SÍ' || detalles.fecha_proxima) {
+                    let fechaProxStr = detalles.fecha_proxima || 'Programado';
+                    if (detalles.fecha_proxima && detalles.fecha_proxima.includes('-')) {
+                        const partes = detalles.fecha_proxima.split('-');
+                        if (partes.length === 3) {
+                            fechaProxStr = `${partes[2]}/${partes[1]}/${partes[0]}`;
+                        }
+                    }
+                    document.getElementById('doc-proximo-servicio').textContent = fechaProxStr;
                 } else {
                     document.getElementById('doc-proximo-servicio').textContent = 'N/A';
                 }
@@ -297,7 +352,7 @@
             const folio = document.getElementById('doc-folio').textContent || 'Seguimiento';
             const opt = {
                 margin: [5, 5, 5, 5],
-                filename: `Recomendaciones_Seguimiento_${folio}.pdf`,
+                filename: `Recomendaciones_Seguimiento_Folio_${folio}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }

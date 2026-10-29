@@ -206,10 +206,9 @@
         <table class="tabla-iydp mb-2" id="tabla-areas-plagas">
             <thead>
                 <tr class="bg-gris-sub text-center" style="font-size: 0.6rem;">
-                    <th rowspan="2" style="width: 23%; vertical-align: middle;">
-                        <div style="display: flex; justify-content: space-between; padding: 0 4px; font-weight: bold;">
-                            <span>ÁREAS</span>
-                            <span style="font-size: 0.52rem; color: #555;">PLAGAS ➔</span>
+                    <th rowspan="2" style="width: 24%; vertical-align: middle;">
+                        <div style="text-align: center; font-weight: bold; font-size: 0.65rem;">
+                            ÁREAS
                         </div>
                     </th>
                     <th colspan="14" style="padding: 1px;">PLAGAS ENCONTRADAS</th>
@@ -447,7 +446,17 @@
                 } else {
                     document.getElementById('chk-prox-no').innerText = 'X';
                 }
-                document.getElementById('val-fecha-proxima').innerText = d.fecha_proxima || '---';
+                let proxFechaTxt = '---';
+                if (d.fecha_proxima) {
+                    if (d.fecha_proxima.includes('-')) {
+                        const parts = d.fecha_proxima.split('-');
+                        if (parts.length === 3) proxFechaTxt = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                        else proxFechaTxt = d.fecha_proxima;
+                    } else {
+                        proxFechaTxt = d.fecha_proxima;
+                    }
+                }
+                document.getElementById('val-fecha-proxima').innerText = proxFechaTxt;
 
                 // Firma del Inspector (Técnico)
                 const firmaTec = d.firma_inspector || o.firma_tecnico;
