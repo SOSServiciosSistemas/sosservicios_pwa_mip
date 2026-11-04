@@ -2,6 +2,7 @@
 let ordenActual = null;
 let padInspector = null;
 let padCliente = null;
+let firmaInspectorBase64 = null;
 let firmaClienteBase64 = null;
 let contadorAreas = 0;
 
@@ -38,8 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Cargar datos de la orden
     await cargarDatosOrden(folio);
 
-    // Inicializar Canvas de Firma del Inspector
-    inicializarPadInspector();
+    // Cargar firma guardada del técnico/inspector automáticamente
+    await cargarFirmaInspector();
 
     // Inicializar Canvas de Firma del Cliente
     inicializarPadCliente();
@@ -98,9 +99,85 @@ async function cargarDatosOrden(folio) {
     }
 }
 
-// Inicializar pad del inspector
+// Cargar firma digital del técnico guardada en su cuenta
+async function cargarFirmaInspector() {
+    const idUsuario = localStorage.getItem('idUsuario');
+    const nombreTecnico = localStorage.getItem('nombreUsuario') || 'Inspector Especialista';
+    const elNombre = document.getElementById('nombre-inspector-txt');
+    if (elNombre) elNombre.innerText = `${nombreTecnico} (Inspector Especialista)`;
+
+    // 1. Intentar desde localStorage si ya fue guardada
+    const firmaLocal = localStorage.getItem('firmaDigital');
+    if (firmaLocal && firmaLocal.length > 50) {
+        firmaInspectorBase64 = firmaLocal;
+        mostrarFirmaInspector(firmaLocal);
+    }
+
+    // 2. Consultar siempre la versión más reciente en base de datos
+    if (idUsuario) {
+        try {
+            const res = await fetch(`${BASE_URL}/api/usuarios/${idUsuario}/firma`);
+            const datos = await res.json();
+            if (datos.exito && datos.usuario && datos.usuario.firma_digital) {
+                firmaInspectorBase64 = datos.usuario.firma_digital;
+                localStorage.setItem('firmaDigital', firmaInspectorBase64);
+                mostrarFirmaInspector(firmaInspectorBase64);
+                return;
+            }
+        } catch (e) {
+            console.warn("No se pudo consultar firma desde API:", e);
+        }
+    }
+
+    // 3. Si no tiene firma guardada en su cuenta, mostrar canvas como respaldo
+    if (!firmaInspectorBase64) {
+        mostrarFallbackCanvasInspector();
+    }
+}
+
+function mostrarFirmaInspector(base64) {
+    const img = document.getElementById('img-firma-inspector-preview');
+    const txtCargando = document.getElementById('txt-cargando-firma');
+    const txtSinFirma = document.getElementById('txt-sin-firma');
+    const badge = document.getElementById('badge-firma-inspector');
+    const contenedorCanvas = document.getElementById('contenedor-canvas-inspector');
+
+    if (img) {
+        img.src = base64;
+        img.style.display = 'block';
+    }
+    if (txtCargando) txtCargando.style.display = 'none';
+    if (txtSinFirma) txtSinFirma.classList.add('d-none');
+    if (badge) {
+        badge.className = 'badge bg-success-subtle text-success border border-success-subtle fw-bold';
+        badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Firma Oficial Vinculada';
+        badge.style.display = 'inline-block';
+    }
+    if (contenedorCanvas) contenedorCanvas.classList.add('d-none');
+}
+
+function mostrarFallbackCanvasInspector() {
+    const txtCargando = document.getElementById('txt-cargando-firma');
+    const txtSinFirma = document.getElementById('txt-sin-firma');
+    const badge = document.getElementById('badge-firma-inspector');
+    const contenedorCanvas = document.getElementById('contenedor-canvas-inspector');
+
+    if (txtCargando) txtCargando.style.display = 'none';
+    if (txtSinFirma) txtSinFirma.classList.remove('d-none');
+    if (badge) {
+        badge.className = 'badge bg-warning text-dark fw-bold';
+        badge.innerHTML = '<i class="fas fa-pen me-1"></i> Firma Manual';
+    }
+    if (contenedorCanvas) {
+        contenedorCanvas.classList.remove('d-none');
+        inicializarPadInspector();
+    }
+}
+
+// Inicializar pad del inspector (solo si es necesario firma manual de respaldo)
 function inicializarPadInspector() {
     const canvas = document.getElementById('canvas-firma-inspector');
+    if (!canvas) return;
     
     function redimensionar() {
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -119,9 +196,12 @@ function inicializarPadInspector() {
     redimensionar();
     window.addEventListener('resize', redimensionar);
 
-    document.getElementById('btn-limpiar-firma-inspector').onclick = () => {
-        padInspector.clear();
-    };
+    const btnLimpiar = document.getElementById('btn-limpiar-firma-inspector');
+    if (btnLimpiar) {
+        btnLimpiar.onclick = () => {
+            if (padInspector) padInspector.clear();
+        };
+    }
 }
 
 // Inicializar pad del cliente en el modal
@@ -294,12 +374,16 @@ async function guardarInspeccion(e) {
     });
 
     // Validar firma del inspector
-    if (padInspector.isEmpty()) {
-        alert("Por favor estampe su firma como Inspector antes de finalizar.");
-        return;
+    let firmaInspectorAEnviar = firmaInspectorBase64;
+    if (!firmaInspectorAEnviar) {
+        if (padInspector && !padInspector.isEmpty()) {
+            const canvasInspector = document.getElementById('canvas-firma-inspector');
+            firmaInspectorAEnviar = recortarFirma(canvasInspector);
+        } else {
+            alert("No se encontró la firma del técnico inspector vinculada. Por favor regístrela para continuar.");
+            return;
+        }
     }
-    const canvasInspector = document.getElementById('canvas-firma-inspector');
-    const firmaInspectorBase64 = recortarFirma(canvasInspector);
 
     // Validar firma del cliente
     if (!firmaClienteBase64) {
@@ -348,7 +432,7 @@ async function guardarInspeccion(e) {
         tratamiento_costo: tratamientoCosto,
         proxima_visita: proxVisita,
         fecha_proxima: fechaProx,
-        firma_inspector: firmaInspectorBase64,
+        firma_inspector: firmaInspectorAEnviar,
         firma_cliente: firmaClienteBase64,
         plagas_detectadas_texto: nombresPlagasTexto || 'Sin plaga aparente',
         tabla_productos: [] // Cero productos ya que es una inspección

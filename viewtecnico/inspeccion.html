@@ -207,14 +207,35 @@
             <!-- SECCIÓN 6: FIRMAS (INSPECTOR Y CLIENTE) -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body p-3">
-                    <!-- Firma del Inspector -->
+                    <!-- Firma del Inspector (Automática por sesión del técnico) -->
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="etiqueta-seccion mb-0"><i class="fas fa-user-check me-1"></i> Firma del Inspector (Técnico):</label>
-                            <button type="button" class="btn btn-sm btn-link text-danger p-0" id="btn-limpiar-firma-inspector">Limpiar</button>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold" id="badge-firma-inspector" style="font-size: 0.72rem;">
+                                <i class="fas fa-check-circle me-1"></i> Firma Oficial Vinculada
+                            </span>
                         </div>
-                        <canvas id="canvas-firma-inspector" class="canvas-firma-box"></canvas>
-                        <div class="small text-muted text-center mt-1" id="nombre-inspector-txt">Técnico</div>
+
+                        <div class="p-3 border rounded-3 bg-white text-center shadow-xs" id="caja-firma-inspector" style="min-height: 95px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <img id="img-firma-inspector-preview" src="" alt="Firma del Inspector" style="max-height: 75px; max-width: 90%; object-fit: contain; display: none; margin: 0 auto;">
+                            <div id="txt-cargando-firma" class="small text-muted py-2">
+                                <i class="fas fa-spinner fa-spin me-1"></i> Cargando firma guardada de tu cuenta...
+                            </div>
+                            <div id="txt-sin-firma" class="small text-danger py-2 d-none">
+                                <i class="fas fa-exclamation-triangle me-1"></i> Tu usuario no tiene una firma registrada. Puedes dibujarla abajo:
+                            </div>
+                        </div>
+
+                        <!-- Canvas alternativo de respaldo si no hubiera firma registrada -->
+                        <div id="contenedor-canvas-inspector" class="d-none mt-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="small text-muted">Dibujar firma manual:</span>
+                                <button type="button" class="btn btn-sm btn-link text-danger p-0" id="btn-limpiar-firma-inspector">Limpiar</button>
+                            </div>
+                            <canvas id="canvas-firma-inspector" class="canvas-firma-box"></canvas>
+                        </div>
+
+                        <div class="small text-muted text-center mt-2 fw-bold" id="nombre-inspector-txt">Técnico</div>
                     </div>
 
                     <!-- Firma del Cliente (Para el documento de recomendaciones) -->

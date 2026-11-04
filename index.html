@@ -104,6 +104,9 @@
                     localStorage.setItem('nombreUsuario', datos.usuario.nombre_completo);
                     localStorage.setItem('idUsuario', datos.usuario.id_usuario);
                     localStorage.setItem('rolUsuario', rol);
+                    if (datos.usuario.firma_digital) {
+                        localStorage.setItem('firmaDigital', datos.usuario.firma_digital);
+                    }
 
                     // Redirije a cada rol a su carpeta independiente (4 Vistas)
                     if (rol === 'Tecnico') {
