@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
     <style>
         body {
@@ -137,9 +138,9 @@
         <a id="btn-ir-diagnostico" href="#" class="btn btn-outline-light btn-sm px-3 shadow-sm">
             <i class="fas fa-clipboard-check me-1"></i> Ver Diagnóstico (Interno)
         </a>
-        <button class="btn btn-secondary btn-sm px-3 shadow-sm" onclick="window.close()">
-            <i class="fas fa-times me-1"></i> Cerrar
-        </button>
+        <a href="../viewtecnico/tecnico.html" class="btn btn-secondary btn-sm px-3 shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Volver a Agenda
+        </a>
     </div>
 
     <!-- DOCUMENTO OFICIAL -->
@@ -229,13 +230,59 @@
 
     </div>
 
+    <!-- BOTÓN INFERIOR PARA FIRMAR POR EL CLIENTE (Oculto si ya está firmado) -->
+    <div class="container text-center mt-4 mb-5 no-imprimir" id="zona-boton-firmar" style="display: none;">
+        <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow rounded-pill fw-bold">
+            <i class="fas fa-pen me-2"></i> Firmar Reporte (Cliente)
+        </button>
+    </div>
+
+    <!-- MENSAJE DE ÉXITO CUANDO YA ESTÁ FIRMADO -->
+    <div class="container text-center mt-3 mb-4 no-imprimir" id="zona-firmado-ok" style="display: none;">
+        <div class="badge bg-success-subtle text-success border border-success-subtle fs-6 px-4 py-2 rounded-pill fw-bold">
+            <i class="fas fa-check-circle me-1"></i> Reporte Firmado por el Cliente
+        </div>
+    </div>
+
+    <!-- MODAL DE FIRMA A PANTALLA COMPLETA (Para celulares y pantallas táctiles) -->
+    <div id="modal-firma" class="d-none no-imprimir"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 9999; display: flex; flex-direction: column;">
+
+        <!-- Encabezado del modal -->
+        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow" style="flex-shrink: 0;">
+            <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Firma del Cliente (Gire para mayor comodidad)</h6>
+            <button id="btn-cerrar-firma" class="btn btn-danger btn-sm">Cancelar</button>
+        </div>
+
+        <!-- Área del Canvas -->
+        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
+            <canvas id="pizarra-firma" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+        </div>
+
+        <!-- Botones de acción del modal -->
+        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg"
+            style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
+            <button id="btn-borrar-firma" class="btn btn-warning fw-bold shadow-sm">
+                <i class="fas fa-eraser me-1"></i> Borrar
+            </button>
+            <button id="btn-guardar-firma" class="btn btn-success fw-bold shadow-sm px-4">
+                <i class="fas fa-check-circle me-1"></i> Terminar y Guardar
+            </button>
+        </div>
+    </div>
+
     <!-- CONFIGURACIÓN CENTRAL DE LA APP (BASE_URL) -->
     <script src="../config.js"></script>
 
     <script>
+        let folioActual = null;
+        let signaturePad = null;
+        let ordenActual = null;
+
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const folio = urlParams.get('folio') || urlParams.get('id');
+            folioActual = folio;
 
             if (!folio) {
                 alert('No se especificó ningún folio de servicio.');
@@ -248,16 +295,79 @@
                 linkDiag.href = `inspeccion_diagnostico.html?folio=${folio}`;
             }
 
+            // Inicializar el Pad de firma
+            inicializarFirmaModal();
+
+            // Cargar datos
+            await cargarDatosDocumento(folio);
+        });
+
+        // 1. Inicializar Modal y Canvas de Firma
+        function inicializarFirmaModal() {
+            const canvas = document.getElementById('pizarra-firma');
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(255, 255, 255)',
+                minWidth: 4,
+                maxWidth: 8
+            });
+
+            function redimensionarCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                signaturePad.clear();
+            }
+
+            const modalFirma = document.getElementById('modal-firma');
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const btnCerrarFirma = document.getElementById('btn-cerrar-firma');
+            const btnBorrarFirma = document.getElementById('btn-borrar-firma');
+            const btnGuardarFirma = document.getElementById('btn-guardar-firma');
+
+            btnAbrirFirma.addEventListener('click', () => {
+                modalFirma.classList.remove('d-none');
+                document.body.style.overflow = 'hidden';
+                setTimeout(redimensionarCanvas, 100);
+            });
+
+            btnCerrarFirma.addEventListener('click', () => {
+                modalFirma.classList.add('d-none');
+                document.body.style.overflow = 'auto';
+            });
+
+            btnBorrarFirma.addEventListener('click', () => {
+                signaturePad.clear();
+            });
+
+            window.addEventListener('resize', () => {
+                if (!modalFirma.classList.contains('d-none')) {
+                    redimensionarCanvas();
+                }
+            });
+
+            btnGuardarFirma.addEventListener('click', procesarFirmaCliente);
+        }
+
+        // 2. Cargar los datos desde el Backend
+        async function cargarDatosDocumento(folio) {
             try {
                 const res = await fetch(`${BASE_URL}/api/ordenes/${folio}/reporte-final`);
-                const data = await res.json();
+                if (!res.ok) {
+                    const txt = await res.text();
+                    console.error("Respuesta no OK del servidor:", res.status, txt);
+                    alert(`No se pudo cargar la información del servicio (Código de error: ${res.status}).`);
+                    return;
+                }
 
+                const data = await res.json();
                 if (!data.exito || !data.orden) {
-                    alert('No se pudo cargar la información del servicio.');
+                    alert('No se pudo encontrar el reporte para esta orden.');
                     return;
                 }
 
                 const orden = data.orden;
+                ordenActual = orden;
                 const detalles = orden.detalles_completos || {};
 
                 // 1. Folio (con relleno a 3 dígitos ej. 054)
@@ -296,7 +406,6 @@
                 } else if (detalles.plaga) {
                     plagaStr = detalles.plaga;
                 } else if (detalles.tabla_areas && Array.isArray(detalles.tabla_areas)) {
-                    // Extraer plagas de las áreas
                     const setP = new Set();
                     detalles.tabla_areas.forEach(a => {
                         if (Array.isArray(a.plagas)) {
@@ -308,9 +417,15 @@
                     }
                 }
                 if (!plagaStr && orden.plagas_a_tratar) {
-                    const arrPlagas = typeof orden.plagas_a_tratar === 'string' ? JSON.parse(orden.plagas_a_tratar) : orden.plagas_a_tratar;
-                    if (Array.isArray(arrPlagas) && arrPlagas.length > 0) {
-                        plagaStr = arrPlagas.join(', ');
+                    try {
+                        const arrPlagas = typeof orden.plagas_a_tratar === 'string' ? JSON.parse(orden.plagas_a_tratar) : orden.plagas_a_tratar;
+                        if (Array.isArray(arrPlagas) && arrPlagas.length > 0) {
+                            plagaStr = arrPlagas.join(', ');
+                        } else if (typeof orden.plagas_a_tratar === 'string') {
+                            plagaStr = orden.plagas_a_tratar;
+                        }
+                    } catch (e) {
+                        plagaStr = String(orden.plagas_a_tratar);
                     }
                 }
                 document.getElementById('doc-plaga').textContent = plagaStr || 'Control Integral';
@@ -335,17 +450,151 @@
                 }
 
                 // 7. Firma del cliente
+                const zonaBtnFirmar = document.getElementById('zona-boton-firmar');
+                const zonaFirmadoOk = document.getElementById('zona-firmado-ok');
+
                 if (detalles.firma_cliente) {
                     const imgFirma = document.getElementById('img-firma-cliente');
                     imgFirma.src = detalles.firma_cliente;
                     imgFirma.style.display = 'block';
+                    if (zonaBtnFirmar) zonaBtnFirmar.style.display = 'none';
+                    if (zonaFirmadoOk) zonaFirmadoOk.style.display = 'block';
+                } else {
+                    if (zonaBtnFirmar) zonaBtnFirmar.style.display = 'block';
+                    if (zonaFirmadoOk) zonaFirmadoOk.style.display = 'none';
                 }
 
             } catch (err) {
                 console.error('Error al cargar datos del documento:', err);
-                alert('Ocurrió un error al cargar los datos del documento.');
+                alert('Ocurrió un error al cargar los datos del documento: ' + err.message);
             }
-        });
+        }
+
+        // 3. Procesar firma del cliente, estampar en documento y guardar PDF
+        async function procesarFirmaCliente() {
+            if (!signaturePad || signaturePad.isEmpty()) {
+                alert("Por favor solicite al cliente que plasme su firma antes de continuar.");
+                return;
+            }
+
+            const modalFirma = document.getElementById('modal-firma');
+            modalFirma.classList.add('d-none');
+            document.body.style.overflow = 'auto';
+
+            const canvas = document.getElementById('pizarra-firma');
+            const imagenFirma = recortarFirma(canvas);
+
+            const imgFirma = document.getElementById('img-firma-cliente');
+            imgFirma.src = imagenFirma;
+            imgFirma.style.display = 'block';
+
+            const zonaBtnFirmar = document.getElementById('zona-boton-firmar');
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const zonaFirmadoOk = document.getElementById('zona-firmado-ok');
+
+            btnAbrirFirma.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Guardando firma y generando documento...`;
+            btnAbrirFirma.disabled = true;
+
+            setTimeout(async () => {
+                try {
+                    // A. Guardar firma en los detalles del reporte
+                    await fetch(`${BASE_URL}/api/reportes/${folioActual}/firma-cliente`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ firma_cliente: imagenFirma })
+                    });
+
+                    // B. Generar el PDF y almacenarlo en el servidor
+                    const elemento = document.getElementById('documento-impresion');
+                    window.scrollTo(0, 0);
+                    const opt = {
+                        margin: [5, 5, 5, 5],
+                        filename: `Recomendaciones_Seguimiento_Folio_${folioActual}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2, useCORS: true },
+                        jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
+                    };
+
+                    const pdfBase64 = await html2pdf().set(opt).from(elemento).output('datauristring');
+
+                    await fetch(`${BASE_URL}/api/reportes/guardar-pdf`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ folio: folioActual, pdfBase64: pdfBase64, firma_cliente: imagenFirma })
+                    });
+
+                    if (zonaBtnFirmar) zonaBtnFirmar.style.display = 'none';
+                    if (zonaFirmadoOk) zonaFirmadoOk.style.display = 'block';
+
+                    alert("¡Reporte firmado y guardado con éxito!");
+                } catch (err) {
+                    console.error("Error al procesar firma:", err);
+                    alert("La firma se guardó en pantalla. Puede descargar el formato en PDF usando los botones superiores.");
+                    if (zonaBtnFirmar) zonaBtnFirmar.style.display = 'none';
+                    if (zonaFirmadoOk) zonaFirmadoOk.style.display = 'block';
+                }
+            }, 450);
+        }
+
+        // 4. Recorte automático de firma para remover márgenes en blanco
+        function recortarFirma(canvas) {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let hayTrazo = false;
+
+            for (let y = 0; y < h; y += 2) {
+                for (let x = 0; x < w; x += 2) {
+                    const index = (y * w + x) * 4;
+                    const r = data[index];
+                    const g = data[index + 1];
+                    const b = data[index + 2];
+                    const a = data[index + 3];
+
+                    if (a > 30 && (r < 225 || g < 225 || b < 225)) {
+                        hayTrazo = true;
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (!hayTrazo) {
+                return canvas.toDataURL("image/png");
+            }
+
+            const padding = Math.max(15, Math.round(w * 0.02));
+            minX = Math.max(0, minX - padding);
+            minY = Math.max(0, minY - padding);
+            maxX = Math.min(w, maxX + padding);
+            maxY = Math.min(h, maxY + padding);
+
+            const cropWidth = maxX - minX;
+            const cropHeight = maxY - minY;
+
+            const croppedCanvas = document.createElement('canvas');
+            croppedCanvas.width = cropWidth;
+            croppedCanvas.height = cropHeight;
+            const croppedCtx = croppedCanvas.getContext('2d');
+
+            croppedCtx.fillStyle = '#ffffff';
+            croppedCtx.fillRect(0, 0, cropWidth, cropHeight);
+
+            croppedCtx.drawImage(
+                canvas,
+                minX, minY, cropWidth, cropHeight,
+                0, 0, cropWidth, cropHeight
+            );
+
+            return croppedCanvas.toDataURL("image/png");
+        }
 
         function descargarPDF() {
             const elemento = document.getElementById('documento-impresion');

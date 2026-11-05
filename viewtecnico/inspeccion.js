@@ -1,9 +1,7 @@
 // Lógica para el formulario de Inspección y Diagnóstico de Presupuesto
 let ordenActual = null;
 let padInspector = null;
-let padCliente = null;
 let firmaInspectorBase64 = null;
-let firmaClienteBase64 = null;
 let contadorAreas = 0;
 
 const CATALOGO_PLAGAS_INSPECCION = [
@@ -41,9 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Cargar firma oficial del técnico inspector desde su cuenta
     await cargarFirmaInspector();
-
-    // Inicializar Canvas de Firma del Cliente
-    inicializarPadCliente();
 
     // Eventos
     document.getElementById('btn-agregar-area').onclick = () => agregarArea();
@@ -205,60 +200,6 @@ function inicializarPadInspector() {
     }
 }
 
-// Inicializar pad del cliente en el modal
-function inicializarPadCliente() {
-    const canvas = document.getElementById('pizarra-firma-cliente');
-    const modal = document.getElementById('modal-firma-cliente');
-    const btnAbrir = document.getElementById('btn-abrir-modal-firma-cliente');
-    const btnCerrar = document.getElementById('btn-cerrar-modal-firma');
-    const btnBorrar = document.getElementById('btn-borrar-pizarra-cliente');
-    const btnAceptar = document.getElementById('btn-aceptar-firma-cliente');
-
-    function redimensionar() {
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-        if (padCliente) padCliente.clear();
-    }
-
-    padCliente = new SignaturePad(canvas, {
-        backgroundColor: 'rgb(255, 255, 255)',
-        minWidth: 2,
-        maxWidth: 5
-    });
-
-    btnAbrir.onclick = () => {
-        modal.classList.remove('d-none');
-        document.body.style.overflow = 'hidden';
-        setTimeout(redimensionar, 100);
-    };
-
-    btnCerrar.onclick = () => {
-        modal.classList.add('d-none');
-        document.body.style.overflow = 'auto';
-    };
-
-    btnBorrar.onclick = () => {
-        padCliente.clear();
-    };
-
-    btnAceptar.onclick = () => {
-        if (padCliente.isEmpty()) {
-            alert("Por favor solicite al cliente que plasme su firma antes de continuar.");
-            return;
-        }
-
-        firmaClienteBase64 = recortarFirma(canvas);
-        const imgPreview = document.getElementById('img-preview-firma-cliente');
-        imgPreview.src = firmaClienteBase64;
-        imgPreview.style.display = 'block';
-        document.getElementById('txt-sin-firma-cliente').style.display = 'none';
-
-        modal.classList.add('d-none');
-        document.body.style.overflow = 'auto';
-    };
-}
 
 // Agregar tarjeta de área
 function agregarArea(nombreInicial = '') {
@@ -386,12 +327,6 @@ async function guardarInspeccion(e) {
         }
     }
 
-    // Validar firma del cliente
-    if (!firmaClienteBase64) {
-        const confirmarSinFirma = confirm("Aún no ha capturado la firma del cliente para el formato de recomendaciones. ¿Desea guardarlo sin la firma del cliente?");
-        if (!confirmarSinFirma) return;
-    }
-
     // Datos del formulario
     const higieneRadio = document.querySelector('input[name="condicion_higiene"]:checked');
     const higiene = higieneRadio ? higieneRadio.value : 'B';
@@ -434,14 +369,14 @@ async function guardarInspeccion(e) {
         proxima_visita: proxVisita,
         fecha_proxima: fechaProx,
         firma_inspector: firmaInspectorAEnviar,
-        firma_cliente: firmaClienteBase64,
+        firma_cliente: null,
         plagas_detectadas_texto: nombresPlagasTexto || 'Sin plaga aparente',
         tabla_productos: [] // Cero productos ya que es una inspección
     };
 
     const btnSubmit = document.getElementById('btn-guardar-inspeccion');
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Guardando...`;
+    btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Guardando inspección...`;
 
     try {
         const respuesta = await fetch(`${BASE_URL}/api/reportes`, {
@@ -462,13 +397,10 @@ async function guardarInspeccion(e) {
 
         if (datos.exito) {
             localStorage.removeItem('hora_inicio_' + folio);
-
-            // Configurar botones del modal de éxito
-            document.getElementById('btn-ver-diagnostico').href = `../documentosclientes/inspeccion_diagnostico.html?folio=${folio}`;
-            document.getElementById('btn-ver-seguimiento').href = `../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}`;
-
-            const modalExito = new bootstrap.Modal(document.getElementById('modalExito'));
-            modalExito.show();
+            btnSubmit.innerHTML = `<i class="fas fa-check-circle me-1"></i> ¡Guardado! Abriendo reporte...`;
+            setTimeout(() => {
+                window.location.href = `../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}`;
+            }, 600);
         } else {
             alert("Error al guardar inspección: " + (datos.error || 'Error desconocido'));
             btnSubmit.disabled = false;

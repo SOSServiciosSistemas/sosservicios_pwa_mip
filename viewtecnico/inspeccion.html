@@ -237,20 +237,6 @@
 
                         <div class="small text-muted text-center mt-2 fw-bold" id="nombre-inspector-txt">Técnico</div>
                     </div>
-
-                    <!-- Firma del Cliente (Para el documento de recomendaciones) -->
-                    <div class="border-top pt-3">
-                        <label class="etiqueta-seccion mb-1"><i class="fas fa-signature me-1"></i> Firma del Cliente (Para formato de Recomendaciones):</label>
-                        <div class="p-2 border rounded bg-light text-center mb-2">
-                            <img id="img-preview-firma-cliente" src="" alt="Firma del Cliente" style="max-height: 70px; max-width: 90%; display: none; margin: 0 auto;">
-                            <div id="txt-sin-firma-cliente" class="text-muted small py-2">
-                                <i class="fas fa-pen-fancy me-1"></i> Pendiente de firmar por el cliente
-                            </div>
-                        </div>
-                        <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 shadow-sm" id="btn-abrir-modal-firma-cliente">
-                            <i class="fas fa-pen me-1"></i> Capturar Firma del Cliente en Pantalla
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -260,50 +246,6 @@
             </button>
         </form>
 
-    </div>
-
-    <!-- MODAL DE FIRMA DEL CLIENTE A PANTALLA COMPLETA -->
-    <div id="modal-firma-cliente" class="d-none" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 9999; display: flex; flex-direction: column;">
-        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow">
-            <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Firma del Cliente (Gire para mayor espacio)</h6>
-            <button id="btn-cerrar-modal-firma" class="btn btn-danger btn-sm">Cancelar</button>
-        </div>
-        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #0b5394; background: white; border-radius: 10px; min-height: 0;">
-            <canvas id="pizarra-firma-cliente" style="width: 100%; height: 100%; touch-action: none;"></canvas>
-        </div>
-        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg">
-            <button id="btn-borrar-pizarra-cliente" class="btn btn-warning fw-bold shadow-sm">
-                <i class="fas fa-eraser me-1"></i> Borrar
-            </button>
-            <button id="btn-aceptar-firma-cliente" class="btn btn-success fw-bold shadow-sm px-4">
-                <i class="fas fa-check me-1"></i> Listo
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL DE ÉXITO CON BOTONES A LOS 2 DOCUMENTOS -->
-    <div class="modal fade" id="modalExito" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg text-center p-3">
-                <div class="modal-body">
-                    <div class="display-3 text-success mb-2">✅</div>
-                    <h4 class="fw-bold text-dark">¡Inspección Completada!</h4>
-                    <p class="text-muted small">Los datos han sido guardados en el sistema y los formatos están listos para ser consultados o impresos.</p>
-
-                    <div class="d-grid gap-2 mt-4">
-                        <a id="btn-ver-diagnostico" href="#" target="_blank" class="btn btn-outline-primary fw-bold py-2 shadow-sm">
-                            <i class="fas fa-clipboard-check me-2"></i> 1. Ver Inspección y Diagnóstico (Interno)
-                        </a>
-                        <a id="btn-ver-seguimiento" href="#" target="_blank" class="btn btn-outline-success fw-bold py-2 shadow-sm">
-                            <i class="fas fa-file-contract me-2"></i> 2. Ver Recomendaciones y Seguimiento (Cliente)
-                        </a>
-                        <a href="tecnico.html" class="btn btn-secondary fw-bold py-2 mt-2">
-                            <i class="fas fa-home me-2"></i> Volver a la Agenda
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -354,6 +354,10 @@
             try {
                 // Obtener orden y reporte de inspección
                 const res = await fetch(`${BASE_URL}/api/ordenes/${id}/reporte-final`);
+                if (!res.ok) {
+                    alert(`No se pudo cargar la información de la inspección (Error ${res.status}).`);
+                    return;
+                }
                 const datos = await res.json();
 
                 if (!datos.exito || !datos.orden) {
