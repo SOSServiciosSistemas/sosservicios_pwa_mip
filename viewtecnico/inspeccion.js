@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Cargar datos de la orden
     await cargarDatosOrden(folio);
 
-    // Cargar firma guardada del técnico/inspector automáticamente
-    await cargarFirmaInspector(folio);
+    // Cargar firma oficial del técnico inspector desde su cuenta
+    await cargarFirmaInspector();
 
     // Inicializar Canvas de Firma del Cliente
     inicializarPadCliente();
@@ -100,13 +100,13 @@ async function cargarDatosOrden(folio) {
 }
 
 // Cargar firma digital del técnico guardada en su cuenta
-async function cargarFirmaInspector(folio) {
+async function cargarFirmaInspector() {
     const idUsuario = localStorage.getItem('idUsuario');
     const nombreTecnico = localStorage.getItem('nombreUsuario') || 'Inspector Especialista';
     const elNombre = document.getElementById('nombre-inspector-txt');
     if (elNombre) elNombre.innerText = `${nombreTecnico} (Inspector Especialista)`;
 
-    // 1. Intentar desde localStorage si ya fue guardada en el dispositivo
+    // 1. Intentar desde localStorage si ya está guardada en la sesión
     const firmaLocal = localStorage.getItem('firmaDigital');
     if (firmaLocal && firmaLocal.length > 50) {
         firmaInspectorBase64 = firmaLocal;
@@ -114,47 +114,7 @@ async function cargarFirmaInspector(folio) {
         return;
     }
 
-    // 2. Intentar consultar desde el reporte de la orden actual (contiene firma_tecnico vinculada)
-    if (folio) {
-        try {
-            const resRep = await fetch(`${BASE_URL}/api/ordenes/${folio}/reporte-final`);
-            if (resRep.ok) {
-                const dataRep = await resRep.json();
-                if (dataRep.exito && dataRep.orden && dataRep.orden.firma_tecnico) {
-                    firmaInspectorBase64 = dataRep.orden.firma_tecnico;
-                    localStorage.setItem('firmaDigital', firmaInspectorBase64);
-                    mostrarFirmaInspector(firmaInspectorBase64);
-                    return;
-                }
-            }
-        } catch (e) {
-            console.warn("No se pudo obtener firma desde orden:", e);
-        }
-    }
-
-    // 3. Consultar /api/admin/usuarios (catálogo de usuarios con firmas digitales activas)
-    try {
-        const resAdmin = await fetch(`${BASE_URL}/api/admin/usuarios`);
-        if (resAdmin.ok) {
-            const dataAdmin = await resAdmin.json();
-            if (dataAdmin.exito && Array.isArray(dataAdmin.usuarios)) {
-                const userEncontrado = dataAdmin.usuarios.find(u => 
-                    (idUsuario && u.id_usuario == idUsuario) || 
-                    (nombreTecnico && u.nombre_completo && u.nombre_completo.trim().toLowerCase() === nombreTecnico.trim().toLowerCase())
-                );
-                if (userEncontrado && userEncontrado.firma_digital) {
-                    firmaInspectorBase64 = userEncontrado.firma_digital;
-                    localStorage.setItem('firmaDigital', firmaInspectorBase64);
-                    mostrarFirmaInspector(firmaInspectorBase64);
-                    return;
-                }
-            }
-        }
-    } catch (e) {
-        console.warn("No se pudo obtener firma desde catálogo de usuarios:", e);
-    }
-
-    // 4. Intentar endpoint directo /api/usuarios/:id/firma
+    // 2. Consultar directamente la ruta oficial en backend para el usuario actual
     if (idUsuario) {
         try {
             const res = await fetch(`${BASE_URL}/api/usuarios/${idUsuario}/firma`);
@@ -168,14 +128,12 @@ async function cargarFirmaInspector(folio) {
                 }
             }
         } catch (e) {
-            console.warn("No se pudo consultar firma desde endpoint específico:", e);
+            console.error("Error al consultar firma oficial del técnico:", e);
         }
     }
 
-    // 5. Si no tiene firma guardada en su cuenta, mostrar canvas como respaldo
-    if (!firmaInspectorBase64) {
-        mostrarFallbackCanvasInspector();
-    }
+    // 3. Si el usuario no tiene firma digital registrada en su cuenta
+    mostrarFallbackCanvasInspector();
 }
 
 function mostrarFirmaInspector(base64) {
