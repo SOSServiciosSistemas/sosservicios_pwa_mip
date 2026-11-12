@@ -72,16 +72,30 @@ async function cargarDatosReporte(id) {
         if (datos.exito) {
             const orden = datos.orden;
             console.log("DATOS DE LA ORDEN:", orden);
-            // Función auxiliar para horas (Ajuste UTC-6 para zona horaria de México)
+            // Función auxiliar para horas en formato 24 horas (Ajuste UTC-6 para zona horaria de México)
             const formatHora = (fecha) => {
                 if (!fecha) return '';
                 let d = new Date(fecha);
                 d.setHours(d.getHours() - 6);
-                return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
             };
             
             document.getElementById('rep-folio').innerText = orden.id_orden.toString().padStart(5, '0');
             document.getElementById('rep-fecha').innerText = new Date(orden.fecha_servicio).toLocaleDateString('es-MX');
+
+            // Tipo de Servicio (Aplicación, Monitoreo, Garantía)
+            const tipoServicioNorm = (orden.tipo_servicio || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (tipoServicioNorm.includes('aplic')) {
+                const el = document.getElementById('chk-serv-aplicacion');
+                if (el) el.innerText = 'X';
+            } else if (tipoServicioNorm.includes('monit')) {
+                const el = document.getElementById('chk-serv-monitoreo');
+                if (el) el.innerText = 'X';
+            } else if (tipoServicioNorm.includes('garant')) {
+                const el = document.getElementById('chk-serv-garantia');
+                if (el) el.innerText = 'X';
+            }
+
             document.getElementById('rep-cliente').innerText = orden.nombre_cliente;
             document.getElementById('rep-domicilio').innerText = orden.direccion_completa;
             document.getElementById('rep-telefonos').innerText = orden.telefono;
@@ -103,19 +117,18 @@ async function cargarDatosReporte(id) {
                 }
             }
 
-            // Lógica para Hora de Reingreso (+2 horas sobre la hora real de México)
+            // Lógica para Hora de Reingreso en formato 24 horas (+2 horas sobre la hora real de México)
             let textoReingreso = "";
             if (orden.hora_salida) {
                 let fechaSalida = new Date(orden.hora_salida);
                 fechaSalida.setHours(fechaSalida.getHours() - 6 + 2); 
-                textoReingreso = fechaSalida.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                textoReingreso = fechaSalida.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
             }
             document.getElementById('rep-hora-reingreso').innerText = textoReingreso;
 
-            // Llenado de Productos (4 filas fijas A,B,C,D para mantener formato)
+            // Llenado de Productos (4 filas fijas 1, 2, 3, 4 para coincidir con la tabla inferior)
             const tbodyProductos = document.getElementById('rep-tabla-productos');
             tbodyProductos.innerHTML = '';
-            const letras = ['A', 'B', 'C', 'D'];
             
             for (let i = 0; i < 4; i++) {
                 let prod = (datos.productos_utilizados && datos.productos_utilizados[i]) ? datos.productos_utilizados[i] : null;
@@ -128,7 +141,7 @@ async function cargarDatosReporte(id) {
                 }
                 tbodyProductos.innerHTML += `
                     <tr>
-                        <td class="fw-bold text-center">${letras[i]}</td>
+                        <td class="fw-bold text-center">${i + 1}</td>
                         <td>${prod ? (prod.ingrediente_activo || prod.nombre_comercial) : ''}</td>
                         <td>${prod ? (prod.registro_sanitario || 'N/A') : ''}</td>
                         <td class="text-center">${textoDosis}</td>
@@ -155,19 +168,19 @@ async function cargarDatosReporte(id) {
                         <tr>
                             <td style="height: 12px;" class="fw-bold">${area.nombre || area.area || ''}</td>
                             <td class="text-center fw-bold">${actSi}</td>
-                            <td class="text-center"></td>
                             <td class="text-center fw-bold">${actNo}</td>
                             <td class="text-center fw-bold">${plagasStr}</td>
-                            <td class="text-center fw-bold">${area.productos_num || area.producto || ''}</td>                            <td class="text-center fw-bold">${area.metodo || area.metodo_aplicacion || ''}</td>
+                            <td class="text-center fw-bold">${area.productos_num || area.producto || ''}</td>
+                            <td class="text-center fw-bold">${area.metodo || area.metodo_aplicacion || ''}</td>
                             <td class="text-center">${area.observaciones || ''}</td>
                         </tr>
                     `;
                 } else {
-                    // Generar filas en blanco para que el PDF no pierda su tamaño
+                    // Generar filas en blanco para que el PDF no pierda su tamaño (7 columnas)
                     tbodyAreas.innerHTML += `
                         <tr>
                             <td style="height: 12px;"></td>
-                            <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            <td></td><td></td><td></td><td></td><td></td><td></td>
                         </tr>
                     `;
                 }
@@ -189,19 +202,38 @@ async function cargarDatosReporte(id) {
                 document.getElementById('chk-factura-no').innerText = 'X';
             }
 
-            // 3. Tratamientos y Costos
+            // 3. Tratamientos y Costos definidos por Mesa de Control
+            const numTrat = parseInt(orden.num_tratamiento) || 1;
+            const totTrat = parseInt(orden.total_tratamientos) || 1;
+
             document.getElementById('rep-tratamiento-actual').innerText = orden.num_tratamiento || '';
             document.getElementById('rep-tratamiento-total').innerText = orden.total_tratamientos || '';
             
-            // Toma el costo de control_pagos (si ya se facturó) o el costo base de la orden (ingresos_cobrados)
-            let costoMostrar = (orden.costo_con_iva !== null && orden.costo_con_iva !== undefined && orden.costo_con_iva !== '') 
-                ? orden.costo_con_iva 
-                : ((orden.costo_sin_iva !== null && orden.costo_sin_iva !== undefined && orden.costo_sin_iva !== '') 
-                    ? orden.costo_sin_iva 
-                    : orden.ingresos_cobrados);
+            let costoMostrar = 0;
 
-            if (costoMostrar !== null && costoMostrar !== undefined && costoMostrar !== '') {
-                let costoNum = parseFloat(costoMostrar) || 0;
+            // Si son varias aplicaciones/tratamientos, el costo va solo en el primer servicio
+            if (totTrat > 1) {
+                if (numTrat === 1) {
+                    costoMostrar = (orden.costo_con_iva !== null && orden.costo_con_iva !== undefined && orden.costo_con_iva !== '') 
+                        ? orden.costo_con_iva 
+                        : ((orden.costo_sin_iva !== null && orden.costo_sin_iva !== undefined && orden.costo_sin_iva !== '') 
+                            ? orden.costo_sin_iva 
+                            : (orden.costo_total_tratamiento || orden.costo_mesa || orden.costo || 0));
+                } else {
+                    // En los servicios 2, 3, etc. no se coloca costo (ya fue establecido en el 1)
+                    costoMostrar = 0;
+                }
+            } else {
+                // Servicio único
+                costoMostrar = (orden.costo_con_iva !== null && orden.costo_con_iva !== undefined && orden.costo_con_iva !== '') 
+                    ? orden.costo_con_iva 
+                    : ((orden.costo_sin_iva !== null && orden.costo_sin_iva !== undefined && orden.costo_sin_iva !== '') 
+                        ? orden.costo_sin_iva 
+                        : (orden.costo_mesa !== null && orden.costo_mesa !== undefined && orden.costo_mesa !== '' ? orden.costo_mesa : (orden.costo || orden.costo_total_tratamiento || 0)));
+            }
+
+            let costoNum = parseFloat(costoMostrar) || 0;
+            if (costoNum > 0) {
                 document.getElementById('rep-costo').innerText = costoNum.toFixed(2);
                 document.getElementById('rep-costo-letra').innerText = numeroALetras(costoNum) + " M.N.";
             } else {
@@ -209,9 +241,32 @@ async function cargarDatosReporte(id) {
                 document.getElementById('rep-costo-letra').innerText = 'CERO PESOS 00/100 M.N.';
             }
 
-            // 4. Acciones y Seguimiento
+            // 4. Acciones y Seguimiento (Áreas de Oportunidad)
             document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || jsonDetalles.acciones_correctivas || '';
             document.getElementById('rep-seguimiento').innerText = orden.recomendaciones_seguimiento || jsonDetalles.indicaciones_proximas || '';
+
+            // 5. Próximo Servicio
+            const elProx = document.getElementById('rep-proximo-servicio');
+            if (elProx) {
+                const fechaProxVal = orden.fecha_proximo_servicio || (jsonDetalles && jsonDetalles.fecha_proxima);
+                if (fechaProxVal) {
+                    let textoFechaProx = '';
+                    if (typeof fechaProxVal === 'string' && /^\d{4}-\d{2}-\d{2}/.test(fechaProxVal)) {
+                        const p = fechaProxVal.slice(0, 10).split('-');
+                        textoFechaProx = `${p[2]}/${p[1]}/${p[0]}`;
+                    } else {
+                        const dProx = new Date(fechaProxVal);
+                        if (!isNaN(dProx.getTime())) {
+                            textoFechaProx = `${String(dProx.getDate()).padStart(2, '0')}/${String(dProx.getMonth() + 1).padStart(2, '0')}/${dProx.getFullYear()}`;
+                        } else {
+                            textoFechaProx = fechaProxVal;
+                        }
+                    }
+                    elProx.innerText = textoFechaProx;
+                } else {
+                    elProx.innerText = 'N/A';
+                }
+            }
         }
     } catch (error) {
         console.error("Error al cargar el reporte del cliente:", error);

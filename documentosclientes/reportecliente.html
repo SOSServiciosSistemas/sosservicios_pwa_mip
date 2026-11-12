@@ -149,19 +149,13 @@
             </div>
         </div>
 
-        <!-- Bloque de Checkboxes en Horizontal (De lado a lado de la hoja) -->
-        <div class="d-flex justify-content-between align-items-center w-100 mb-3"
-            style="font-size: 0.65rem; padding: 0 5px;">
-            <div><span class="caja-check"></span> Aplicación</div>&nbsp;
-            <div><span class="caja-check"></span> Inspección</div>&nbsp;
-            <div><span class="caja-check"></span> Mantenimiento</div>&nbsp;
-            <div><span class="caja-check"></span> Refuerzo</div>&nbsp;
-            <div style="flex-grow: 1; text-align: right; padding-left: 15px;">
-                <span class="caja-check"></span> Otro: <span
-                    style="border-bottom: 1px solid #000; display: inline-block; width: 70%;"></span>
-            </div>
+        <!-- Bloque de Checkboxes: 3 Tipos de Servicio (Aplicación, Monitoreo, Garantía) -->
+        <div class="d-flex justify-content-around align-items-center w-100 mb-2"
+            style="font-size: 0.72rem; padding: 2px 10px; font-weight: bold;">
+            <div><span class="caja-check text-center fw-bold" id="chk-serv-aplicacion" style="line-height: 10px;"></span> Aplicación</div>
+            <div><span class="caja-check text-center fw-bold" id="chk-serv-monitoreo" style="line-height: 10px;"></span> Monitoreo</div>
+            <div><span class="caja-check text-center fw-bold" id="chk-serv-garantia" style="line-height: 10px;"></span> Garantía</div>
         </div>
-
 
         <!-- Datos del Cliente -->
         <div class="seccion-datos">
@@ -171,42 +165,37 @@
                     class="campo-valor" id="rep-domicilio"></span></div>
             <div class="campo" style="width: 40%;"><span class="campo-label">Teléfonos:</span><span class="campo-valor"
                     id="rep-telefonos"></span></div>
-            <div class="campo" style="width: 45%; padding-right: 5px;"><span class="campo-label">Giro del
+            <div class="campo" style="width: 36%; padding-right: 5px;"><span class="campo-label">Giro del
                     Cliente:</span><span class="campo-valor" id="rep-giro"></span></div>
-            <div class="campo" style="width: 25%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span
+            <div class="campo" style="width: 22%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span
                     class="campo-valor" id="rep-ciudad"></span></div>
-            <div class="campo" style="width: 15%; padding-right: 5px;"><span class="campo-label">Hora de
+            <div class="campo" style="width: 21%; padding-right: 5px;"><span class="campo-label">Hora de
                     Entrada:</span><span class="campo-valor text-center" id="rep-hora-ent"></span></div>
-            <div class="campo" style="width: 15%;"><span class="campo-label">Hora de Salida:</span><span
+            <div class="campo" style="width: 21%;"><span class="campo-label">Hora de Salida:</span><span
                     class="campo-valor text-center" id="rep-hora-sal"></span></div>
-            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span
+            <div class="campo" style="width: 55%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span
                     class="campo-valor" id="rep-contacto"></span></div>
-            <div class="campo" style="width: 40%;"><span class="campo-label">Hora de ingreso a áreas
+            <div class="campo" style="width: 45%;"><span class="campo-label">Hora de ingreso a áreas
                     tratadas:</span><span class="campo-valor text-center" id="rep-hora-reingreso"></span></div>
         </div>
 
-        <!-- Detalle de Producto -->
-        <div class="d-flex">
-            <div style="width: 75%; padding-right: 5px;">
-                <table class="tabla-oficial">
-                    <thead>
-                        <tr>
-                            <th colspan="4" class="bg-gris">DETALLE DE PRODUCTO A UTILIZAR</th>
-                        </tr>
-                        <tr class="bg-gris">
-                            <th style="width: 5%;">TIPO</th>
-                            <th style="width: 45%;">INGREDIENTE ACTIVO</th>
-                            <th style="width: 35%;">REGISTRO DE CICOPLAFEST COFEPRIS</th>
-                            <th style="width: 15%;">DOSIS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="rep-tabla-productos">
-                        <!-- Se llena con JS -->
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
+        <!-- Detalle de Producto a Utilizar (Ancho 100%) -->
+        <table class="tabla-oficial w-100">
+            <thead>
+                <tr>
+                    <th colspan="4" class="bg-gris">DETALLE DE PRODUCTO A UTILIZAR</th>
+                </tr>
+                <tr class="bg-gris">
+                    <th style="width: 6%;">TIPO</th>
+                    <th style="width: 46%;">INGREDIENTE ACTIVO</th>
+                    <th style="width: 33%;">REGISTRO DE CICOPLAFEST COFEPRIS</th>
+                    <th style="width: 15%;">DOSIS</th>
+                </tr>
+            </thead>
+            <tbody id="rep-tabla-productos">
+                <!-- Se llena con JS -->
+            </tbody>
+        </table>
         <div style="font-size: 0.5rem; margin-top: -5px; margin-bottom: 5px;">NOTA: PARA MAYOR INFORMACIÓN CONSULTA LA
             ETIQUETA</div>
 
@@ -215,16 +204,15 @@
             <thead class="bg-gris">
                 <tr>
                     <th rowspan="2" style="width: 25%;">ÁREA</th>
-                    <th colspan="3">ACTIVIDAD</th>
-                    <th rowspan="2" style="width: 12%;">**TIPO DE PLAGA A COMBATIR</th>
+                    <th colspan="2">ACTIVIDAD</th>
+                    <th rowspan="2" style="width: 14%;">**TIPO DE PLAGA A COMBATIR</th>
                     <th rowspan="2" style="width: 10%;">TIPO DE PRODUCTO</th>
-                    <th rowspan="2" style="width: 12%;">MÉTODO DE APLICACIÓN</th>
-                    <th rowspan="2" style="width: 31%;">OBSERVACIONES Y RECOMENDACIONES</th>
+                    <th rowspan="2" style="width: 14%;">MÉTODO DE APLICACIÓN</th>
+                    <th rowspan="2" style="width: 29%;">OBSERVACIONES Y RECOMENDACIONES</th>
                 </tr>
                 <tr>
-                    <th style="width: 3%;">SI</th>
-                    <th style="width: 4%;">*</th>
-                    <th style="width: 3%;">NO</th>
+                    <th style="width: 4%;">SI</th>
+                    <th style="width: 4%;">NO</th>
                 </tr>
             </thead>
             <tbody id="rep-tabla-areas">
@@ -244,14 +232,14 @@
                         style="line-height: 10px;"></span> C) BAJO</td>
             </tr>
             <tr>
-                <td colspan="4" class="bg-gris">DETALLES DEL SERVICIO</td>
+                <td colspan="4" class="bg-gris">ACCIONES REALIZADAS EN EL SERVICIO</td>
             </tr>
             <!-- Reducimos height a 25px -->
             <tr>
                 <td colspan="4" style="height: 25px; vertical-align: top;" id="rep-acciones"></td>
             </tr>
             <tr>
-                <td colspan="4" class="bg-gris">ÁREAS DE OPORTUNIDAD INDISPENSABLES A CORREGIR</td>
+                <td colspan="4" class="bg-gris">ÁREAS DE OPORTUNIDAD</td>
             </tr>
             <!-- Reducimos height a 25px -->
             <tr>
@@ -282,7 +270,9 @@
             </div>
         </div>
 
-        <div class="bg-gris border border-dark mb-1">PRÓXIMO SERVICIO</div>
+        <div class="bg-gris border border-dark mb-1 text-center py-1" style="font-size: 0.72rem; font-weight: bold;">
+            PRÓXIMO SERVICIO: <span id="rep-proximo-servicio" style="font-weight: bold; margin-left: 5px;"></span>
+        </div>
 
         <!-- Firmas (reducimos los márgenes mt-4 mb-2 a mt-2 mb-0) -->
         <div class="row text-center align-items-end mt-2 mb-0" style="font-size: 0.65rem;">
