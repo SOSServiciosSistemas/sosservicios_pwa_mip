@@ -779,13 +779,14 @@ window.cargarHistorial = async function() {
                 }
 
                 let botonesAccion = '';
-                const esInspeccion = (orden.tipo_servicio || '').toLowerCase().includes('inspecc');
+                const tipoServ = (orden.tipo_servicio || '').toLowerCase();
+                const esDiagnosticoOInspeccion = tipoServ.includes('diagn') || tipoServ.includes('inspecc');
                 if (orden.estatus === 'Completado') {
-                    if (esInspeccion) {
+                    if (esDiagnosticoOInspeccion) {
                         botonesAccion = `
                             <br>
                             <div class="btn-group mt-2">
-                                <a class="btn btn-sm btn-outline-primary fw-bold" href="../documentosclientes/inspeccion_diagnostico.html?folio=${orden.id_orden}" target="_blank" title="Inspección y Diagnóstico">📋 Inspección</a>
+                                <a class="btn btn-sm btn-outline-primary fw-bold" href="../documentosclientes/inspeccion_diagnostico.html?folio=${orden.id_orden}" target="_blank" title="Diagnóstico y Presupuesto">📋 Diagnóstico</a>
                                 <a class="btn btn-sm btn-outline-success fw-bold" href="../documentosclientes/recomendaciones_seguimiento.html?folio=${orden.id_orden}" target="_blank" title="Recomendaciones y Seguimiento">📄 Seguimiento</a>
                             </div>
                         `;

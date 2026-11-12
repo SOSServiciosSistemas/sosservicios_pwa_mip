@@ -63,17 +63,18 @@
 
                 if(datos.exito) {
                     const orden = datos.orden;
-                    const esInspeccion = (orden.tipo_servicio || '').toLowerCase().includes('inspecc');
+                    const tipoServ = (orden.tipo_servicio || '').toLowerCase();
+                    const esDiagnosticoOInspeccion = tipoServ.includes('diagn') || tipoServ.includes('inspecc');
                     const contenedorAcciones = document.getElementById('contenedor-acciones-orden');
 
                     if (orden.estatus === 'Completado' || orden.estatus === 'Realizado') {
-                        if (esInspeccion) {
+                        if (esDiagnosticoOInspeccion) {
                             contenedorAcciones.innerHTML = `
                                 <div class="alert alert-success text-center py-2 mb-3 fw-bold">
-                                    ✔ Inspección Realizada y Registrada
+                                    ✔ Diagnóstico Realizado y Registrado
                                 </div>
                                 <a href="../documentosclientes/inspeccion_diagnostico.html?folio=${folio}" class="btn btn-primary w-100 fw-bold py-3 mb-2 shadow-sm" style="background-color: #0b5394; border-color: #0b5394;">
-                                    📋 Ver Inspección y Diagnóstico (Interno)
+                                    📋 Ver Diagnóstico (Interno)
                                 </a>
                                 <a href="../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}" class="btn btn-outline-success w-100 fw-bold py-3 shadow-sm">
                                     📄 Ver Recomendaciones y Seguimiento (Cliente)
@@ -90,10 +91,10 @@
                             `;
                         }
                     } else {
-                        if (esInspeccion) {
+                        if (esDiagnosticoOInspeccion) {
                             contenedorAcciones.innerHTML = `
                                 <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='inspeccion.html?folio=${folio}'" style="background-color: #0b5394; border-color: #0b5394;">
-                                    🔍 Inspección Realizada (Llenar Diagnóstico)
+                                    🔍 Diagnóstico Realizado (Llenar Diagnóstico)
                                 </button>
                             `;
                         } else {

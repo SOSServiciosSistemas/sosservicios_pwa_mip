@@ -72,7 +72,8 @@ async function cargarDatosOrden(folio) {
         if (datos.exito && datos.orden) {
             ordenActual = datos.orden;
 
-            document.getElementById('nav-titulo').innerHTML = `<i class="fas fa-search-location me-1"></i> Inspección #${ordenActual.id_orden}`;
+            const nomTipo = ordenActual.tipo_servicio || 'Diagnóstico';
+            document.getElementById('nav-titulo').innerHTML = `<i class="fas fa-search-location me-1"></i> ${nomTipo} #${ordenActual.id_orden}`;
             document.getElementById('info-cliente').innerText = (ordenActual.nombre_cliente || 'Sin cliente').toUpperCase();
             
             const direccion = `${ordenActual.domicilio || ''} ${ordenActual.colonia ? ', Col. ' + ordenActual.colonia : ''} ${ordenActual.ciudad ? ', ' + ordenActual.ciudad : ''}`;
@@ -353,7 +354,7 @@ async function guardarInspeccion(e) {
     const horaFin = new Date().toISOString();
 
     const detallesJSON = {
-        tipo_documento: 'inspeccion',
+        tipo_documento: (ordenActual && ordenActual.tipo_servicio ? ordenActual.tipo_servicio.toLowerCase() : 'diagnostico'),
         contacto: ordenActual ? (ordenActual.persona_contacto || ordenActual.contacto || ordenActual.nombre_cliente) : '',
         hora_entrada: horaInicio,
         hora_salida: horaFin,
@@ -371,12 +372,12 @@ async function guardarInspeccion(e) {
         firma_inspector: firmaInspectorAEnviar,
         firma_cliente: null,
         plagas_detectadas_texto: nombresPlagasTexto || 'Sin plaga aparente',
-        tabla_productos: [] // Cero productos ya que es una inspección
+        tabla_productos: [] // Cero productos ya que es una inspección / diagnóstico
     };
 
     const btnSubmit = document.getElementById('btn-guardar-inspeccion');
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Guardando inspección...`;
+    btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i> Guardando diagnóstico...`;
 
     try {
         const respuesta = await fetch(`${BASE_URL}/api/reportes`, {
@@ -402,15 +403,15 @@ async function guardarInspeccion(e) {
                 window.location.href = `../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}`;
             }, 600);
         } else {
-            alert("Error al guardar inspección: " + (datos.error || 'Error desconocido'));
+            alert("Error al guardar diagnóstico: " + (datos.error || 'Error desconocido'));
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `<i class="fas fa-check-circle me-1"></i> Guardar y Finalizar Inspección`;
+            btnSubmit.innerHTML = `<i class="fas fa-check-circle me-1"></i> Guardar y Finalizar Diagnóstico`;
         }
     } catch (error) {
         console.error("Error de conexión:", error);
-        alert("Error de conexión al guardar la inspección.");
+        alert("Error de conexión al guardar el diagnóstico.");
         btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<i class="fas fa-check-circle me-1"></i> Guardar y Finalizar Inspección`;
+        btnSubmit.innerHTML = `<i class="fas fa-check-circle me-1"></i> Guardar y Finalizar Diagnóstico`;
     }
 }
 
