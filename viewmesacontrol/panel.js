@@ -14,10 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.getElementById('nombre-usuario-nav').innerText = `Hola, ${nombreUsuario}`;
 
-    // Configurar la casilla del historial para que inicie en el mes actual automáticamente
-    const hoy = new Date();
-    const mesStr = (hoy.getMonth() + 1).toString().padStart(2, '0');
-    document.getElementById('filtro-mes').value = `${hoy.getFullYear()}-${mesStr}`;
+    // Iniciar con todos los meses visibles para permitir navegar arriba y abajo en el historial
+    document.getElementById('filtro-mes').value = '';
 
     // Inicializar Calendario
     var calendarEl = document.getElementById('calendario');
@@ -748,8 +746,16 @@ window.cargarHistorial = async function() {
 
         if (datos.exito && datos.historial.length > 0) {
             tbody.innerHTML = ''; 
-            datos.historial.forEach(orden => {
-                const fecha = new Date(orden.fecha_programada).toLocaleString('es-ES', { 
+
+            const hoyObj = new Date();
+            const hoyYMD = `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
+
+            let idFilaHoyObjetivo = null;
+            let idFilaProximaObjetivo = null;
+
+            datos.historial.forEach((orden, index) => {
+                const dateObj = new Date(orden.fecha_programada);
+                const fecha = dateObj.toLocaleString('es-ES', { 
                     day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' 
                 });
                 
@@ -759,8 +765,18 @@ window.cargarHistorial = async function() {
                 if (orden.estatus === 'Completado') colorBadge = 'bg-primary'; 
 
                 const direccionCompleta = `${orden.domicilio || ''} ${orden.colonia || ''} ${orden.ciudad || ''}`;
-                const dateObj = new Date(orden.fecha_programada);
+                const ordenYMD = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
                 const mesOculto = dateObj.getFullYear() + "-" + (dateObj.getMonth() + 1).toString().padStart(2, '0');
+
+                const esHoy = (ordenYMD === hoyYMD);
+                const rowId = `fila-historial-${orden.id_orden || index}`;
+
+                if (esHoy && !idFilaHoyObjetivo) {
+                    idFilaHoyObjetivo = rowId;
+                }
+                if (!idFilaProximaObjetivo && ordenYMD >= hoyYMD) {
+                    idFilaProximaObjetivo = rowId;
+                }
 
                 let botonesAccion = '';
                 const esInspeccion = (orden.tipo_servicio || '').toLowerCase().includes('inspecc');
@@ -780,22 +796,81 @@ window.cargarHistorial = async function() {
                     botonesAccion = `<br><button class="btn btn-sm btn-outline-secondary fw-bold mt-2" onclick="abrirModalEditarOrden(${orden.id_orden})">✏️ Editar Datos</button>`;
                 }
 
+                const claseHoy = esHoy ? 'fila-hoy-historial' : '';
+                const badgeHoy = esHoy ? '<span class="badge bg-primary ms-1" style="font-size: 0.65rem;">HOY</span>' : '';
+
                 tbody.innerHTML += `
-                    <tr data-direccion="${direccionCompleta}" data-mes="${mesOculto}">
-                        <td class="text-muted fw-bold">${fecha}</td>
+                    <tr id="${rowId}" class="${claseHoy}" data-direccion="${direccionCompleta}" data-mes="${mesOculto}" data-ymd="${ordenYMD}" data-es-hoy="${esHoy}">
+                        <td class="text-muted fw-bold">${fecha} ${badgeHoy}</td>
                         <td class="fw-bold text-primary">${orden.nombre_cliente}</td>
-                        <td>${orden.nombre_tecnico}</td>
+                        <td>${orden.nombre_tecnico || 'Sin asignar'}</td>
                         <td>${orden.tipo_servicio} ${botonesAccion}</td>
                         <td><span class="badge ${colorBadge}">${orden.estatus}</span></td>
                     </tr>
                 `;
             });
+
+            // Si hay filtros escritos, aplicarlos
+            if (document.getElementById('buscador-historial').value || 
+                document.getElementById('filtro-estatus').value || 
+                document.getElementById('filtro-mes').value) {
+                filtrarHistorial();
+            }
+
+            // Desplazar automáticamente la tabla a la fila del día de hoy
+            window.irAHoyHistorial(idFilaHoyObjetivo || idFilaProximaObjetivo);
+
         } else {
             tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">No hay servicios registrados en el historial.</td></tr>`;
         }
     } catch (error) {
         tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error al conectar con el servidor.</td></tr>`;
     }
+};
+
+// Desplaza la vista interna de la tabla a la fecha de hoy
+window.irAHoyHistorial = function(idFilaObjetivo) {
+    setTimeout(() => {
+        const contenedor = document.getElementById('contenedor-tabla-historial');
+        if (!contenedor) return;
+
+        let fila = null;
+        if (idFilaObjetivo) {
+            fila = document.getElementById(idFilaObjetivo);
+        }
+
+        if (!fila) {
+            const hoyObj = new Date();
+            const hoyYMD = `${hoyObj.getFullYear()}-${String(hoyObj.getMonth() + 1).padStart(2, '0')}-${String(hoyObj.getDate()).padStart(2, '0')}`;
+            
+            // 1. Buscar fila visible de hoy
+            fila = contenedor.querySelector('tr[data-es-hoy="true"]:not([style*="display: none"])');
+            
+            // 2. Si no hay de hoy, buscar la primera fecha >= hoy visible
+            if (!fila) {
+                const filasVisibles = Array.from(contenedor.querySelectorAll('tbody tr[data-ymd]')).filter(f => f.style.display !== 'none');
+                fila = filasVisibles.find(f => f.getAttribute('data-ymd') >= hoyYMD);
+            }
+            
+            // 3. Si todas son pasadas, ir a la última visible
+            if (!fila) {
+                const filasVisibles = Array.from(contenedor.querySelectorAll('tbody tr')).filter(f => f.style.display !== 'none');
+                if (filasVisibles.length > 0) {
+                    fila = filasVisibles[filasVisibles.length - 1];
+                }
+            }
+        }
+
+        if (fila) {
+            const filaRect = fila.getBoundingClientRect();
+            const contRect = contenedor.getBoundingClientRect();
+            const targetScrollTop = contenedor.scrollTop + (filaRect.top - contRect.top) - 45;
+            contenedor.scrollTo({
+                top: Math.max(0, targetScrollTop),
+                behavior: 'smooth'
+            });
+        }
+    }, 150);
 };
 
 function normalizarTexto(texto) {

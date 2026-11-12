@@ -12,7 +12,7 @@
 <body class="bg-light">
 
     <!-- Barra de navegación (Header) -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
         <div class="container-fluid">
             <span class="navbar-brand mb-0 h1">Mesa de Control | SOS Servicios</span>
             
@@ -100,20 +100,32 @@
 
         <!-- ================= HISTORIAL DE SERVICIOS ================= -->
         <div id="seccion-historial" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="fw-bold text-secondary">Historial de Servicios</h2>
-                <button class="btn btn-outline-secondary fw-bold" onclick="cargarHistorial()">🔄 Actualizar Tabla</button>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="fw-bold text-secondary mb-0">Historial de Servicios</h2>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary btn-sm fw-bold shadow-sm" onclick="irAHoyHistorial()" title="Desplazar la tabla al día de hoy">
+                        📍 Ir a Hoy
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm fw-bold shadow-sm" onclick="cargarHistorial()">
+                        🔄 Actualizar Tabla
+                    </button>
+                </div>
             </div>
             
-            <div class="row mb-3">
-                <div class="col-md-5 mb-2 mb-md-0">
+            <div class="row g-2 mb-3">
+                <div class="col-md-5">
                     <div class="input-group shadow-sm">
                         <span class="input-group-text bg-white text-muted">🔍</span>
                         <input type="text" class="form-control border-start-0" id="buscador-historial" placeholder="Buscar nombre, domicilio..." onkeyup="filtrarHistorial()">
                     </div>
                 </div>
-                <div class="col-md-4 mb-2 mb-md-0">
-                    <input type="month" class="form-control shadow-sm text-secondary fw-bold" id="filtro-mes" onchange="filtrarHistorial()">
+                <div class="col-md-4">
+                    <div class="input-group shadow-sm">
+                        <input type="month" class="form-control text-secondary fw-bold" id="filtro-mes" onchange="filtrarHistorial()" title="Filtrar por mes específico">
+                        <button class="btn btn-outline-secondary btn-sm fw-bold" type="button" onclick="document.getElementById('filtro-mes').value = ''; filtrarHistorial();" title="Mostrar todos los meses">
+                            Todos
+                        </button>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <select class="form-select shadow-sm text-secondary fw-bold" id="filtro-estatus" onchange="filtrarHistorial()">
@@ -128,15 +140,15 @@
 
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    <div class="table-responsive contenedor-scroll-historial" id="contenedor-tabla-historial">
                         <table class="table table-hover table-striped mb-0 align-middle">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Fecha del Servicio</th>
-                                    <th>Cliente</th>
-                                    <th>Técnico Asignado</th>
-                                    <th>Servicio</th>
-                                    <th>Estatus</th>
+                                    <th class="th-fijo-historial">Fecha del Servicio</th>
+                                    <th class="th-fijo-historial">Cliente</th>
+                                    <th class="th-fijo-historial">Técnico Asignado</th>
+                                    <th class="th-fijo-historial">Servicio</th>
+                                    <th class="th-fijo-historial">Estatus</th>
                                 </tr>
                             </thead>
                             <tbody id="tbody-historial">
