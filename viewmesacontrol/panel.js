@@ -323,7 +323,20 @@ function capitalizarTexto(texto) {
     }).join(' ');
 }
 
-document.getElementById('nc-nombre').addEventListener('blur', function() { this.value = capitalizarTexto(this.value); });
+document.getElementById('nc-nombre').addEventListener('blur', function() {
+    const esEmpresa = document.getElementById('nc-es-empresa')?.checked;
+    if (!esEmpresa) {
+        this.value = capitalizarTexto(this.value);
+    }
+});
+
+document.getElementById('nc-es-empresa')?.addEventListener('change', function() {
+    const inputNombre = document.getElementById('nc-nombre');
+    if (!this.checked && inputNombre && inputNombre.value) {
+        inputNombre.value = capitalizarTexto(inputNombre.value);
+    }
+});
+
 document.getElementById('nc-contacto').addEventListener('blur', function() { this.value = capitalizarTexto(this.value); });
 document.getElementById('ec-contacto').addEventListener('blur', function() { this.value = capitalizarTexto(this.value); });
 document.getElementById('nc-rfc').addEventListener('input', function() { this.value = this.value.toUpperCase(); });
@@ -334,8 +347,12 @@ document.getElementById('form-nuevo-cliente').addEventListener('submit', async (
     const btnGuardar = document.getElementById('btn-guardar-cliente');
     btnGuardar.innerText = "Guardando..."; btnGuardar.disabled = true;
 
+    const esEmpresa = document.getElementById('nc-es-empresa')?.checked;
+    const nombreValor = document.getElementById('nc-nombre').value.trim();
+    const nombreFinal = esEmpresa ? nombreValor : capitalizarTexto(nombreValor);
+
     const nuevoCliente = {
-        nombre: capitalizarTexto(document.getElementById('nc-nombre').value),
+        nombre: nombreFinal,
         contacto: capitalizarTexto(document.getElementById('nc-contacto').value),
         telefono: document.getElementById('nc-telefono').value,
         clase: document.getElementById('nc-clase').value,
