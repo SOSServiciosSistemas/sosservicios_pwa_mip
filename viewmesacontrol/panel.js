@@ -38,13 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
         
         events: BASE_URL + '/api/agenda-general',
         
-        // Intercepta los datos del backend para garantizar color azul a los completados
+        // Intercepta los datos del backend para garantizar color azul a Confirmados y verde a Completados
         eventDataTransform: function(eventData) {
             const estatus = (eventData.extendedProps && eventData.extendedProps.estatus) || eventData.estatus;
-            if (estatus === 'Completado') {
+            if (estatus === 'Confirmado') {
                 eventData.color = '#0d6efd';
                 eventData.backgroundColor = '#0d6efd';
                 eventData.borderColor = '#0a58ca';
+                eventData.textColor = '#ffffff';
+            } else if (estatus === 'Completado') {
+                eventData.color = '#198754';
+                eventData.backgroundColor = '#198754';
+                eventData.borderColor = '#146c43';
                 eventData.textColor = '#ffffff';
             }
             return eventData;
@@ -53,7 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // Asigna clase CSS especial para forzar el color por hoja de estilo
         eventClassNames: function(arg) {
             const estatus = (arg.event.extendedProps && arg.event.extendedProps.estatus) || arg.event.estatus;
-            if (estatus === 'Completado') {
+            if (estatus === 'Confirmado') {
+                return ['evento-confirmado'];
+            } else if (estatus === 'Completado') {
                 return ['evento-completado'];
             }
             return [];
@@ -61,15 +68,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         eventDidMount: function(info) {
             const estatus = (info.event.extendedProps && info.event.extendedProps.estatus) || info.event.estatus;
-            if (estatus === 'Completado') {
+            if (estatus === 'Confirmado') {
                 info.el.style.setProperty('background-color', '#0d6efd', 'important');
                 info.el.style.setProperty('border-color', '#0a58ca', 'important');
                 info.el.style.setProperty('--fc-event-bg-color', '#0d6efd', 'important');
                 info.el.style.setProperty('--fc-event-border-color', '#0a58ca', 'important');
-                info.el.classList.add('evento-completado');
+                info.el.classList.add('evento-confirmado');
                 const mainEl = info.el.querySelector('.fc-event-main');
                 if (mainEl) {
                     mainEl.style.setProperty('background-color', '#0d6efd', 'important');
+                }
+            } else if (estatus === 'Completado') {
+                info.el.style.setProperty('background-color', '#198754', 'important');
+                info.el.style.setProperty('border-color', '#146c43', 'important');
+                info.el.style.setProperty('--fc-event-bg-color', '#198754', 'important');
+                info.el.style.setProperty('--fc-event-border-color', '#146c43', 'important');
+                info.el.classList.add('evento-completado');
+                const mainEl = info.el.querySelector('.fc-event-main');
+                if (mainEl) {
+                    mainEl.style.setProperty('background-color', '#198754', 'important');
                 }
             }
         },
@@ -167,8 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const badgeEstatus = document.getElementById('do-estatus');
             badgeEstatus.innerText = estatusActual;
             let colorBadge = 'bg-secondary';
-            if (estatusActual === 'Confirmado') colorBadge = 'bg-success';
+            if (estatusActual === 'Confirmado') colorBadge = 'bg-primary';
             if (estatusActual === 'Cancelado') colorBadge = 'bg-danger';
+            if (estatusActual === 'Completado') colorBadge = 'bg-success';
             badgeEstatus.className = 'badge fs-6 px-3 py-2 ' + colorBadge;
 
             const cajaAcciones = document.getElementById('caja-acciones-servicio');
@@ -179,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cajaAcciones.style.display = 'none';
                 btnEditar.style.display = 'none'; 
                 cajaBloqueo.style.display = 'block';
-                badgeEstatus.className = 'badge fs-6 px-3 py-2 bg-primary'; 
+                badgeEstatus.className = 'badge fs-6 px-3 py-2 bg-success'; 
             } else {
                 cajaAcciones.style.display = 'block';
                 btnEditar.style.display = 'inline-block';
@@ -190,9 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnConfirmar.className = 'btn btn-warning fw-bold w-100 ms-2 text-dark';
                     btnConfirmar.innerHTML = '✖ Retirar confirmación';
                     btnConfirmar.onclick = function() { retirarConfirmacion(); };
-                    badgeEstatus.className = 'badge fs-6 px-3 py-2 bg-success';
+                    badgeEstatus.className = 'badge fs-6 px-3 py-2 bg-primary';
                 } else {
-                    btnConfirmar.className = 'btn btn-success fw-bold w-100 ms-2';
+                    btnConfirmar.className = 'btn btn-primary fw-bold w-100 ms-2';
                     btnConfirmar.innerHTML = '✔ Marcar Confirmado';
                     btnConfirmar.onclick = function() { cambiarEstatusOrden('Confirmado'); };
                     badgeEstatus.className = 'badge fs-6 px-3 py-2 bg-secondary';
@@ -796,9 +814,9 @@ window.cargarHistorial = async function() {
                 });
                 
                 let colorBadge = 'bg-secondary';
-                if (orden.estatus === 'Confirmado') colorBadge = 'bg-success';
+                if (orden.estatus === 'Confirmado') colorBadge = 'bg-primary';
                 if (orden.estatus === 'Cancelado') colorBadge = 'bg-danger';
-                if (orden.estatus === 'Completado') colorBadge = 'bg-primary'; 
+                if (orden.estatus === 'Completado') colorBadge = 'bg-success'; 
 
                 const direccionCompleta = `${orden.domicilio || ''} ${orden.colonia || ''} ${orden.ciudad || ''}`;
                 const ordenYMD = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;

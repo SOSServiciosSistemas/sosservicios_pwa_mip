@@ -10,7 +10,22 @@
     padding: 2px 4px !important; /* Le da un poco de espacio al texto por dentro */
 }
 
-/* Eventos Completados en Azul */
+/* Confirmados en Azul */
+.fc-event.evento-confirmado,
+.fc-daygrid-event.evento-confirmado,
+.fc-timegrid-event.evento-confirmado,
+.evento-confirmado,
+.evento-confirmado .fc-event-main,
+.evento-confirmado .fc-event-main-frame,
+a.fc-event.evento-confirmado {
+    background-color: #0d6efd !important;
+    border-color: #0a58ca !important;
+    --fc-event-bg-color: #0d6efd !important;
+    --fc-event-border-color: #0a58ca !important;
+    color: #ffffff !important;
+}
+
+/* Completados en Verde */
 .fc-event.evento-completado,
 .fc-daygrid-event.evento-completado,
 .fc-timegrid-event.evento-completado,
@@ -18,10 +33,10 @@
 .evento-completado .fc-event-main,
 .evento-completado .fc-event-main-frame,
 a.fc-event.evento-completado {
-    background-color: #0d6efd !important;
-    border-color: #0a58ca !important;
-    --fc-event-bg-color: #0d6efd !important;
-    --fc-event-border-color: #0a58ca !important;
+    background-color: #198754 !important;
+    border-color: #146c43 !important;
+    --fc-event-bg-color: #198754 !important;
+    --fc-event-border-color: #146c43 !important;
     color: #ffffff !important;
 }
 

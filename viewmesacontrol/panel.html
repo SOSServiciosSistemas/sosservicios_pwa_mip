@@ -7,8 +7,24 @@
     <link rel="icon" href="../img/logo-SOS-Plagas.webp" type="image/webp">
     <link rel="manifest" href="../manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="panel.css?v=21">
+    <link rel="stylesheet" href="panel.css?v=22">
     <style>
+        /* Confirmados en Azul */
+        .fc-event.evento-confirmado,
+        .fc-daygrid-event.evento-confirmado,
+        .fc-timegrid-event.evento-confirmado,
+        .evento-confirmado,
+        .evento-confirmado .fc-event-main,
+        .evento-confirmado .fc-event-main-frame,
+        a.fc-event.evento-confirmado {
+            background-color: #0d6efd !important;
+            border-color: #0a58ca !important;
+            --fc-event-bg-color: #0d6efd !important;
+            --fc-event-border-color: #0a58ca !important;
+            color: #ffffff !important;
+        }
+
+        /* Completados en Verde */
         .fc-event.evento-completado,
         .fc-daygrid-event.evento-completado,
         .fc-timegrid-event.evento-completado,
@@ -16,10 +32,10 @@
         .evento-completado .fc-event-main,
         .evento-completado .fc-event-main-frame,
         a.fc-event.evento-completado {
-            background-color: #0d6efd !important;
-            border-color: #0a58ca !important;
-            --fc-event-bg-color: #0d6efd !important;
-            --fc-event-border-color: #0a58ca !important;
+            background-color: #198754 !important;
+            border-color: #146c43 !important;
+            --fc-event-bg-color: #198754 !important;
+            --fc-event-border-color: #146c43 !important;
             color: #ffffff !important;
         }
     </style>
@@ -73,8 +89,8 @@
                     <h2 class="fw-bold text-secondary mb-0">Agenda General Operativa</h2>
                     <div class="d-flex gap-2 ms-md-3 mt-1 mt-md-0" style="font-size: 0.75rem;">
                         <span class="badge bg-secondary">🕒 Pendiente</span>
-                        <span class="badge bg-success">✔ Confirmado</span>
-                        <span class="badge bg-primary">✔ Completado</span>
+                        <span class="badge bg-primary">✔ Confirmado</span>
+                        <span class="badge bg-success">✔ Completado</span>
                         <span class="badge bg-danger">✖ Cancelado</span>
                     </div>
                 </div>
@@ -962,7 +978,7 @@
     
     <!-- Scripts propios -->
     <script src="../config.js"></script>
-    <script src="panel.js?v=21"></script>
+    <script src="panel.js?v=22"></script>
     
 </body>
 </html>
