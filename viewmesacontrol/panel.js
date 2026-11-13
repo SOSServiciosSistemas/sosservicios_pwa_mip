@@ -38,6 +38,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         events: BASE_URL + '/api/agenda-general',
         
+        eventDidMount: function(info) {
+            if (info.event.extendedProps.estatus === 'Completado') {
+                info.el.style.backgroundColor = '#0d6efd';
+                info.el.style.borderColor = '#0d6efd';
+            }
+        },
+        
         eventDrop: async function(info) {
             const idOrden = info.event.id;
             const nuevaFechaObj = info.event.start;
