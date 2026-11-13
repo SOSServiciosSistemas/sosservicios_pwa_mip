@@ -38,10 +38,39 @@ document.addEventListener('DOMContentLoaded', () => {
         
         events: BASE_URL + '/api/agenda-general',
         
+        // Intercepta los datos del backend para garantizar color azul a los completados
+        eventDataTransform: function(eventData) {
+            const estatus = (eventData.extendedProps && eventData.extendedProps.estatus) || eventData.estatus;
+            if (estatus === 'Completado') {
+                eventData.color = '#0d6efd';
+                eventData.backgroundColor = '#0d6efd';
+                eventData.borderColor = '#0a58ca';
+                eventData.textColor = '#ffffff';
+            }
+            return eventData;
+        },
+
+        // Asigna clase CSS especial para forzar el color por hoja de estilo
+        eventClassNames: function(arg) {
+            const estatus = (arg.event.extendedProps && arg.event.extendedProps.estatus) || arg.event.estatus;
+            if (estatus === 'Completado') {
+                return ['evento-completado'];
+            }
+            return [];
+        },
+        
         eventDidMount: function(info) {
-            if (info.event.extendedProps.estatus === 'Completado') {
-                info.el.style.backgroundColor = '#0d6efd';
-                info.el.style.borderColor = '#0d6efd';
+            const estatus = (info.event.extendedProps && info.event.extendedProps.estatus) || info.event.estatus;
+            if (estatus === 'Completado') {
+                info.el.style.setProperty('background-color', '#0d6efd', 'important');
+                info.el.style.setProperty('border-color', '#0a58ca', 'important');
+                info.el.style.setProperty('--fc-event-bg-color', '#0d6efd', 'important');
+                info.el.style.setProperty('--fc-event-border-color', '#0a58ca', 'important');
+                info.el.classList.add('evento-completado');
+                const mainEl = info.el.querySelector('.fc-event-main');
+                if (mainEl) {
+                    mainEl.style.setProperty('background-color', '#0d6efd', 'important');
+                }
             }
         },
         
