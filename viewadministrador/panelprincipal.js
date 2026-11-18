@@ -1,7 +1,7 @@
 // Seguridad básica: Verificar que haya un usuario y que sea Admin
 document.addEventListener('DOMContentLoaded', () => {
     const rolUsuario = localStorage.getItem('rolUsuario');
-    if (rolUsuario !== 'Admin') {
+    if (rolUsuario !== 'Admin' && rolUsuario !== 'Administrador') {
         alert("Acceso denegado. Serás redirigido.");
         window.location.href = "../index.html"; // Regresa al login
         return;

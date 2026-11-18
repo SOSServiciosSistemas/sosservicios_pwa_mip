@@ -113,11 +113,15 @@
                         window.location.href = "viewtecnico/tecnico.html";
                     } else if (rol === 'Mesa_Control') {
                         window.location.href = "viewmesacontrol/panel.html";
-                    } else if (rol === 'Admin') {
+                    } else if (rol === 'Admin' || rol === 'Administrador') {
                         window.location.href = "viewadministrador/panelprincipal.html";
-
                     } else if (rol === 'Direccion') {
                         window.location.href = "viewdireccion/panel.html";
+                    } else {
+                        mensajeError.innerText = "Rol no asignado o desconocido: " + (rol || 'Sin rol');
+                        mensajeError.classList.remove('d-none');
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = 'Iniciar Sesión';
                     }
 
                 } else {

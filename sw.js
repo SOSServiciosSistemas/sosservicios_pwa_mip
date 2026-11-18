@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sos-servicios-v22';
+const CACHE_NAME = 'sos-servicios-v23';
 
 // Archivos estáticos principales que queremos que funcionen sin conexión (Offline)
 const urlsToCache = [
@@ -47,6 +47,9 @@ self.addEventListener('activate', event => {
 
 // Evento Fetch: Estrategia de Red Primero (Network First), con respaldo en caché
 self.addEventListener('fetch', event => {
+  // Ignorar peticiones que no sean HTTP/HTTPS (por ejemplo extensiones del navegador chrome-extension://)
+  if (!event.request.url.startsWith('http')) return;
+
   // Ignorar peticiones que no son GET (como POST del login o datos de API)
   if (event.request.method !== 'GET') return;
 
