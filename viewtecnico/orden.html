@@ -64,11 +64,54 @@
                 if(datos.exito) {
                     const orden = datos.orden;
                     const tipoServ = (orden.tipo_servicio || '').toLowerCase();
-                    const esDiagnosticoOInspeccion = tipoServ.includes('diagn') || tipoServ.includes('inspecc');
+                    const subtipo = orden.subtipo_monitoreo || orden.subtipo_servicio || '';
                     const contenedorAcciones = document.getElementById('contenedor-acciones-orden');
 
                     if (orden.estatus === 'Completado' || orden.estatus === 'Realizado') {
-                        if (esDiagnosticoOInspeccion) {
+                        if (tipoServ === 'monitoreo') {
+                            if (subtipo === 'Luz') {
+                                contenedorAcciones.innerHTML = `
+                                    <div class="alert alert-info text-center py-2 mb-3 fw-bold">
+                                        💡 Monitoreo de Luz Completado
+                                    </div>
+                                    <a href="../documentosclientes/reporte_luz.html?folio=${folio}" class="btn btn-info text-white w-100 fw-bold py-3 shadow-sm">
+                                        💡 Ver Reporte de Dispositivos de Luz
+                                    </a>
+                                `;
+                            } else {
+                                contenedorAcciones.innerHTML = `
+                                    <div class="alert alert-primary text-center py-2 mb-3 fw-bold">
+                                        📋 Monitoreo de Control Completado
+                                    </div>
+                                    <a href="../documentosclientes/reporte_control.html?folio=${folio}" class="btn btn-primary w-100 fw-bold py-3 shadow-sm">
+                                        📋 Ver Reporte de Dispositivos de Control
+                                    </a>
+                                `;
+                            }
+                        } else if (tipoServ === 'inspección') {
+                            if (subtipo === 'Analisis_Riesgos') {
+                                contenedorAcciones.innerHTML = `
+                                    <div class="alert alert-warning text-center py-2 mb-3 fw-bold">
+                                        ⚠️ Análisis de Riesgos Completado
+                                    </div>
+                                    <a href="#" onclick="alert('Formato en preparación'); return false;" class="btn btn-warning w-100 fw-bold py-3 shadow-sm">
+                                        ⚠️ Ver Análisis de Riesgos
+                                    </a>
+                                `;
+                            } else {
+                                contenedorAcciones.innerHTML = `
+                                    <div class="alert alert-success text-center py-2 mb-3 fw-bold">
+                                        ✔ Diagnóstico Realizado y Registrado
+                                    </div>
+                                    <a href="../documentosclientes/inspeccion_diagnostico.html?folio=${folio}" class="btn btn-primary w-100 fw-bold py-3 mb-2 shadow-sm" style="background-color: #0b5394; border-color: #0b5394;">
+                                        📋 Ver Diagnóstico (Interno)
+                                    </a>
+                                    <a href="../documentosclientes/recomendaciones_seguimiento.html?folio=${folio}" class="btn btn-outline-success w-100 fw-bold py-3 shadow-sm">
+                                        📄 Ver Recomendaciones y Seguimiento (Cliente)
+                                    </a>
+                                `;
+                            }
+                        } else if (tipoServ === 'diagnóstico') {
                             contenedorAcciones.innerHTML = `
                                 <div class="alert alert-success text-center py-2 mb-3 fw-bold">
                                     ✔ Diagnóstico Realizado y Registrado
@@ -91,7 +134,35 @@
                             `;
                         }
                     } else {
-                        if (esDiagnosticoOInspeccion) {
+                        if (tipoServ === 'monitoreo') {
+                            if (subtipo === 'Luz') {
+                                contenedorAcciones.innerHTML = `
+                                    <button class="btn btn-info text-white w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='monitoreo_luz.html?folio=${folio}'">
+                                        💡 Monitoreo Realizado (Llenar Dispositivos de Luz)
+                                    </button>
+                                `;
+                            } else {
+                                contenedorAcciones.innerHTML = `
+                                    <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='monitoreo_control.html?folio=${folio}'">
+                                        📋 Monitoreo Realizado (Llenar Dispositivos de Control)
+                                    </button>
+                                `;
+                            }
+                        } else if (tipoServ === 'inspección') {
+                            if (subtipo === 'Analisis_Riesgos') {
+                                contenedorAcciones.innerHTML = `
+                                    <button class="btn btn-warning text-dark w-100 fw-bold py-3 shadow-sm" onclick="alert('Formato de Análisis de Riesgos en preparación.');">
+                                        ⚠️ Llenar Análisis de Riesgos
+                                    </button>
+                                `;
+                            } else {
+                                contenedorAcciones.innerHTML = `
+                                    <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='inspeccion.html?folio=${folio}'" style="background-color: #0b5394; border-color: #0b5394;">
+                                        🔍 Diagnóstico Realizado (Llenar Diagnóstico)
+                                    </button>
+                                `;
+                            }
+                        } else if (tipoServ === 'diagnóstico') {
                             contenedorAcciones.innerHTML = `
                                 <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm" onclick="window.location.href='inspeccion.html?folio=${folio}'" style="background-color: #0b5394; border-color: #0b5394;">
                                     🔍 Diagnóstico Realizado (Llenar Diagnóstico)
@@ -188,10 +259,19 @@
                             `;
                         }
 
+                        let subtipoTxt = '';
+                        if (subtipo) {
+                            if (subtipo === 'Control') subtipoTxt = ' (Dispositivos de Control)';
+                            else if (subtipo === 'Luz') subtipoTxt = ' (Dispositivos de Luz)';
+                            else if (subtipo === 'Analisis_Riesgos') subtipoTxt = ' (Análisis de Riesgos)';
+                            else if (subtipo === 'Diagnostico') subtipoTxt = ' (Diagnóstico)';
+                            else subtipoTxt = ` (${subtipo})`;
+                        }
+
                         // Dibujamos el formato emulando la hoja impresa
                         document.getElementById('contenedor-datos').innerHTML = `
                             <div class="row mb-3 border-bottom pb-2">
-                                <div class="col-6"><strong>TIPO DE SERVICIO:</strong> <br><span class="text-primary">${orden.tipo_servicio || 'N/A'}</span></div>
+                                <div class="col-6"><strong>TIPO DE SERVICIO:</strong> <br><span class="text-primary">${orden.tipo_servicio || 'N/A'}${subtipoTxt}</span></div>
                                 <div class="col-6 text-end"><strong>FOLIO:</strong> <br><span class="text-danger fw-bold h5">${folioCompleto}</span></div>
                             </div>
 

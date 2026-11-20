@@ -602,7 +602,45 @@ const inputTotalTrat = document.getElementById('no-total-tratamientos');
 const contFrecuencia = document.getElementById('contenedor-frecuencia');
 const seccionPlagas = document.getElementById('seccion-plagas');
 
+// Función auxiliar para configurar dinámicamente el selector de subtipos (Monitoreo e Inspección)
+function configurarSelectorSubtipo(selectTipo, contFila, lblSubtipo, selectSubtipo, valorDefecto = '') {
+    if (!selectTipo || !contFila || !lblSubtipo || !selectSubtipo) return;
+    const tipo = selectTipo.value;
+    selectSubtipo.innerHTML = '';
+
+    if (tipo === 'Monitoreo') {
+        contFila.classList.remove('d-none');
+        lblSubtipo.innerText = 'Tipo de Reporte de Monitoreo *';
+        selectSubtipo.required = true;
+        selectSubtipo.innerHTML = `
+            <option value="Control">Reporte dispositivos de control</option>
+            <option value="Luz">Reporte dispositivos de luz</option>
+        `;
+        if (valorDefecto) selectSubtipo.value = valorDefecto;
+    } else if (tipo === 'Inspección') {
+        contFila.classList.remove('d-none');
+        lblSubtipo.innerText = 'Tipo de Reporte de Inspección *';
+        selectSubtipo.required = true;
+        selectSubtipo.innerHTML = `
+            <option value="Diagnostico">Diagnóstico</option>
+            <option value="Analisis_Riesgos">Análisis de riesgos</option>
+        `;
+        if (valorDefecto) selectSubtipo.value = valorDefecto;
+    } else {
+        contFila.classList.add('d-none');
+        selectSubtipo.required = false;
+        selectSubtipo.innerHTML = '';
+    }
+}
+
 inputTipoServicio.addEventListener('change', function() {
+    configurarSelectorSubtipo(
+        this,
+        document.getElementById('fila-no-subtipo'),
+        document.getElementById('lbl-no-subtipo'),
+        document.getElementById('no-subtipo-servicio')
+    );
+
     if (this.value === 'Diagnóstico' || this.value === 'Inspección') {
         inputNumTrat.value = 0;
         inputTotalTrat.value = 0;
@@ -665,6 +703,8 @@ document.getElementById('form-nueva-orden').addEventListener('submit', async (e)
         id_tecnico: document.getElementById('no-tecnico').value,
         fecha_programada: document.getElementById('no-fecha').value,
         tipo_servicio: inputTipoServicio.value,
+        subtipo_servicio: document.getElementById('no-subtipo-servicio').value || null,
+        subtipo_monitoreo: document.getElementById('no-subtipo-servicio').value || null,
         observaciones_mesa: document.getElementById('no-observaciones').value,
         costo: document.getElementById('no-costo').value || 0,
         num_tratamiento: inputNumTrat.value,
@@ -834,9 +874,28 @@ window.cargarHistorial = async function() {
 
                 let botonesAccion = '';
                 const tipoServ = (orden.tipo_servicio || '').toLowerCase();
-                const esDiagnosticoOInspeccion = tipoServ.includes('diagn') || tipoServ.includes('inspecc');
+                const subtipo = (orden.subtipo_monitoreo || orden.subtipo_servicio || '');
+
                 if (orden.estatus === 'Completado') {
-                    if (esDiagnosticoOInspeccion) {
+                    if (tipoServ === 'monitoreo') {
+                        if (subtipo === 'Luz') {
+                            botonesAccion = `<br><a class="btn btn-sm btn-outline-info fw-bold mt-2" href="../documentosclientes/reporte_luz.html?folio=${orden.id_orden}" target="_blank">💡 Reporte de Luz</a>`;
+                        } else {
+                            botonesAccion = `<br><a class="btn btn-sm btn-outline-primary fw-bold mt-2" href="../documentosclientes/reporte_control.html?folio=${orden.id_orden}" target="_blank">📋 Reporte de Control</a>`;
+                        }
+                    } else if (tipoServ === 'inspección') {
+                        if (subtipo === 'Analisis_Riesgos') {
+                            botonesAccion = `<br><a class="btn btn-sm btn-outline-warning text-dark fw-bold mt-2" href="#" onclick="alert('Formato de Análisis de Riesgos en preparación.'); return false;">⚠️ Análisis de Riesgos</a>`;
+                        } else {
+                            botonesAccion = `
+                                <br>
+                                <div class="btn-group mt-2">
+                                    <a class="btn btn-sm btn-outline-primary fw-bold" href="../documentosclientes/inspeccion_diagnostico.html?folio=${orden.id_orden}" target="_blank" title="Diagnóstico y Presupuesto">📋 Diagnóstico</a>
+                                    <a class="btn btn-sm btn-outline-success fw-bold" href="../documentosclientes/recomendaciones_seguimiento.html?folio=${orden.id_orden}" target="_blank" title="Recomendaciones y Seguimiento">📄 Seguimiento</a>
+                                </div>
+                            `;
+                        }
+                    } else if (tipoServ === 'diagnóstico') {
                         botonesAccion = `
                             <br>
                             <div class="btn-group mt-2">
@@ -995,6 +1054,13 @@ window.abrirModalEditarOrden = async function(idOrdenDirecto) {
 
             document.getElementById('eo-fecha').value = fechaFormateada;
             document.getElementById('eo-tipo-servicio').value = o.tipo_servicio || '';
+            configurarSelectorSubtipo(
+                document.getElementById('eo-tipo-servicio'),
+                document.getElementById('fila-eo-subtipo'),
+                document.getElementById('lbl-eo-subtipo'),
+                document.getElementById('eo-subtipo-servicio'),
+                o.subtipo_monitoreo || o.subtipo_servicio || ''
+            );
             document.getElementById('eo-costo').value = o.costo || 0;
             document.getElementById('eo-observaciones').value = o.observaciones_mesa || '';
             
@@ -1051,6 +1117,15 @@ window.abrirModalEditarOrden = async function(idOrdenDirecto) {
     }
 };
 
+document.getElementById('eo-tipo-servicio').addEventListener('change', function() {
+    configurarSelectorSubtipo(
+        this,
+        document.getElementById('fila-eo-subtipo'),
+        document.getElementById('lbl-eo-subtipo'),
+        document.getElementById('eo-subtipo-servicio')
+    );
+});
+
 document.getElementById('form-editar-orden').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -1071,6 +1146,8 @@ document.getElementById('form-editar-orden').addEventListener('submit', async (e
         fecha_programada: fechaSeleccionada,
         id_tecnico: document.getElementById('eo-tecnico').value,
         tipo_servicio: document.getElementById('eo-tipo-servicio').value,
+        subtipo_servicio: document.getElementById('eo-subtipo-servicio').value || null,
+        subtipo_monitoreo: document.getElementById('eo-subtipo-servicio').value || null,
         costo: document.getElementById('eo-costo').value || 0,
         observaciones_mesa: document.getElementById('eo-observaciones').value
     };
