@@ -1574,13 +1574,14 @@ window.cargarInventarioOficina = async function() {
             datos.inventario.forEach(item => {
                 // Lógica inteligente para mostrar Stock
                 let stockTexto = '';
-                if(item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
-                    // Si es líquido/polvo, calculamos cuántos "envases" representa eso
-                    const envases = (parseFloat(item.cantidad_disponible) / parseFloat(item.capacidad_presentacion)).toFixed(1);
-                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida} <br><small class="text-muted">(${envases} envases)</small>`;
+                const capacidad = parseFloat(item.capacidad_presentacion) || 1;
+                const cantDisp = parseFloat(item.cantidad_disponible) || 0;
+                if (capacidad > 1) {
+                    const envases = (cantDisp / capacidad);
+                    const envasesFmt = (envases % 1 === 0) ? envases.toString() : envases.toFixed(2);
+                    stockTexto = `${cantDisp} ${item.unidad_medida} <br><small class="text-muted">(${envasesFmt} envases)</small>`;
                 } else {
-                    // Si son piezas (ej. desarmadores), se muestra directo
-                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida}`;
+                    stockTexto = `${cantDisp} ${item.unidad_medida}`;
                 }
 
                 // Damos formato a la fecha de caducidad
@@ -1636,13 +1637,16 @@ window.cargarInventarioTecnicos = async function() {
             datos.inventario.forEach(item => {
                 tecnicosUnicos.add(item.nombre_almacen);
                 
-                // Lógica de envases vs mililitros
+                // Lógica de envases vs unidades base
                 let stockTexto = '';
-                if(item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
-                    const envases = (parseFloat(item.cantidad_disponible) / parseFloat(item.capacidad_presentacion)).toFixed(1);
-                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida} <span class="text-muted small">(${envases} envases)</span>`;
+                const capacidadTec = parseFloat(item.capacidad_presentacion) || 1;
+                const cantDispTec = parseFloat(item.cantidad_disponible) || 0;
+                if (capacidadTec > 1) {
+                    const envases = (cantDispTec / capacidadTec);
+                    const envasesFmt = (envases % 1 === 0) ? envases.toString() : envases.toFixed(2);
+                    stockTexto = `${cantDispTec} ${item.unidad_medida} <span class="text-muted small">(${envasesFmt} envases)</span>`;
                 } else {
-                    stockTexto = `${item.cantidad_disponible} ${item.unidad_medida}`;
+                    stockTexto = `${cantDispTec} ${item.unidad_medida}`;
                 }
 
                 // Agregamos un data-atributo a la fila para poder filtrarla fácilmente
@@ -1723,12 +1727,17 @@ document.getElementById('btn-traspasar-stock')?.addEventListener('click', async 
             const disponibles = datosInv.inventario.filter(item => parseFloat(item.cantidad_disponible) > 0);
             
             disponibles.forEach(item => {
-                const stockBase = parseFloat(item.cantidad_disponible);
+                const stockBase = parseFloat(item.cantidad_disponible) || 0;
                 const capacidad = parseFloat(item.capacidad_presentacion) || 1;
-                let stockEnvases = stockBase;
                 
-                if (item.unidad_medida === 'ml' || item.unidad_medida === 'g') {
-                    stockEnvases = (stockBase / capacidad).toFixed(2);
+                const stockEnvases = (stockBase / capacidad);
+                const stockEnvasesFmt = (stockEnvases % 1 === 0) ? stockEnvases.toString() : stockEnvases.toFixed(2);
+                
+                let textoDisp = '';
+                if (capacidad > 1) {
+                    textoDisp = `${stockEnvasesFmt} env. (${stockBase} ${item.unidad_medida})`;
+                } else {
+                    textoDisp = `${stockBase} ${item.unidad_medida}`;
                 }
                 
                 selectProd.innerHTML += `
@@ -1736,9 +1745,9 @@ document.getElementById('btn-traspasar-stock')?.addEventListener('click', async 
                             data-unidad="${item.unidad_medida}"
                             data-capacidad="${capacidad}"
                             data-stock-base="${stockBase}"
-                            data-stock-envases="${stockEnvases}"
+                            data-stock-envases="${stockEnvasesFmt}"
                             data-nombre="${item.nombre_comercial}">
-                        ${item.clave_producto} - ${item.nombre_comercial} (Disp: ${stockEnvases} envases)
+                        ${item.clave_producto} - ${item.nombre_comercial} (Disp: ${textoDisp})
                     </option>`;
             });
         }
@@ -1753,29 +1762,33 @@ function actualizarMaximosTraspaso() {
     const selectUnidad = document.getElementById('traspaso-tipo-unidad');
     const opcion = selectProd.options[selectProd.selectedIndex];
 
-    if (opcion.value) {
-        const unidad = opcion.getAttribute('data-unidad');
-        const stockBase = opcion.getAttribute('data-stock-base');
-        const stockEnvases = opcion.getAttribute('data-stock-envases');
+    if (opcion && opcion.value) {
+        const unidad = opcion.getAttribute('data-unidad') || 'pz';
+        const stockBase = parseFloat(opcion.getAttribute('data-stock-base')) || 0;
+        const stockEnvases = parseFloat(opcion.getAttribute('data-stock-envases')) || 0;
+        const capacidad = parseFloat(opcion.getAttribute('data-capacidad')) || 1;
 
-        // Mostramos la unidad real (ml, g, pz)
-        document.getElementById('opt-unidad-base').innerText = unidad;
+        // Mostramos la unidad real (Piezas, ml, g)
+        const optBase = document.getElementById('opt-unidad-base');
+        let nombreUnidadBase = unidad;
+        if (unidad === 'pz') nombreUnidadBase = 'Piezas (pz)';
+        else if (unidad === 'ml') nombreUnidadBase = 'Mililitros (ml)';
+        else if (unidad === 'g') nombreUnidadBase = 'Gramos (g)';
+        
+        if (optBase) optBase.innerText = nombreUnidadBase;
 
-        // Si es una pieza (ej. Desarmador), bloqueamos la opción de 'ml/g'
-        if(unidad === 'pz') {
-            selectUnidad.value = 'envase';
-            selectUnidad.disabled = true;
-        } else {
-            selectUnidad.disabled = false;
-        }
+        // Siempre habilitado para que el usuario pueda elegir envases o piezas sueltas
+        selectUnidad.disabled = false;
 
         // Ajustamos la etiqueta visual y el validador HTML (max)
         if (selectUnidad.value === 'envase') {
-            document.getElementById('ayuda-stock-maximo').innerText = `Stock máximo: ${stockEnvases} envases/pz`;
+            document.getElementById('ayuda-stock-maximo').innerText = `Stock disponible: ${stockEnvases} envases (${stockBase} ${unidad} totales)`;
             document.getElementById('traspaso-cantidad').max = stockEnvases;
+            document.getElementById('traspaso-cantidad').placeholder = "Ej. 1";
         } else {
-            document.getElementById('ayuda-stock-maximo').innerText = `Stock máximo: ${stockBase} ${unidad}`;
+            document.getElementById('ayuda-stock-maximo').innerText = `Stock disponible: ${stockBase} ${nombreUnidadBase}`;
             document.getElementById('traspaso-cantidad').max = stockBase;
+            document.getElementById('traspaso-cantidad').placeholder = "Ej. 50";
         }
     } else {
         document.getElementById('ayuda-stock-maximo').innerText = '';
