@@ -2033,7 +2033,13 @@ window.renderizarTablaServiciosCobranza = function(lista) {
                 </span>
             `;
             badgeEstadoPago = `<span class="badge bg-danger py-1 px-2 fw-bold">Por Cobrar</span>`;
-        } else if (s.costo_total > 0 && s.saldo_pendiente <= 0) {
+        } else if (s.costo_total === 0) {
+            celdaSaldo = `
+                <div class="fw-bold text-secondary fs-6">$0.00</div>
+                <small class="text-muted">Sin costo</small>
+            `;
+            badgeEstadoPago = `<span class="badge bg-light text-secondary border py-1 px-2">Sin costo</span>`;
+        } else if (s.costo_total > 0 && s.saldo_pendiente <= 0 && s.total_cobrado > 0) {
             celdaSaldo = `
                 <div class="fw-bold text-success fs-6">$0.00</div>
                 <small class="text-muted">Totalmente cubierto</small>
@@ -2042,7 +2048,7 @@ window.renderizarTablaServiciosCobranza = function(lista) {
         } else if (s.total_cobrado > 0 && s.saldo_pendiente > 0) {
             celdaSaldo = `
                 <div class="fw-bold text-warning-emphasis fs-6">${fmtDinero(s.saldo_pendiente)}</div>
-                <small class="text-muted">Resta de ${fmtDinero(s.costo_total)}</small>
+                <small class="text-muted">Abonado: ${fmtDinero(s.total_cobrado)}</small>
             `;
             badgeEstadoPago = `<span class="badge bg-warning text-dark py-1 px-2">Abono Parcial</span>`;
         } else {
@@ -2050,7 +2056,9 @@ window.renderizarTablaServiciosCobranza = function(lista) {
                 <div class="fw-bold text-secondary fs-6">${fmtDinero(s.saldo_pendiente)}</div>
                 <small class="text-muted">Por realizar</small>
             `;
-            badgeEstadoPago = `<span class="badge bg-secondary py-1 px-2">Agendado</span>`;
+            const txtEst = s.estatus === 'Confirmado' ? 'Confirmado' : 'Agendado';
+            const colorEst = s.estatus === 'Confirmado' ? 'bg-primary' : 'bg-secondary';
+            badgeEstadoPago = `<span class="badge ${colorEst} py-1 px-2">${txtEst}</span>`;
         }
 
         // Botones de acción
