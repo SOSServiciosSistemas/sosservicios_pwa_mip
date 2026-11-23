@@ -590,6 +590,8 @@ async function cambiarEstatusCliente(id, nuevoEstatus) {
 // ==========================================
 // MÓDULO DE PRODUCTOS (Químicos)
 // ==========================================
+let listaProductosActuales = [];
+
 async function cargarProductos() {
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/productos');
@@ -599,7 +601,8 @@ async function cargarProductos() {
         tbody.innerHTML = '';
 
         if (datos.exito) {
-            datos.productos.forEach(producto => {
+            listaProductosActuales = datos.productos || [];
+            listaProductosActuales.forEach(producto => {
                 const tipoTexto = producto.tipo_quimico || (producto.categoria === 'Quimico' ? 'Químico' : (producto.categoria || 'N/A'));
                 const fila = `
                     <tr>
@@ -612,10 +615,16 @@ async function cargarProductos() {
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-sm ${producto.activo ? 'btn-danger' : 'btn-success'}" 
-                                onclick="cambiarEstatusProducto(${producto.id_producto}, ${!producto.activo})">
-                                ${producto.activo ? 'Desactivar' : 'Reactivar'}
-                            </button>
+                            <div class="d-flex gap-1 justify-content-start">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                    onclick="abrirModalEditarProducto(${producto.id_producto})" title="Modificar Producto">
+                                    ✏️ Editar
+                                </button>
+                                <button class="btn btn-sm ${producto.activo ? 'btn-danger' : 'btn-success'}" 
+                                    onclick="cambiarEstatusProducto(${producto.id_producto}, ${!producto.activo})">
+                                    ${producto.activo ? 'Desactivar' : 'Reactivar'}
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -648,13 +657,79 @@ async function cambiarEstatusProducto(id, nuevoEstatus) {
     }
 }
 
+// Abrir modal en modo edición
+window.abrirModalEditarProducto = function (id) {
+    const prod = listaProductosActuales.find(p => p.id_producto === id);
+    if (!prod) {
+        alert("No se encontró la información del producto.");
+        return;
+    }
+
+    const form = document.getElementById('form-nuevo-producto');
+    form.reset();
+
+    document.getElementById('prod-id-edicion').value = prod.id_producto;
+    document.getElementById('modalNuevoProductoLabel').textContent = `Modificar Producto: ${prod.nombre_comercial}`;
+    document.getElementById('btn-guardar-producto').textContent = 'Actualizar Cambios';
+
+    document.getElementById('prod-nombre').value = prod.nombre_comercial || '';
+    document.getElementById('prod-clave').value = prod.clave_producto || '';
+    document.getElementById('prod-categoria').value = prod.categoria || '';
+    document.getElementById('prod-unidad').value = prod.unidad_medida || 'ml';
+    document.getElementById('prod-presentacion').value = prod.capacidad_presentacion || '';
+    document.getElementById('prod-stock-min').value = prod.stock_minimo || '';
+
+    const seccionQuimicos = document.getElementById('seccion-quimicos');
+    const selTipo = document.getElementById('prod-tipo-quimico');
+    const selSub = document.getElementById('prod-subcategoria');
+    const inputOtro = document.getElementById('prod-tipo-quimico-otro');
+
+    if (prod.categoria === 'Quimico') {
+        seccionQuimicos.classList.remove('d-none');
+        if (selTipo) selTipo.required = true;
+        if (selSub) selSub.required = true;
+
+        const tiposEstandar = ['Plaguicida', 'Rodenticida', 'Sanitizante', 'Desinfectante'];
+        if (tiposEstandar.includes(prod.tipo_quimico)) {
+            selTipo.value = prod.tipo_quimico;
+            window.toggleCampoTipoQuimico(prod.tipo_quimico);
+        } else if (prod.tipo_quimico) {
+            selTipo.value = 'Otro';
+            window.toggleCampoTipoQuimico('Otro');
+            if (inputOtro) inputOtro.value = prod.tipo_quimico;
+        } else {
+            selTipo.value = '';
+            window.toggleCampoTipoQuimico('');
+        }
+
+        if (selSub) selSub.value = prod.subcategoria || '';
+        document.getElementById('prod-ingrediente').value = prod.ingrediente_activo || '';
+        document.getElementById('prod-registro').value = prod.registro_sanitario || '';
+    } else {
+        seccionQuimicos.classList.add('d-none');
+        if (selTipo) { selTipo.required = false; selTipo.value = ''; }
+        if (selSub) { selSub.required = false; selSub.value = ''; }
+        if (inputOtro) { inputOtro.required = false; inputOtro.value = ''; inputOtro.classList.add('d-none'); }
+        document.getElementById('prod-ingrediente').value = '';
+        document.getElementById('prod-registro').value = '';
+    }
+
+    const modalEl = document.getElementById('modalNuevoProducto');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+};
+
 // ==========================================
 // INTERFAZ: MODAL DE NUEVO PRODUCTO
 // ==========================================
 
 // Mostrar la ventana al hacer clic en el botón
 document.getElementById('btn-nuevo-producto').addEventListener('click', () => {
-    const modal = new bootstrap.Modal(document.getElementById('modalNuevoProducto'));
+    document.getElementById('prod-id-edicion').value = '';
+    document.getElementById('modalNuevoProductoLabel').textContent = 'Registrar Nuevo Producto al Catálogo';
+    document.getElementById('btn-guardar-producto').textContent = 'Guardar Producto';
+
+    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNuevoProducto'));
     document.getElementById('form-nuevo-producto').reset(); // Limpia el formulario
     document.getElementById('seccion-quimicos').classList.add('d-none'); // Oculta sección química por defecto
 
@@ -776,8 +851,13 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
     };
 
     try {
-        const respuesta = await fetch(BASE_URL + '/api/admin/productos', {
-            method: 'POST',
+        const idEdicion = document.getElementById('prod-id-edicion').value;
+        const esEdicion = Boolean(idEdicion);
+        const urlPeticion = esEdicion ? `${BASE_URL}/api/admin/productos/${idEdicion}` : `${BASE_URL}/api/admin/productos`;
+        const metodoPeticion = esEdicion ? 'PUT' : 'POST';
+
+        const respuesta = await fetch(urlPeticion, {
+            method: metodoPeticion,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(nuevoProducto)
         });
@@ -788,13 +868,13 @@ document.getElementById('form-nuevo-producto').addEventListener('submit', async 
             // Cerramos la ventana modal usando bootstrap
             const modalEl = document.getElementById('modalNuevoProducto');
             const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
+            if (modal) modal.hide();
 
-            // Recargamos la tabla para que aparezca el nuevo registro
+            // Recargamos la tabla para que aparezca el nuevo registro o los cambios
             cargarProductos();
-            alert("¡Producto registrado con éxito!");
+            alert(esEdicion ? "¡Producto modificado con éxito!" : "¡Producto registrado con éxito!");
         } else {
-            alert("Error al registrar: " + datos.error);
+            alert("Error al guardar: " + datos.error);
         }
     } catch (error) {
         console.error("Error en la petición:", error);

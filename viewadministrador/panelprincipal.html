@@ -476,6 +476,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="form-nuevo-producto">
+                        <input type="hidden" id="prod-id-edicion" value="">
 
                         <!-- Fila 1: Nombre y Clave -->
                         <div class="row mb-3">
@@ -573,8 +574,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" form="form-nuevo-producto" class="btn btn-primary">Guardar
-                        Producto</button>
+                    <button type="submit" form="form-nuevo-producto" id="btn-guardar-producto" class="btn btn-primary">Guardar Producto</button>
                 </div>
             </div>
         </div>
