@@ -8,9 +8,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Verifica la sesión activa del usuario
     const idUsuario = localStorage.getItem('idUsuario');
     const nombreUsuario = localStorage.getItem('nombreUsuario');
+    const rolUsuario = localStorage.getItem('rolUsuario');
 
     if (!idUsuario) {
         window.location.href = "../index.html";
+        return;
+    }
+
+    // Candado de seguridad: Solo usuarios con rol Técnico pueden usar esta vista
+    if (rolUsuario !== 'Tecnico') {
+        alert("Acceso denegado: Esta vista es exclusiva para personal técnico en ruta.");
+        if (rolUsuario === 'Admin' || rolUsuario === 'Administrador') {
+            window.location.href = "../viewadministrador/panelprincipal.html";
+        } else if (rolUsuario === 'Mesa_Control') {
+            window.location.href = "../viewmesacontrol/panel.html";
+        } else if (rolUsuario === 'Direccion') {
+            window.location.href = "../viewdireccion/panel.html";
+        } else {
+            window.location.href = "../index.html";
+        }
         return;
     }
 
