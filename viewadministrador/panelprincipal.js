@@ -1,11 +1,7 @@
-// Seguridad básica: Verificar que haya un usuario y que sea Admin
-document.addEventListener('DOMContentLoaded', () => {
-    const rolUsuario = localStorage.getItem('rolUsuario');
-    if (rolUsuario !== 'Admin' && rolUsuario !== 'Administrador') {
-        alert("Acceso denegado. Serás redirigido.");
-        window.location.href = "../index.html"; // Regresa al login
-        return;
-    }
+// Seguridad robusta: Verificar autenticidad de sesión y rol Admin contra el servidor
+document.addEventListener('DOMContentLoaded', async () => {
+    const tieneAcceso = await window.validarAccesoVista(['Admin', 'Administrador']);
+    if (!tieneAcceso) return;
 
     // Cargar los datos iniciales de las 3 tablas
     cargarUsuarios();

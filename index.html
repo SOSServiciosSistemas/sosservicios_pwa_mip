@@ -100,10 +100,13 @@
                     // Si el servidor le da acceso, revisa qué rol tiene
                     const rol = datos.usuario.rol;
 
-                    // Guardamos los datos y el ROL del usuario en el navegador
+                    // Guardamos los datos, el ROL y el TOKEN criptográfico del usuario en el navegador
                     localStorage.setItem('nombreUsuario', datos.usuario.nombre_completo);
                     localStorage.setItem('idUsuario', datos.usuario.id_usuario);
                     localStorage.setItem('rolUsuario', rol);
+                    if (datos.token) {
+                        localStorage.setItem('tokenAuth', datos.token);
+                    }
                     if (datos.usuario.firma_digital) {
                         localStorage.setItem('firmaDigital', datos.usuario.firma_digital);
                     }

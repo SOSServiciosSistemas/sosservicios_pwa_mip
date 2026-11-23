@@ -2,16 +2,11 @@
 let todasLasBitacoras = []; // Variable global para guardar los planeadores
 
 // ================= CONFIGURACIÓN INICIAL =================
-document.addEventListener('DOMContentLoaded', () => {
-    const idUsuario = localStorage.getItem('idUsuario');
-    const nombreUsuario = localStorage.getItem('nombreUsuario');
-    const rolUsuario = localStorage.getItem('rolUsuario');
+document.addEventListener('DOMContentLoaded', async () => {
+    const tieneAcceso = await window.validarAccesoVista(['Mesa_Control', 'Admin', 'Administrador', 'Direccion']);
+    if (!tieneAcceso) return;
 
-    // Seguridad
-    if (!idUsuario || rolUsuario !== 'Mesa_Control') {
-        window.location.href = "../index.html";
-        return;
-    }
+    const nombreUsuario = localStorage.getItem('nombreUsuario') || 'Usuario';
     document.getElementById('nombre-usuario-nav').innerText = `Hola, ${nombreUsuario}`;
 
     // Iniciar con todos los meses visibles para permitir navegar arriba y abajo en el historial
