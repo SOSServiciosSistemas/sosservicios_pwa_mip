@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         body {
@@ -115,11 +116,14 @@
 
     <!-- Barra Superior Flotante para Acciones -->
     <div class="d-flex justify-content-center gap-2 mb-3 no-imprimir">
-        <button class="btn btn-secondary btn-sm" onclick="window.history.back()">
-            <i class="fa fa-arrow-left me-1"></i> Regresar
+        <button class="btn btn-secondary btn-sm" onclick="window.location.href='../viewtecnico/tecnico.html'">
+            <i class="fa fa-arrow-left me-1"></i> Inicio Técnico
         </button>
         <button class="btn btn-primary btn-sm" onclick="window.print()">
             <i class="fa fa-print me-1"></i> Imprimir Reporte
+        </button>
+        <button id="btn-top-firmar" class="btn btn-success btn-sm fw-bold">
+            <i class="fas fa-pen me-1"></i> ✍️ Firmar con Cliente
         </button>
     </div>
 
@@ -191,7 +195,7 @@
             </tr>
         </table>
 
-        <!-- DETALLE DE PRODUCTO A UTILIZAR -->
+        <!-- DETALLE DE PRODUCTO A UTILIZAR (Numerado 1, 2, 3...) -->
         <div class="row g-1 mb-2">
             <div class="col-8">
                 <table class="tabla-oficial">
@@ -200,7 +204,7 @@
                             <th colspan="4" class="text-center py-1">DETALLE DE PRODUCTO A UTILIZAR</th>
                         </tr>
                         <tr class="bg-gris" style="font-size: 0.62rem;">
-                            <th style="width: 10%;">TIPO</th>
+                            <th style="width: 10%;">No.</th>
                             <th style="width: 45%;">INGREDIENTE ACTIVO</th>
                             <th style="width: 30%;">REGISTRO CICOPLAFEST</th>
                             <th style="width: 15%;">DOSIS</th>
@@ -208,22 +212,16 @@
                     </thead>
                     <tbody id="tabla-productos-cuerpo">
                         <tr>
-                            <td class="text-center fw-bold">A</td>
-                            <td id="prod-a-ia">-</td>
-                            <td id="prod-a-reg">-</td>
-                            <td class="text-center" id="prod-a-dosis">-</td>
+                            <td class="text-center fw-bold">1</td>
+                            <td id="prod-1-ia">-</td>
+                            <td id="prod-1-reg">-</td>
+                            <td class="text-center" id="prod-1-dosis">-</td>
                         </tr>
                         <tr>
-                            <td class="text-center fw-bold">B</td>
-                            <td id="prod-b-ia">-</td>
-                            <td id="prod-b-reg">-</td>
-                            <td class="text-center" id="prod-b-dosis">-</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center fw-bold">C</td>
-                            <td id="prod-c-ia">-</td>
-                            <td id="prod-c-reg">-</td>
-                            <td class="text-center" id="prod-c-dosis">-</td>
+                            <td class="text-center fw-bold">2</td>
+                            <td id="prod-2-ia">-</td>
+                            <td id="prod-2-reg">-</td>
+                            <td class="text-center" id="prod-2-dosis">-</td>
                         </tr>
                     </tbody>
                 </table>
@@ -330,15 +328,15 @@
             </div>
 
             <div class="col-4 text-center">
-                <div style="height: 45px; display: flex; align-items: flex-end; justify-content: center;">
-                    <img id="img-firma-cliente" src="" alt="Firma Cliente" style="max-height: 45px; max-width: 90%; display: none;">
+                <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                    <img id="img-firma-cliente" src="" alt="Firma Cliente" style="max-height: 55px; max-width: 90%; display: none;">
                 </div>
                 <div class="linea-firma" id="lbl-firma-cliente">NOMBRE Y FIRMA DEL CLIENTE</div>
             </div>
 
             <div class="col-4 text-center">
-                <div style="height: 45px; display: flex; align-items: flex-end; justify-content: center;">
-                    <img id="img-firma-tecnico" src="" alt="Firma Técnico" style="max-height: 45px; max-width: 90%; display: none;">
+                <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                    <img id="img-firma-tecnico" src="" alt="Firma Técnico" style="max-height: 55px; max-width: 90%; display: none;">
                 </div>
                 <div class="linea-firma" id="lbl-firma-tecnico">NOMBRE Y FIRMA TÉCNICO</div>
             </div>
@@ -350,19 +348,182 @@
 
     </div>
 
-    <!-- Script de Carga de Datos -->
+    <!-- BOTÓN INFERIOR PARA FIRMAR A PANTALLA COMPLETA -->
+    <div class="container text-center mt-3 mb-5 no-imprimir" id="zona-boton-firmar">
+        <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow rounded-pill fw-bold">
+            <i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente
+        </button>
+    </div>
+
+    <!-- MODAL DE FIRMA A PANTALLA COMPLETA -->
+    <div id="modal-firma" class="d-none no-imprimir"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 9999; display: flex; flex-direction: column;">
+
+        <!-- Encabezado del modal -->
+        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow"
+            style="flex-shrink: 0;">
+            <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Gire su dispositivo para firmar cómodamente</h6>
+            <button id="btn-cerrar-firma" class="btn btn-danger btn-sm">Cancelar</button>
+        </div>
+
+        <!-- Área del Canvas de Firma -->
+        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
+            <canvas id="pizarra-firma" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+        </div>
+
+        <!-- Botones de acción del modal -->
+        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg"
+            style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
+            <button id="btn-borrar-firma" class="btn btn-warning fw-bold shadow-sm">
+                <i class="fas fa-eraser me-1"></i> Borrar
+            </button>
+            <button id="btn-guardar-firma" class="btn btn-success fw-bold shadow-sm">
+                <i class="fas fa-check-circle me-1"></i> Guardar Firma y Finalizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Script de Carga de Datos y Manejo de Firma -->
     <script src="../config.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const folio = urlParams.get('folio');
+
+        let signaturePad = null;
+        const canvas = document.getElementById('pizarra-firma');
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!folio) {
                 alert("No se especificó ningún folio de servicio.");
                 return;
             }
+
+            // Inicializar SignaturePad
+            if (canvas) {
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    minWidth: 4,
+                    maxWidth: 8
+                });
+            }
+
+            // Configurar eventos del modal de firma
+            configurarEventosFirma();
+
+            // Cargar los datos del reporte
             await cargarReporteControl(folio);
         });
+
+        // Configuración de eventos para firma
+        function configurarEventosFirma() {
+            const modalFirma = document.getElementById('modal-firma');
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const btnTopFirmar = document.getElementById('btn-top-firmar');
+            const btnCerrarFirma = document.getElementById('btn-cerrar-firma');
+            const btnBorrarFirma = document.getElementById('btn-borrar-firma');
+            const btnGuardarFirma = document.getElementById('btn-guardar-firma');
+
+            const abrirModal = () => {
+                modalFirma.classList.remove('d-none');
+                document.body.style.overflow = 'hidden';
+                setTimeout(redimensionarCanvas, 100);
+            };
+
+            const cerrarModal = () => {
+                modalFirma.classList.add('d-none');
+                document.body.style.overflow = 'auto';
+            };
+
+            if (btnAbrirFirma) btnAbrirFirma.addEventListener('click', abrirModal);
+            if (btnTopFirmar) btnTopFirmar.addEventListener('click', abrirModal);
+            if (btnCerrarFirma) btnCerrarFirma.addEventListener('click', cerrarModal);
+
+            if (btnBorrarFirma) {
+                btnBorrarFirma.addEventListener('click', () => {
+                    if (signaturePad) signaturePad.clear();
+                });
+            }
+
+            if (btnGuardarFirma) {
+                btnGuardarFirma.addEventListener('click', guardarFirmaYFinalizar);
+            }
+
+            window.addEventListener("resize", () => {
+                if (modalFirma && !modalFirma.classList.contains('d-none')) {
+                    redimensionarCanvas();
+                }
+            });
+        }
+
+        // Redimensionar el canvas manteniendo proporciones
+        function redimensionarCanvas() {
+            if (!canvas || !signaturePad) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+            signaturePad.clear();
+        }
+
+        // Recorte inteligente de espacios en blanco de la firma
+        function recortarFirma(canvasSrc) {
+            const ctx = canvasSrc.getContext('2d');
+            const w = canvasSrc.width;
+            const h = canvasSrc.height;
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let hayTrazo = false;
+
+            for (let y = 0; y < h; y += 2) {
+                for (let x = 0; x < w; x += 2) {
+                    const idx = (y * w + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    const a = data[idx + 3];
+
+                    if (a > 30 && (r < 225 || g < 225 || b < 225)) {
+                        hayTrazo = true;
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (!hayTrazo) {
+                return canvasSrc.toDataURL("image/png");
+            }
+
+            const padding = Math.max(15, Math.round(w * 0.02));
+            minX = Math.max(0, minX - padding);
+            minY = Math.max(0, minY - padding);
+            maxX = Math.min(w, maxX + padding);
+            maxY = Math.min(h, maxY + padding);
+
+            const cropW = maxX - minX;
+            const cropH = maxY - minY;
+
+            const cropped = document.createElement('canvas');
+            cropped.width = cropW;
+            cropped.height = cropH;
+            const cCtx = cropped.getContext('2d');
+
+            cCtx.fillStyle = '#ffffff';
+            cCtx.fillRect(0, 0, cropW, cropH);
+
+            cCtx.drawImage(
+                canvasSrc,
+                minX, minY, cropW, cropH,
+                0, 0, cropW, cropH
+            );
+
+            return cropped.toDataURL("image/png");
+        }
 
         // Conversor de números a letras para pesos mexicanos
         function numeroALetras(numero) {
@@ -371,6 +532,7 @@
             return `${num.toLocaleString()} PESOS ${centavos}/100 M.N.`;
         }
 
+        // Cargar datos de la orden y reporte
         async function cargarReporteControl(idOrden) {
             try {
                 const res = await fetch(`${BASE_URL}/api/monitoreo/reporte-control/${idOrden}`);
@@ -416,17 +578,26 @@
                 document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
                 document.getElementById('rep-hora-salida').innerText = formatHora24(o.hora_fin);
 
-                // Químicos / Productos
-                if (det.productos && Array.isArray(detallesProductos = det.productos)) {
-                    ['a', 'b', 'c'].forEach((letra, idx) => {
-                        const p = detallesProductos[idx];
-                        if (p) {
-                            document.getElementById(`prod-${letra}-ia`).innerText = p.ingrediente_activo || '-';
-                            document.getElementById(`prod-${letra}-reg`).innerText = p.cicoplafest || '-';
-                            document.getElementById(`prod-${letra}-dosis`).innerText = p.dosis || '-';
-                        }
-                    });
+                // Químicos / Productos dinámicos numerados 1, 2, 3...
+                const tbodyProd = document.getElementById('tabla-productos-cuerpo');
+                tbodyProd.innerHTML = '';
+                const prods = (det.productos && Array.isArray(det.productos) && det.productos.length > 0)
+                    ? det.productos
+                    : [];
+
+                const totalFilas = Math.max(2, prods.length);
+                for (let i = 0; i < totalFilas; i++) {
+                    const p = prods[i];
+                    tbodyProd.innerHTML += `
+                        <tr>
+                            <td class="text-center fw-bold">${i + 1}</td>
+                            <td>${p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-'}</td>
+                            <td>${p ? (p.cicoplafest || p.registro_sanitario || '-') : '-'}</td>
+                            <td class="text-center">${p ? (p.dosis || '-') : '-'}</td>
+                        </tr>
+                    `;
                 }
+
                 if (det.check_rodenticida) document.getElementById('chk-rodenticida').innerText = 'X';
                 if (det.check_placa_goma) document.getElementById('chk-placa-goma').innerText = 'X';
                 if (det.check_mecanico) document.getElementById('chk-mecanico').innerText = 'X';
@@ -475,12 +646,13 @@
                         filasHTML = `<tr><td colspan="7" class="text-center text-muted py-2">Sin dispositivos registrados en este cordón</td></tr>`;
                     } else {
                         dispArray.forEach(d => {
-                            const consumoTxt = (d.consumo_cebo !== undefined && d.consumo_cebo !== null && d.consumo_cebo !== '') ? `${d.consumo_cebo}%` : '-';
+                            const cVal = (d.consumo_cebo !== undefined && d.consumo_cebo !== null && d.consumo_cebo !== '') ? d.consumo_cebo : '';
+                            const consumoTxt = cVal !== '' ? `${cVal}%` : '-';
                             const cmTxt = d.cambio_material === 'S' || d.cambio_material === true ? 'S' : (d.cambio_material === 'N' || d.cambio_material === false ? 'N' : (d.cambio_material || '-'));
                             filasHTML += `
                                 <tr>
                                     <td class="text-center fw-bold" style="width: 6%;">${d.numero_dispositivo || '-'}</td>
-                                    <td class="text-center" style="width: 14%;">${d.tipo_material || '-'}</td>
+                                    <td class="text-center fw-bold" style="width: 14%;">${d.tipo_material || '-'}</td>
                                     <td class="text-center fw-bold" style="width: 10%; color: #0056b3;">${consumoTxt}</td>
                                     <td class="text-center" style="width: 8%;">${cmTxt}</td>
                                     <td class="text-center" style="width: 14%; font-weight: 500;">${d.tipo_plaga || '-'}</td>
@@ -551,6 +723,13 @@
                     const imgC = document.getElementById('img-firma-cliente');
                     imgC.src = det.firma_cliente;
                     imgC.style.display = 'block';
+
+                    const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+                    if (btnAbrirFirma) {
+                        btnAbrirFirma.innerHTML = `<i class="fas fa-check-circle me-2"></i> Reporte Firmado (Modificar)`;
+                        btnAbrirFirma.classList.remove('btn-success');
+                        btnAbrirFirma.classList.add('btn-outline-success');
+                    }
                 }
                 document.getElementById('lbl-firma-cliente').innerText = `${o.nombre_cliente || ''}\nNOMBRE Y FIRMA DEL CLIENTE`;
 
@@ -566,6 +745,90 @@
                 console.error("Error al cargar reporte:", err);
                 alert("Error de conexión al cargar el reporte de control.");
             }
+        }
+
+        // Guardar Firma a Pantalla Completa y Finalizar
+        async function guardarFirmaYFinalizar() {
+            if (!signaturePad || signaturePad.isEmpty()) {
+                alert("Por favor solicite al cliente que firme en el recuadro antes de guardar.");
+                return;
+            }
+
+            const modalFirma = document.getElementById('modal-firma');
+            modalFirma.classList.add('d-none');
+            document.body.style.overflow = 'auto';
+
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const btnTopFirmar = document.getElementById('btn-top-firmar');
+            const zonaBotonFirmar = document.getElementById('zona-boton-firmar');
+
+            if (btnAbrirFirma) {
+                btnAbrirFirma.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Guardando firma y generando PDF...`;
+                btnAbrirFirma.disabled = true;
+            }
+            if (btnTopFirmar) btnTopFirmar.disabled = true;
+
+            const imagenFirma = recortarFirma(canvas);
+            const imgElement = document.getElementById('img-firma-cliente');
+            imgElement.src = imagenFirma;
+            imgElement.style.display = 'block';
+
+            // Pausa estratégica de 500ms para asegurar el render de la imagen en el DOM
+            setTimeout(async () => {
+                try {
+                    // 1. Guardar firma en la base de datos
+                    const resFirma = await fetch(`${BASE_URL}/api/monitoreo/firmar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_orden: folio, firma_cliente: imagenFirma })
+                    });
+                    const dataFirma = await resFirma.json();
+                    if (!dataFirma.exito) {
+                        console.warn("Aviso al guardar firma en BD:", dataFirma.error);
+                    }
+
+                    // 2. Generar PDF y enviar al servidor si html2pdf está disponible
+                    if (typeof html2pdf !== 'undefined') {
+                        try {
+                            if (zonaBotonFirmar) zonaBotonFirmar.style.display = 'none';
+                            window.scrollTo(0, 0);
+
+                            const elementoHoja = document.getElementById('hoja-reporte');
+                            const opciones = {
+                                margin:       [0, 0.4, 0, 0.4],
+                                filename:     `Reporte_Control_${folio}.pdf`,
+                                image:        { type: 'jpeg', quality: 0.98 },
+                                html2canvas:  { scale: 2 },
+                                jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
+                            };
+
+                            const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
+                            
+                            await fetch(`${BASE_URL}/api/reportes/guardar-pdf`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ folio: folio, pdfBase64: pdfBase64, firma_cliente: imagenFirma })
+                            });
+                        } catch (errPdf) {
+                            console.warn("Aviso al generar PDF en servidor:", errPdf);
+                        } finally {
+                            if (zonaBotonFirmar) zonaBotonFirmar.style.display = 'block';
+                        }
+                    }
+
+                    alert("¡Reporte de Control firmado y guardado exitosamente!");
+                    window.location.href = "../viewtecnico/tecnico.html";
+
+                } catch (err) {
+                    console.error("Error al guardar firma:", err);
+                    alert("Ocurrió un error al guardar la firma: " + err.message);
+                    if (btnAbrirFirma) {
+                        btnAbrirFirma.innerHTML = `<i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente`;
+                        btnAbrirFirma.disabled = false;
+                    }
+                    if (btnTopFirmar) btnTopFirmar.disabled = false;
+                }
+            }, 500);
         }
     </script>
 </body>

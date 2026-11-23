@@ -8,13 +8,12 @@
     <link rel="manifest" href="../manifest.json">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
     <style>
         body {
             background-color: #f4f6f9;
             font-size: 0.85rem;
-            padding-bottom: 60px;
+            padding-bottom: 70px;
         }
 
         .card-custom {
@@ -43,12 +42,20 @@
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 15px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
         }
 
         .tarjeta-dispositivo {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tarjeta-quimico {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 10px;
@@ -62,13 +69,10 @@
             border-radius: 6px;
         }
 
-        .canvas-firma {
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            width: 100%;
-            height: 160px;
-            background-color: #fff;
-            touch-action: none;
+        .dropdown-menu-plagas {
+            max-height: 240px;
+            overflow-y: auto;
+            font-size: 0.82rem;
         }
     </style>
 </head>
@@ -99,7 +103,7 @@
 
         <form id="form-monitoreo-control">
 
-            <!-- Configuración General del Monitoreo -->
+            <!-- 1. Configuración General del Monitoreo -->
             <div class="card card-custom p-3">
                 <div class="header-seccion">
                     <span>1. Configuración de Monitoreo</span>
@@ -124,7 +128,7 @@
                 </div>
 
                 <div class="p-2 border rounded bg-light">
-                    <span class="fw-bold small text-secondary d-block mb-1">Tipo de Dispositivos Instalados:</span>
+                    <span class="fw-bold small text-secondary d-block mb-1">Dispositivos a Monitorear:</span>
                     <div class="d-flex flex-wrap gap-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="chk-cfg-cebaderos" checked>
@@ -142,65 +146,25 @@
                 </div>
             </div>
 
-            <!-- Detalle de Producto / Material a Utilizar -->
+            <!-- 2. Detalle de Producto / Químico a Utilizar (Dinámico desde Inventario del Técnico) -->
             <div class="card card-custom p-3">
                 <div class="header-seccion">
-                    <span>2. Detalle de Producto a Utilizar</span>
+                    <span>2. Productos e Insumos a Utilizar</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="agregarTarjetaQuimico()">
+                        <i class="fa fa-plus me-1"></i> Añadir Químico
+                    </button>
                 </div>
 
-                <!-- Producto A -->
-                <div class="border rounded p-2 mb-2 bg-light">
-                    <div class="fw-bold text-primary mb-1">Tipo A:</div>
-                    <div class="row g-2">
-                        <div class="col-12 col-md-5">
-                            <input type="text" class="form-control form-control-sm" id="prod-a-ia" placeholder="Ingrediente Activo (ej. Difacinona)">
-                        </div>
-                        <div class="col-8 col-md-4">
-                            <input type="text" class="form-control form-control-sm" id="prod-a-reg" placeholder="Reg. CICOPLAFEST">
-                        </div>
-                        <div class="col-4 col-md-3">
-                            <input type="text" class="form-control form-control-sm" id="prod-a-dosis" placeholder="Dosis (ej. A/D)">
-                        </div>
-                    </div>
+                <div class="alert alert-info py-1 px-2 small mb-2">
+                    <i class="fa fa-info-circle me-1"></i> Selecciona primero el <strong>Tipo de Producto</strong> para filtrar tu inventario disponible en camioneta.
                 </div>
 
-                <!-- Producto B (Opcional) -->
-                <div class="border rounded p-2 mb-2 bg-light">
-                    <div class="fw-bold text-secondary mb-1">Tipo B (Opcional):</div>
-                    <div class="row g-2">
-                        <div class="col-12 col-md-5">
-                            <input type="text" class="form-control form-control-sm" id="prod-b-ia" placeholder="Ingrediente Activo">
-                        </div>
-                        <div class="col-8 col-md-4">
-                            <input type="text" class="form-control form-control-sm" id="prod-b-reg" placeholder="Reg. CICOPLAFEST">
-                        </div>
-                        <div class="col-4 col-md-3">
-                            <input type="text" class="form-control form-control-sm" id="prod-b-dosis" placeholder="Dosis">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tipo de Producto Checkboxes -->
-                <div class="mt-2 pt-2 border-top">
-                    <span class="fw-bold small text-secondary d-block mb-1">Tipo de Producto Aplicado:</span>
-                    <div class="d-flex flex-wrap gap-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="chk-prod-rodenticida" checked>
-                            <label class="form-check-label fw-bold" for="chk-prod-rodenticida">Rodenticida</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="chk-prod-placa-goma">
-                            <label class="form-check-label" for="chk-prod-placa-goma">Placa de Goma</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="chk-prod-mecanico">
-                            <label class="form-check-label" for="chk-prod-mecanico">Mecánico</label>
-                        </div>
-                    </div>
+                <div id="contenedor-quimicos">
+                    <!-- Tarjetas de Químico 1, Químico 2, etc. -->
                 </div>
             </div>
 
-            <!-- Cordones y Dispositivos de Control -->
+            <!-- 3. Cordones y Dispositivos de Control -->
             <div class="card card-custom p-3">
                 <div class="header-seccion">
                     <span>3. Cordones y Dispositivos Monitoreados</span>
@@ -209,13 +173,12 @@
                     </button>
                 </div>
 
-                <!-- Contenedor dinámico de cordones -->
                 <div id="contenedor-cordones">
-                    <!-- Tarjetas de cordón inyectadas con JS -->
+                    <!-- Tarjetas de cordón inyectadas dinámicamente -->
                 </div>
             </div>
 
-            <!-- Acciones y Observaciones Generales & Seguimiento -->
+            <!-- 4. Observaciones Generales y Seguimiento -->
             <div class="card card-custom p-3">
                 <div class="header-seccion">
                     <span>4. Observaciones Generales y Seguimiento</span>
@@ -230,7 +193,7 @@
                 </div>
             </div>
 
-            <!-- Cobro y Factura -->
+            <!-- 5. Cobro del Servicio -->
             <div class="card card-custom p-3">
                 <div class="header-seccion">
                     <span>5. Cobro del Servicio</span>
@@ -249,22 +212,10 @@
                 </div>
             </div>
 
-            <!-- Firma Digital del Cliente -->
-            <div class="card card-custom p-3">
-                <div class="header-seccion">
-                    <span>6. Firma de Aceptación del Cliente</span>
-                    <button type="button" class="btn btn-sm btn-outline-danger" id="btn-limpiar-firma">
-                        <i class="fa fa-eraser me-1"></i> Limpiar
-                    </button>
-                </div>
-                <canvas id="canvas-firma-cliente" class="canvas-firma"></canvas>
-                <div class="text-center text-muted small mt-1">Firme con su dedo en el cuadro superior</div>
-            </div>
-
-            <!-- Botón Guardar y Generar Reporte -->
-            <div class="mt-3 mb-5">
-                <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-lg" id="btn-guardar-reporte">
-                    <i class="fa fa-check-circle me-2"></i> Guardar y Generar Reporte
+            <!-- Botón Continuar a Revisión y Firma en Formato PDF -->
+            <div class="mt-4 mb-5">
+                <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-lg fs-6" id="btn-guardar-reporte">
+                    <i class="fa fa-file-signature me-2"></i> Guardar y Revisar Reporte con Cliente ➔
                 </button>
             </div>
 
@@ -272,14 +223,29 @@
     </div>
 
     <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../config.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const folio = urlParams.get('folio');
 
-        let signaturePad = null;
         let ordenActual = null;
         let contadorCordones = 0;
+        let inventarioTecnico = [];
+
+        // Catálogo oficial de plagas
+        const catalogoPlagas = [
+            { id: 'MM', nombre: 'MM - Mus Musculus' },
+            { id: 'RR', nombre: 'RR - Rattus Rattus' },
+            { id: 'RN', nombre: 'RN - Rattus Norvegicus' },
+            { id: 'BG', nombre: 'BG - Cucaracha Alemana' },
+            { id: 'PA', nombre: 'PA - Cucaracha Americana' },
+            { id: 'H', nombre: 'H - Hormiga' },
+            { id: 'A', nombre: 'A - Araña' },
+            { id: 'AL', nombre: 'AL - Alacrán' },
+            { id: 'T', nombre: 'T - Tijerilla' },
+            { id: 'Otros', nombre: 'Otro' }
+        ];
 
         document.getElementById('btn-volver').onclick = () => {
             window.location.href = `orden.html?folio=${folio}`;
@@ -291,35 +257,188 @@
                 return;
             }
 
-            // Inicializar canvas de firma
-            const canvas = document.getElementById('canvas-firma-cliente');
-            function redimensionarCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                canvas.getContext("2d").scale(ratio, ratio);
-            }
-            window.addEventListener("resize", redimensionarCanvas);
-            redimensionarCanvas();
-            signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255, 255, 255)' });
-
-            document.getElementById('btn-limpiar-firma').addEventListener('click', () => {
-                signaturePad.clear();
-            });
-
-            // Guardar hora de llegada en localStorage si no existe
             if (!localStorage.getItem('hora_inicio_' + folio)) {
                 localStorage.setItem('hora_inicio_' + folio, new Date().toISOString());
             }
 
+            await cargarInventarioTecnico();
             await cargarDatosOrden(folio);
+
+            // Iniciar por defecto con 1 Químico
+            agregarTarjetaQuimico();
         });
 
+        // Cargar inventario del técnico desde el backend
+        async function cargarInventarioTecnico() {
+            try {
+                const res = await fetch(`${BASE_URL}/api/inventario/tecnicos`);
+                const data = await res.json();
+                if (data.exito && Array.isArray(data.inventario)) {
+                    const miId = localStorage.getItem('idUsuario');
+                    inventarioTecnico = data.inventario.filter(item => {
+                        const idDueno = item.id_tecnico || item.id_usuario || item.id_encargado;
+                        return idDueno == miId && parseFloat(item.cantidad_disponible) > 0;
+                    });
+                }
+            } catch (err) {
+                console.error("Error al cargar inventario:", err);
+            }
+        }
+
+        // ==========================================
+        // GESTIÓN DE QUÍMICOS / INSUMOS (Químico 1, 2, ...)
+        // ==========================================
+        function agregarTarjetaQuimico() {
+            const contenedor = document.getElementById('contenedor-quimicos');
+            const totalActual = contenedor.querySelectorAll('.tarjeta-quimico').length;
+            const numQuimico = totalActual + 1;
+
+            const div = document.createElement('div');
+            div.className = 'tarjeta-quimico';
+            div.id = `tarjeta-quimico-${numQuimico}`;
+
+            div.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                    <span class="badge bg-primary px-2 py-1 fs-6">
+                        Químico ${numQuimico} (Material ${numQuimico})
+                    </span>
+                    ${numQuimico > 1 ? `
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="eliminarTarjetaQuimico(this)">
+                        <i class="fa fa-trash"></i> Quitar
+                    </button>` : ''}
+                </div>
+
+                <div class="row g-2 mb-2">
+                    <div class="col-12 col-md-5">
+                        <label class="form-label small fw-bold text-secondary mb-1">1. Tipo de Producto *</label>
+                        <select class="form-select form-select-sm sel-tipo-producto" onchange="alCambiarTipoProducto(this)" required>
+                            <option value="">Seleccione tipo...</option>
+                            <option value="Rodenticida">Rodenticida</option>
+                            <option value="Placa de goma">Placa de goma</option>
+                            <option value="Mecánico">Mecánico</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-7">
+                        <label class="form-label small fw-bold text-primary mb-1">2. Insumo en Camioneta *</label>
+                        <select class="form-select form-select-sm sel-producto-inv" onchange="alSeleccionarProductoInventario(this)" required disabled>
+                            <option value="">Primero elija Tipo de Producto...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-12 col-md-5">
+                        <label class="form-label small text-secondary mb-1">Ingrediente Activo</label>
+                        <input type="text" class="form-control form-control-sm q-ingrediente" placeholder="Se llena en automático">
+                    </div>
+                    <div class="col-7 col-md-4">
+                        <label class="form-label small text-secondary mb-1">Reg. CICOPLAFEST</label>
+                        <input type="text" class="form-control form-control-sm q-registro" placeholder="Se llena en automático">
+                    </div>
+                    <div class="col-5 col-md-3">
+                        <label class="form-label small fw-bold text-secondary mb-1">Dosis *</label>
+                        <input type="text" class="form-control form-control-sm q-dosis" placeholder="Ej. A/D o 20 g" required>
+                    </div>
+                </div>
+            `;
+
+            contenedor.appendChild(div);
+            actualizarSelectoresMaterialDispositivos();
+        }
+
+        function eliminarTarjetaQuimico(btn) {
+            btn.closest('.tarjeta-quimico').remove();
+            renumerarQuimicos();
+            actualizarSelectoresMaterialDispositivos();
+        }
+
+        function renumerarQuimicos() {
+            const tarjetas = document.querySelectorAll('.tarjeta-quimico');
+            tarjetas.forEach((t, idx) => {
+                const num = idx + 1;
+                const badge = t.querySelector('.badge');
+                if (badge) badge.innerText = `Químico ${num} (Material ${num})`;
+            });
+        }
+
+        // Filtra los insumos de la camioneta según el Tipo de Producto elegido
+        function alCambiarTipoProducto(selectTipo) {
+            const tarjeta = selectTipo.closest('.tarjeta-quimico');
+            const selectInv = tarjeta.querySelector('.sel-producto-inv');
+            const valTipo = selectTipo.value;
+
+            selectInv.innerHTML = '';
+            tarjeta.querySelector('.q-ingrediente').value = '';
+            tarjeta.querySelector('.q-registro').value = '';
+
+            if (!valTipo) {
+                selectInv.disabled = true;
+                selectInv.innerHTML = '<option value="">Primero elija Tipo de Producto...</option>';
+                return;
+            }
+
+            selectInv.disabled = false;
+            let itemsFiltrados = [];
+
+            if (valTipo === 'Rodenticida') {
+                // Solo insumos clasificados como Rodenticida
+                itemsFiltrados = inventarioTecnico.filter(item => {
+                    const tipoQ = (item.tipo_quimico || '').toLowerCase();
+                    return tipoQ.includes('roden');
+                });
+            } else {
+                // Placa de goma o Mecánico: los clasificados como 'Otro' o trampas/adhesivos
+                itemsFiltrados = inventarioTecnico.filter(item => {
+                    const tipoQ = (item.tipo_quimico || '').toLowerCase();
+                    return tipoQ.includes('otro') || !tipoQ.includes('roden');
+                });
+            }
+
+            if (itemsFiltrados.length === 0) {
+                // Si no hay específicos en camioneta, ofrecer lista completa del inventario técnico
+                selectInv.innerHTML = '<option value="">Sin stock de este tipo (Seleccione otro)...</option>';
+                inventarioTecnico.forEach(it => {
+                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || it.nombre_comercial}" data-reg="${it.registro_sanitario || ''}">${it.nombre_comercial} (${it.clave_producto})</option>`;
+                });
+            } else {
+                selectInv.innerHTML = '<option value="">Seleccione producto...</option>';
+                itemsFiltrados.forEach(it => {
+                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || it.nombre_comercial}" data-reg="${it.registro_sanitario || ''}">${it.nombre_comercial} - Disp: ${parseFloat(it.cantidad_disponible).toFixed(1)} ${it.unidad_medida}</option>`;
+                });
+            }
+        }
+
+        function alSeleccionarProductoInventario(selectInv) {
+            const tarjeta = selectInv.closest('.tarjeta-quimico');
+            const opt = selectInv.selectedOptions[0];
+            if (!opt || !opt.value) return;
+
+            tarjeta.querySelector('.q-ingrediente').value = opt.getAttribute('data-ia') || '';
+            tarjeta.querySelector('.q-registro').value = opt.getAttribute('data-reg') || 'RSCO-RODE-0503-304-033-0.005';
+        }
+
+        function actualizarSelectoresMaterialDispositivos() {
+            const totalQuimicos = document.querySelectorAll('.tarjeta-quimico').length || 1;
+            document.querySelectorAll('.disp-material').forEach(sel => {
+                const valorPrevio = sel.value;
+                sel.innerHTML = '';
+                for (let i = 1; i <= totalQuimicos; i++) {
+                    sel.innerHTML += `<option value="${i}">Material ${i}</option>`;
+                }
+                if (valorPrevio && valorPrevio <= totalQuimicos) {
+                    sel.value = valorPrevio;
+                }
+            });
+        }
+
+        // ==========================================
+        // CORDONES Y DISPOSITIVOS
+        // ==========================================
         async function cargarDatosOrden(id) {
             try {
                 const res = await fetch(`${BASE_URL}/api/orden/${id}`);
                 const data = await res.json();
-
                 if (!data.exito) {
                     alert("No se pudo cargar la orden: " + data.error);
                     return;
@@ -331,21 +450,18 @@
                 document.getElementById('txt-fecha').innerText = new Date(ordenActual.fecha_programada).toLocaleDateString('es-MX');
                 document.getElementById('txt-cliente').innerText = ordenActual.nombre_cliente;
                 document.getElementById('txt-direccion').innerText = `${ordenActual.domicilio}, ${ordenActual.colonia}, ${ordenActual.ciudad}`;
-                
+
                 if (ordenActual.costo) {
                     document.getElementById('monto-cobrado').value = ordenActual.costo;
                 }
 
-                // Cargar dispositivos previos registrados para la ubicación del cliente
                 if (ordenActual.id_ubicacion) {
                     await cargarDispositivosPrevios(ordenActual.id_ubicacion);
                 } else {
-                    agregarCordon(); // Crear Cordón 1 por defecto
+                    agregarCordon(1);
                 }
-
             } catch (err) {
                 console.error("Error al cargar orden:", err);
-                alert("Error de conexión al cargar la orden.");
             }
         }
 
@@ -355,7 +471,6 @@
                 const data = await res.json();
 
                 if (data.exito && data.dispositivos && data.dispositivos.length > 0) {
-                    // Agrupar por cordón
                     const grupos = {};
                     data.dispositivos.forEach(d => {
                         const c = d.cordon || 1;
@@ -363,18 +478,16 @@
                         grupos[c].push(d);
                     });
 
-                    Object.keys(grupos).sort((a,b) => a - b).forEach(numCordon => {
+                    Object.keys(grupos).sort((a, b) => a - b).forEach(numCordon => {
                         agregarCordon(parseInt(numCordon), grupos[numCordon]);
                     });
                 } else {
-                    // Si no tiene dispositivos previos, crear Cordón 1 con 3 dispositivos base
-                    const cordonElem = agregarCordon(1);
-                    agregarDispositivoACordon(cordonElem, 1);
-                    agregarDispositivoACordon(cordonElem, 2);
-                    agregarDispositivoACordon(cordonElem, 3);
+                    const cElem = agregarCordon(1);
+                    agregarDispositivoACordon(cElem, 1);
+                    agregarDispositivoACordon(cElem, 2);
+                    agregarDispositivoACordon(cElem, 3);
                 }
             } catch (err) {
-                console.warn("No se pudieron cargar dispositivos previos:", err);
                 agregarCordon(1);
             }
         }
@@ -399,7 +512,7 @@
                     </button>
                 </div>
                 <div class="contenedor-dispositivos-cordon" id="dispositivos-cordon-${numCordon}">
-                    <!-- Dispositivos de este cordón -->
+                    <!-- Dispositivos -->
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="agregarDispositivoACordon(this.closest('.tarjeta-cordon'))">
                     <i class="fa fa-plus me-1"></i> + Dispositivo a Cordón ${numCordon}
@@ -433,6 +546,18 @@
 
             const divDisp = document.createElement('div');
             divDisp.className = 'tarjeta-dispositivo';
+
+            // Generar HTML de opciones de plagas para el multi-select
+            let plagasItemsHTML = '';
+            catalogoPlagas.forEach(p => {
+                plagasItemsHTML += `
+                    <div class="form-check py-1 border-bottom">
+                        <input class="form-check-input chk-p" type="checkbox" value="${p.id}" id="chk-p-${numDisp}-${p.id}" onchange="alCambiarPlagas(this)">
+                        <label class="form-check-label small" for="chk-p-${numDisp}-${p.id}">${p.nombre}</label>
+                    </div>
+                `;
+            });
+
             divDisp.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="badge-numero">Dispositivo #${numDisp}</span>
@@ -446,23 +571,19 @@
                     <div class="col-4">
                         <label class="form-label small fw-bold mb-1 text-secondary">Material</label>
                         <select class="form-select form-select-sm disp-material">
-                            <option value="A" selected>Tipo A</option>
-                            <option value="B">Tipo B</option>
-                            <option value="C">Tipo C</option>
+                            <!-- Inyectado dinámicamente según químicos -->
                         </select>
                     </div>
+
+                    <!-- Consumo manual con símbolo % automático -->
                     <div class="col-4">
                         <label class="form-label small fw-bold mb-1 text-primary">% Consumo</label>
-                        <select class="form-select form-select-sm disp-consumo">
-                            <option value="0" selected>0%</option>
-                            <option value="25">25%</option>
-                            <option value="50">50%</option>
-                            <option value="70">70%</option>
-                            <option value="75">75%</option>
-                            <option value="90">90%</option>
-                            <option value="100">100%</option>
-                        </select>
+                        <div class="input-group input-group-sm">
+                            <input type="number" min="0" max="100" class="form-control disp-consumo" value="0" placeholder="0" oninput="validarConsumo(this)" required>
+                            <span class="input-group-text fw-bold">%</span>
+                        </div>
                     </div>
+
                     <div class="col-4">
                         <label class="form-label small fw-bold mb-1 text-secondary">Cambio (CM)</label>
                         <select class="form-select form-select-sm disp-cm">
@@ -473,23 +594,24 @@
                 </div>
 
                 <div class="row g-2 mb-2">
-                    <div class="col-7">
-                        <label class="form-label small fw-bold mb-1 text-secondary">Plaga Encontrada</label>
-                        <select class="form-select form-select-sm disp-plaga">
-                            <option value="" selected>Ninguna</option>
-                            <option value="MM">MM - Mus Musculus</option>
-                            <option value="RR">RR - Rattus Rattus</option>
-                            <option value="RN">RN - Rattus Norvegicus</option>
-                            <option value="BG">BG - Cucaracha Alemana</option>
-                            <option value="PA">PA - Cucaracha Americana</option>
-                            <option value="H">H - Hormiga</option>
-                            <option value="A">A - Araña</option>
-                            <option value="AL">AL - Alacrán</option>
-                            <option value="T">T - Tijerilla</option>
-                            <option value="O">O - Otro</option>
-                        </select>
+                    <!-- Plagas Encontradas Multi-Selección -->
+                    <div class="col-8">
+                        <label class="form-label small fw-bold mb-1 text-secondary">Plagas Encontradas (Múltiple)</label>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100 text-start text-truncate btn-plagas-resumen" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                                Ninguna
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-plagas p-2 shadow w-100">
+                                ${plagasItemsHTML}
+                                <div class="mt-2 d-none cont-plaga-otro">
+                                    <label class="form-label small fw-bold text-primary mb-1">Especifique Plaga (Máx. 15 car.):</label>
+                                    <input type="text" class="form-control form-control-sm txt-plaga-otro" maxlength="15" placeholder="Ej. Polilla" oninput="actualizarTextoPlagas(this)">
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-5">
+
+                    <div class="col-4">
                         <label class="form-label small fw-bold mb-1 text-secondary">Capturas</label>
                         <input type="number" min="0" class="form-control form-control-sm disp-captura" value="0">
                     </div>
@@ -497,39 +619,133 @@
 
                 <div>
                     <label class="form-label small fw-bold mb-1 text-secondary">Observación individual</label>
-                    <input type="text" class="form-control form-control-sm disp-observacion" placeholder="Ej. Dañado, buen estado, presencia de heces...">
+                    <input type="text" class="form-control form-control-sm disp-observacion" placeholder="Ej. Buen estado, cebadera con heces...">
                 </div>
             `;
 
             contDispositivos.appendChild(divDisp);
+            actualizarSelectoresMaterialDispositivos();
         }
 
-        // Envío del Formulario
-        document.getElementById('form-monitoreo-control').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Validador de número entero de consumo entre 0 y 100
+        function validarConsumo(input) {
+            let val = parseInt(input.value);
+            if (isNaN(val)) val = 0;
+            if (val < 0) val = 0;
+            if (val > 100) val = 100;
+            input.value = val;
+        }
 
-            if (signaturePad.isEmpty()) {
-                alert("⚠️ Se requiere la firma del cliente para completar el reporte de monitoreo.");
+        // Manejo de multi-selección de plagas y campo 'Otro' (limitado a 15 caracteres)
+        function alCambiarPlagas(chk) {
+            const contDropdown = chk.closest('.dropdown-menu');
+            const contOtro = contDropdown.querySelector('.cont-plaga-otro');
+            const inputOtro = contDropdown.querySelector('.txt-plaga-otro');
+            const chkOtro = contDropdown.querySelector('input[value="Otros"]');
+
+            if (chkOtro && chkOtro.checked) {
+                contOtro.classList.remove('d-none');
+                inputOtro.focus();
+            } else {
+                contOtro.classList.add('d-none');
+                inputOtro.value = '';
+            }
+
+            actualizarTextoPlagas(chk);
+        }
+
+        function actualizarTextoPlagas(elem) {
+            const dropdown = elem.closest('.dropdown');
+            const btn = dropdown.querySelector('.btn-plagas-resumen');
+            const checkedBoxes = dropdown.querySelectorAll('.chk-p:checked');
+            const inputOtro = dropdown.querySelector('.txt-plaga-otro');
+
+            if (checkedBoxes.length === 0) {
+                btn.innerText = 'Ninguna';
+                btn.classList.remove('btn-primary', 'text-white');
+                btn.classList.add('btn-outline-secondary');
                 return;
             }
 
+            const seleccionados = [];
+            checkedBoxes.forEach(c => {
+                if (c.value === 'Otros') {
+                    const txt = (inputOtro.value || '').trim();
+                    seleccionados.push(txt ? `Otro(${txt})` : 'Otro');
+                } else {
+                    seleccionados.push(c.value);
+                }
+            });
+
+            btn.innerText = seleccionados.join(', ');
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary', 'text-white');
+        }
+
+        // ==========================================
+        // GUARDAR DATOS Y ENVIAR AL FORMATO DE FIRMA
+        // ==========================================
+        document.getElementById('form-monitoreo-control').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
             const btnSubmit = document.getElementById('btn-guardar-reporte');
             btnSubmit.disabled = true;
-            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando reporte...`;
+            btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Guardando datos...`;
 
-            // Recolectar cordones y dispositivos
+            // 1. Recolectar productos / insumos utilizados
+            const productosData = [];
+            let checkRodenticida = false;
+            let checkPlacaGoma = false;
+            let checkMecanico = false;
+
+            document.querySelectorAll('.tarjeta-quimico').forEach((t, idx) => {
+                const num = idx + 1;
+                const tipoProd = t.querySelector('.sel-tipo-producto').value;
+                const claveProd = t.querySelector('.sel-producto-inv').value;
+                const ia = t.querySelector('.q-ingrediente').value;
+                const reg = t.querySelector('.q-registro').value;
+                const dosis = t.querySelector('.q-dosis').value;
+
+                if (tipoProd === 'Rodenticida') checkRodenticida = true;
+                if (tipoProd === 'Placa de goma') checkPlacaGoma = true;
+                if (tipoProd === 'Mecánico') checkMecanico = true;
+
+                productosData.push({
+                    tipo: num.toString(), // 1, 2, 3...
+                    tipo_producto: tipoProd,
+                    clave_producto: claveProd,
+                    ingrediente_activo: ia,
+                    cicoplafest: reg,
+                    dosis: dosis
+                });
+            });
+
+            // 2. Recolectar cordones y dispositivos
             const cordonesData = [];
             document.querySelectorAll('.tarjeta-cordon').forEach(cCard => {
                 const numCordon = parseInt(cCard.dataset.cordon) || 1;
                 const dispList = [];
 
                 cCard.querySelectorAll('.tarjeta-dispositivo').forEach(dCard => {
+                    // Obtener plagas seleccionadas
+                    const plagasArr = [];
+                    const checkedPlagas = dCard.querySelectorAll('.chk-p:checked');
+                    const txtOtro = (dCard.querySelector('.txt-plaga-otro').value || '').trim();
+
+                    checkedPlagas.forEach(cp => {
+                        if (cp.value === 'Otros') {
+                            plagasArr.push(txtOtro ? `Otro(${txtOtro})` : 'Otro');
+                        } else {
+                            plagasArr.push(cp.value);
+                        }
+                    });
+
                     dispList.push({
                         numero_dispositivo: parseInt(dCard.querySelector('.disp-numero').value) || 1,
-                        tipo_material: dCard.querySelector('.disp-material').value,
+                        tipo_material: dCard.querySelector('.disp-material').value || '1',
                         consumo_cebo: parseFloat(dCard.querySelector('.disp-consumo').value) || 0,
                         cambio_material: dCard.querySelector('.disp-cm').value,
-                        tipo_plaga: dCard.querySelector('.disp-plaga').value,
+                        tipo_plaga: plagasArr.join(', '),
                         captura: parseInt(dCard.querySelector('.disp-captura').value) || 0,
                         observaciones: dCard.querySelector('.disp-observacion').value
                     });
@@ -540,26 +756,6 @@
                     dispositivos: dispList
                 });
             });
-
-            // Productos químicos
-            const productosData = [
-                {
-                    tipo: 'A',
-                    ingrediente_activo: document.getElementById('prod-a-ia').value || 'DIFACINONA',
-                    cicoplafest: document.getElementById('prod-a-reg').value || 'RSCO-RODE-0503-304-033-0.005',
-                    dosis: document.getElementById('prod-a-dosis').value || 'A/D'
-                }
-            ];
-
-            const prodB_IA = document.getElementById('prod-b-ia').value;
-            if (prodB_IA) {
-                productosData.push({
-                    tipo: 'B',
-                    ingrediente_activo: prodB_IA,
-                    cicoplafest: document.getElementById('prod-b-reg').value || '',
-                    dosis: document.getElementById('prod-b-dosis').value || ''
-                });
-            }
 
             const horaInicio = localStorage.getItem('hora_inicio_' + folio) || new Date().toISOString();
             const horaFin = new Date().toISOString();
@@ -578,14 +774,13 @@
                     check_cebaderos: document.getElementById('chk-cfg-cebaderos').checked,
                     check_trampa_mecanica: document.getElementById('chk-cfg-trampa-mec').checked,
                     check_trampa_adhesiva: document.getElementById('chk-cfg-trampa-adh').checked,
-                    check_rodenticida: document.getElementById('chk-prod-rodenticida').checked,
-                    check_placa_goma: document.getElementById('chk-prod-placa-goma').checked,
-                    check_mecanico: document.getElementById('chk-prod-mecanico').checked,
+                    check_rodenticida: checkRodenticida,
+                    check_placa_goma: checkPlacaGoma,
+                    check_mecanico: checkMecanico,
                     productos: productosData,
                     cordones: cordonesData,
                     acciones_observaciones: document.getElementById('txt-acciones-generales').value,
-                    seguimiento: document.getElementById('txt-seguimiento').value,
-                    firma_cliente: signaturePad.toDataURL()
+                    seguimiento: document.getElementById('txt-seguimiento').value
                 }
             };
 
@@ -599,18 +794,18 @@
                 const data = await respuesta.json();
                 if (data.exito) {
                     localStorage.removeItem('hora_inicio_' + folio);
-                    alert("✅ Reporte de Monitoreo guardado exitosamente.");
+                    // Redirigir al reporte oficial para revisión y firma a pantalla completa
                     window.location.href = `../documentosclientes/reporte_control.html?folio=${folio}`;
                 } else {
                     alert("Error al guardar: " + data.error);
                     btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = `<i class="fa fa-check-circle me-2"></i> Guardar y Generar Reporte`;
+                    btnSubmit.innerHTML = `<i class="fa fa-file-signature me-2"></i> Guardar y Revisar Reporte con Cliente ➔`;
                 }
             } catch (err) {
                 console.error("Error al enviar reporte:", err);
                 alert("Error de conexión al guardar el reporte.");
                 btnSubmit.disabled = false;
-                btnSubmit.innerHTML = `<i class="fa fa-check-circle me-2"></i> Guardar y Generar Reporte`;
+                btnSubmit.innerHTML = `<i class="fa fa-file-signature me-2"></i> Guardar y Revisar Reporte con Cliente ➔`;
             }
         });
     </script>

@@ -248,11 +248,12 @@ document.addEventListener('DOMContentLoaded', () => {
 window.cambiarVista = function(vista, evento) {
     if(evento) evento.preventDefault();
     
-    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active', 'text-warning', 'text-info', 'fw-bold'));
+    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active', 'text-warning', 'text-info', 'text-success', 'fw-bold'));
     if(evento) {
         evento.target.classList.add('active');
         if (vista === 'planeadores') evento.target.classList.add('text-warning', 'fw-bold');
         if (vista === 'inventarios') evento.target.classList.add('text-info', 'fw-bold');
+        if (vista === 'cobranza') evento.target.classList.add('text-success', 'fw-bold');
     }
 
     // Ocultar todas las vistas
@@ -261,6 +262,8 @@ window.cambiarVista = function(vista, evento) {
     document.getElementById('seccion-historial').style.display = 'none';
     document.getElementById('seccion-planeadores').style.display = 'none';
     document.getElementById('seccion-inventarios').style.display = 'none'; 
+    const secCobranza = document.getElementById('seccion-cobranza');
+    if (secCobranza) secCobranza.style.display = 'none';
     
     // Mostrar la vista elegida
     if(vista === 'clientes') {
@@ -280,6 +283,9 @@ window.cambiarVista = function(vista, evento) {
         cargarInventarioOficina();
         cargarCatalogoParaCompras(); 
         cargarInventarioTecnicos();
+    } else if(vista === 'cobranza') {
+        if (secCobranza) secCobranza.style.display = 'block';
+        cargarCobranza();
     }
 };
 
@@ -1842,4 +1848,468 @@ document.getElementById('form-traspaso-stock')?.addEventListener('submit', async
         btnGuardar.innerText = "Confirmar Entrega"; 
         btnGuardar.disabled = false;
     }
+});
+
+// ====================================================================
+// MÓDULO DE CONTROL DE PAGOS Y COBRANZA (MESA DE CONTROL)
+// ====================================================================
+window.datosCobranza = null;
+window.subvistaCobranzaActual = 'urgentes';
+
+// Cambiar subvista de cobranza (pestañas: urgentes, pendientes, historial, todos)
+window.cambiarSubvistaCobranza = function(subvista) {
+    window.subvistaCobranzaActual = subvista;
+
+    // Actualizar estilo de pills
+    const pills = ['urgentes', 'pendientes', 'historial', 'todos'];
+    pills.forEach(p => {
+        const btn = document.getElementById(`pill-${p}`);
+        if (btn) {
+            btn.classList.remove('active');
+            if (p === subvista) btn.classList.add('active');
+        }
+    });
+
+    const vistaServicios = document.getElementById('vista-tabla-servicios');
+    const vistaPagos = document.getElementById('vista-tabla-historial-pagos');
+
+    if (subvista === 'historial') {
+        if (vistaServicios) vistaServicios.style.display = 'none';
+        if (vistaPagos) vistaPagos.style.display = 'block';
+    } else {
+        if (vistaServicios) vistaServicios.style.display = 'block';
+        if (vistaPagos) vistaPagos.style.display = 'none';
+    }
+
+    filtrarCobranza();
+};
+
+// Cargar todos los datos de cobranza del backend
+window.cargarCobranza = async function() {
+    const tbodyServ = document.getElementById('tbody-cobranza-servicios');
+    const tbodyPagos = document.getElementById('tbody-cobranza-pagos');
+    if (tbodyServ) tbodyServ.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando datos de cobranza...</td></tr>';
+    if (tbodyPagos) tbodyPagos.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando historial de pagos...</td></tr>';
+
+    try {
+        const res = await fetch(`${BASE_URL}/api/cobranza/resumen`);
+        const data = await res.json();
+
+        if (!data.exito) {
+            if (tbodyServ) tbodyServ.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">Error: ${data.error}</td></tr>`;
+            return;
+        }
+
+        window.datosCobranza = data;
+
+        // Actualizar KPIs superiores
+        const kpis = data.kpis || {};
+        const fmtDinero = (num) => `$${(parseFloat(num) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        document.getElementById('kpi-urgente-monto').innerText = fmtDinero(kpis.total_urgente_monto);
+        document.getElementById('kpi-urgente-conteo').innerText = `${kpis.total_urgente_conteo || 0} servicio(s) concluidos sin pago`;
+        document.getElementById('kpi-pendiente-monto').innerText = fmtDinero(kpis.total_pendiente_monto);
+        document.getElementById('kpi-pendiente-conteo').innerText = `${kpis.total_pendiente_conteo || 0} servicio(s) agendados por cobrar`;
+        document.getElementById('kpi-cobrado-monto').innerText = fmtDinero(kpis.total_cobrado_monto);
+        document.getElementById('kpi-pagos-conteo').innerText = `${kpis.total_pagos_conteo || 0} pago(s) registrados`;
+        document.getElementById('badge-conteo-urgentes').innerText = kpis.total_urgente_conteo || 0;
+
+        // Llenar selector de órdenes del modal de registro de pago
+        actualizarSelectOrdenesPago(data.servicios || []);
+
+        // Filtrar y renderizar según la subvista activa
+        filtrarCobranza();
+
+    } catch (err) {
+        console.error("Error al cargar cobranza:", err);
+        if (tbodyServ) tbodyServ.innerHTML = '<tr><td colspan="10" class="text-center text-danger py-4">Error de conexión al cargar cobranza.</td></tr>';
+    }
+};
+
+// Filtrar en tiempo real la subvista actual
+window.filtrarCobranza = function() {
+    if (!window.datosCobranza) return;
+
+    const texto = (document.getElementById('buscador-cobranza')?.value || '').toLowerCase().trim();
+    const filtroMetodo = (document.getElementById('filtro-metodo-cobranza')?.value || '').toLowerCase().trim();
+
+    if (window.subvistaCobranzaActual === 'historial') {
+        // Filtrar pagos individuales
+        const pagos = (window.datosCobranza.pagos || []).filter(p => {
+            const coincideTexto = !texto || 
+                (p.nombre_cliente && p.nombre_cliente.toLowerCase().includes(texto)) ||
+                (p.id_orden && p.id_orden.toString().includes(texto)) ||
+                (p.tipo_servicio && p.tipo_servicio.toLowerCase().includes(texto)) ||
+                (p.referencia && p.referencia.toLowerCase().includes(texto)) ||
+                (p.notas && p.notas.toLowerCase().includes(texto));
+
+            const coincideMetodo = !filtroMetodo || 
+                (p.metodo_pago && p.metodo_pago.toLowerCase().includes(filtroMetodo));
+
+            return coincideTexto && coincideMetodo;
+        });
+
+        renderizarTablaPagosCobranza(pagos);
+
+    } else {
+        // Filtrar servicios
+        const servicios = (window.datosCobranza.servicios || []).filter(s => {
+            // Filtro por subvista
+            if (window.subvistaCobranzaActual === 'urgentes' && !s.es_urgente) return false;
+            if (window.subvistaCobranzaActual === 'pendientes' && (s.estatus !== 'Pendiente' && s.estatus !== 'Confirmado' || s.saldo_pendiente <= 0)) return false;
+
+            // Filtro por texto
+            const coincideTexto = !texto ||
+                (s.nombre_cliente && s.nombre_cliente.toLowerCase().includes(texto)) ||
+                (s.id_orden && s.id_orden.toString().includes(texto)) ||
+                (s.folio_display && s.folio_display.includes(texto)) ||
+                (s.telefono && s.telefono.toLowerCase().includes(texto)) ||
+                (s.nombre_tecnico && s.nombre_tecnico.toLowerCase().includes(texto)) ||
+                (s.tipo_servicio && s.tipo_servicio.toLowerCase().includes(texto)) ||
+                (s.domicilio && s.domicilio.toLowerCase().includes(texto));
+
+            // Filtro por método de pago último
+            const coincideMetodo = !filtroMetodo ||
+                (s.ultimo_pago_metodo && s.ultimo_pago_metodo.toLowerCase().includes(filtroMetodo));
+
+            return coincideTexto && coincideMetodo;
+        });
+
+        renderizarTablaServiciosCobranza(servicios);
+    }
+};
+
+// Renderizar tabla de servicios (Urgentes, Pendientes, Todos)
+window.renderizarTablaServiciosCobranza = function(lista) {
+    const tbody = document.getElementById('tbody-cobranza-servicios');
+    if (!tbody) return;
+
+    if (!lista || lista.length === 0) {
+        let msg = "No hay servicios para mostrar en esta categoría.";
+        if (window.subvistaCobranzaActual === 'urgentes') {
+            msg = "🎉 ¡Excelente! No hay servicios concluidos con adeudo pendiente.";
+        }
+        tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-5 fs-6">${msg}</td></tr>`;
+        return;
+    }
+
+    const fmtDinero = (num) => `$${(parseFloat(num) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    let html = '';
+    lista.forEach(s => {
+        // Formato de fecha
+        let fechaTxt = 'N/A';
+        if (s.fecha_servicio || s.fecha_programada) {
+            const f = new Date(s.fecha_servicio || s.fecha_programada);
+            fechaTxt = f.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        // Folio e info de tratamiento
+        let tratBadge = '';
+        if (s.es_multitratamiento) {
+            tratBadge = `<span class="badge bg-light text-dark border ms-1" style="font-size: 0.68rem;">Visita ${s.num_tratamiento}/${s.total_tratamientos}</span>`;
+        }
+
+        // Estado del servicio
+        let estatusServBadge = `<span class="badge bg-secondary">${s.estatus}</span>`;
+        if (s.estatus === 'Completado') estatusServBadge = `<span class="badge bg-success">✔ Concluido</span>`;
+        if (s.estatus === 'Confirmado') estatusServBadge = `<span class="badge bg-primary">✔ Confirmado</span>`;
+        if (s.estatus === 'Cancelado') estatusServBadge = `<span class="badge bg-danger">✖ Cancelado</span>`;
+
+        // SALDO PENDIENTE (CON ROJO LLAMATIVO PARA CONCLUIDOS SIN PAGO - URGENTES)
+        let celdaSaldo = '';
+        let badgeEstadoPago = '';
+        let claseFila = '';
+
+        if (s.es_urgente) {
+            // ¡URGENTE COBRARLES! Número en rojo llamativo y badge rojo con pulso
+            claseFila = 'table-danger bg-opacity-25';
+            celdaSaldo = `
+                <div class="fw-bolder text-danger" style="font-size: 1.25rem; letter-spacing: 0.3px; color: #dc3545 !important;">
+                    ${fmtDinero(s.saldo_pendiente)}
+                </div>
+                <span class="badge bg-danger text-white py-1 px-2 fw-bold alerta-cobro-urgente" style="font-size: 0.72rem;">
+                    🚨 URGENTE COBRAR
+                </span>
+            `;
+            badgeEstadoPago = `<span class="badge bg-danger py-1 px-2 fw-bold">Por Cobrar</span>`;
+        } else if (s.costo_total > 0 && s.saldo_pendiente <= 0) {
+            celdaSaldo = `
+                <div class="fw-bold text-success fs-6">$0.00</div>
+                <small class="text-muted">Totalmente cubierto</small>
+            `;
+            badgeEstadoPago = `<span class="badge bg-success py-1 px-2">✔ Liquidado</span>`;
+        } else if (s.total_cobrado > 0 && s.saldo_pendiente > 0) {
+            celdaSaldo = `
+                <div class="fw-bold text-warning-emphasis fs-6">${fmtDinero(s.saldo_pendiente)}</div>
+                <small class="text-muted">Resta de ${fmtDinero(s.costo_total)}</small>
+            `;
+            badgeEstadoPago = `<span class="badge bg-warning text-dark py-1 px-2">Abono Parcial</span>`;
+        } else {
+            celdaSaldo = `
+                <div class="fw-bold text-secondary fs-6">${fmtDinero(s.saldo_pendiente)}</div>
+                <small class="text-muted">Por realizar</small>
+            `;
+            badgeEstadoPago = `<span class="badge bg-secondary py-1 px-2">Agendado</span>`;
+        }
+
+        // Botones de acción
+        let btnCobrar = '';
+        if (s.saldo_pendiente > 0 && s.estatus !== 'Cancelado') {
+            btnCobrar = `
+                <button class="btn btn-sm btn-success fw-bold px-2 py-1 shadow-sm text-nowrap" onclick="abrirModalRegistrarPago(${s.id_orden})">
+                    💳 Cobrar
+                </button>
+            `;
+        }
+
+        let subtipoStr = s.subtipo ? ` <span class="text-muted small">(${s.subtipo})</span>` : '';
+
+        html += `
+            <tr class="${claseFila}">
+                <td>
+                    <div class="fw-bold text-primary">#${s.folio_display}</div>
+                    <div class="small fw-semibold text-secondary">${s.tipo_servicio}${subtipoStr} ${tratBadge}</div>
+                </td>
+                <td>
+                    <div class="fw-bold text-dark">${s.nombre_cliente}</div>
+                    <div class="small text-muted"><i class="fa fa-phone me-1"></i>${s.telefono}</div>
+                    <div class="small text-muted text-truncate" style="max-width: 200px;">${s.domicilio}</div>
+                </td>
+                <td class="small fw-semibold text-secondary">${fechaTxt}</td>
+                <td class="small">${s.nombre_tecnico}</td>
+                <td>${estatusServBadge}</td>
+                <td class="text-end fw-bold">${fmtDinero(s.costo_total)}</td>
+                <td class="text-end fw-bold text-success">${fmtDinero(s.total_cobrado)}</td>
+                <td class="text-end">${celdaSaldo}</td>
+                <td class="text-center">${badgeEstadoPago}</td>
+                <td class="text-center">
+                    <div class="btn-group">
+                        ${btnCobrar}
+                        <button class="btn btn-sm btn-outline-primary px-2 py-1 ms-1" onclick="abrirModalEditarOrden(${s.id_orden})" title="Ver detalles">
+                            ✏️
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+};
+
+// Renderizar tabla del historial de pagos individuales
+window.renderizarTablaPagosCobranza = function(lista) {
+    const tbody = document.getElementById('tbody-cobranza-pagos');
+    if (!tbody) return;
+
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-5 fs-6">No hay pagos registrados para este filtro.</td></tr>`;
+        return;
+    }
+
+    const fmtDinero = (num) => `$${(parseFloat(num) || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    let html = '';
+    lista.forEach(p => {
+        let fechaTxt = 'N/A';
+        if (p.fecha_pago) {
+            const f = new Date(p.fecha_pago);
+            fechaTxt = f.toLocaleString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        let tratStr = '';
+        if (p.total_tratamientos && parseInt(p.total_tratamientos) > 1) {
+            tratStr = ` (Tratamiento ${p.num_tratamiento}/${p.total_tratamientos})`;
+        }
+
+        let metodoColor = 'bg-primary';
+        if (p.metodo_pago.includes('Transferencia')) metodoColor = 'bg-info text-dark';
+        if (p.metodo_pago.includes('Oficina')) metodoColor = 'bg-success';
+        if (p.metodo_pago.includes('Tarjeta')) metodoColor = 'bg-warning text-dark';
+
+        html += `
+            <tr>
+                <td class="fw-semibold small">${fechaTxt}</td>
+                <td>
+                    <span class="fw-bold text-primary">#${(p.id_orden || '').toString().padStart(5, '0')}</span>
+                    <div class="small text-muted">${p.tipo_servicio || 'Servicio'}${tratStr}</div>
+                </td>
+                <td class="fw-bold">${p.nombre_cliente || 'N/A'}</td>
+                <td class="text-end fw-bolder text-success fs-6">${fmtDinero(p.monto)}</td>
+                <td><span class="badge ${metodoColor}">${p.metodo_pago || 'Pago'}</span></td>
+                <td class="small fw-semibold text-secondary">${p.referencia || '-'}</td>
+                <td class="small">${p.usuario_registra || 'Sistema'}</td>
+                <td class="small text-muted" style="max-width: 220px;">${p.notas || '-'}</td>
+            </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
+};
+
+// Actualizar lista desplegable de servicios en el modal de cobro
+window.actualizarSelectOrdenesPago = function(servicios) {
+    const select = document.getElementById('pago-id-orden');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Seleccione el servicio a cobrar...</option>';
+    
+    // Priorizar servicios con adeudo
+    const conAdeudo = servicios.filter(s => s.saldo_pendiente > 0 && s.estatus !== 'Cancelado');
+    const liquidados = servicios.filter(s => s.saldo_pendiente <= 0 && s.estatus !== 'Cancelado');
+
+    if (conAdeudo.length > 0) {
+        const optgroupAdeudo = document.createElement('optgroup');
+        optgroupAdeudo.label = "⚠️ SERVICIOS CON SALDO PENDIENTE";
+        conAdeudo.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id_orden;
+            opt.setAttribute('data-cliente', s.nombre_cliente);
+            opt.setAttribute('data-servicio', `${s.tipo_servicio} (Folio #${s.folio_display})`);
+            opt.setAttribute('data-saldo', s.saldo_pendiente);
+            opt.textContent = `Folio #${s.folio_display} - ${s.nombre_cliente} | Saldo: $${s.saldo_pendiente.toFixed(2)}`;
+            optgroupAdeudo.appendChild(opt);
+        });
+        select.appendChild(optgroupAdeudo);
+    }
+
+    if (liquidados.length > 0) {
+        const optgroupLiq = document.createElement('optgroup');
+        optgroupLiq.label = "SERVICIOS YA LIQUIDADOS / OTROS";
+        liquidados.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id_orden;
+            opt.setAttribute('data-cliente', s.nombre_cliente);
+            opt.setAttribute('data-servicio', `${s.tipo_servicio} (Folio #${s.folio_display})`);
+            opt.setAttribute('data-saldo', s.saldo_pendiente);
+            opt.textContent = `Folio #${s.folio_display} - ${s.nombre_cliente} (Liquidado)`;
+            optgroupLiq.appendChild(opt);
+        });
+        select.appendChild(optgroupLiq);
+    }
+};
+
+// Abrir modal de cobro (opcionalmente preseleccionando una orden)
+window.abrirModalRegistrarPago = function(idOrdenPreseleccionado) {
+    const form = document.getElementById('form-registrar-pago');
+    if (form) form.reset();
+
+    // Fecha actual local en formato datetime-local
+    const ahora = new Date();
+    const ahoraIso = new Date(ahora.getTime() - (ahora.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    const inputFecha = document.getElementById('pago-fecha');
+    if (inputFecha) inputFecha.value = ahoraIso;
+
+    const selectOrden = document.getElementById('pago-id-orden');
+    const boxInfo = document.getElementById('box-info-pago');
+
+    if (idOrdenPreseleccionado && selectOrden) {
+        selectOrden.value = idOrdenPreseleccionado;
+    }
+
+    // Disparar evento de actualización de caja informativa
+    if (selectOrden) {
+        selectOrden.dispatchEvent(new Event('change'));
+    }
+
+    const modalEl = document.getElementById('modalRegistrarPago');
+    const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+    modal.show();
+};
+
+// Evento al cambiar la orden seleccionada en el modal de cobro
+document.getElementById('pago-id-orden')?.addEventListener('change', function() {
+    const opt = this.options[this.selectedIndex];
+    const boxInfo = document.getElementById('box-info-pago');
+    const inputMonto = document.getElementById('pago-monto');
+
+    if (opt && opt.value) {
+        const cliente = opt.getAttribute('data-cliente') || 'N/A';
+        const servicio = opt.getAttribute('data-servicio') || 'N/A';
+        const saldo = parseFloat(opt.getAttribute('data-saldo')) || 0;
+
+        document.getElementById('pago-txt-cliente').innerText = `Cliente: ${cliente}`;
+        document.getElementById('pago-txt-servicio').innerText = `Servicio: ${servicio}`;
+        document.getElementById('pago-txt-saldo').innerText = `$${saldo.toFixed(2)}`;
+
+        if (inputMonto && saldo > 0) {
+            inputMonto.value = saldo.toFixed(2);
+        }
+
+        if (boxInfo) boxInfo.style.display = 'block';
+    } else {
+        if (boxInfo) boxInfo.style.display = 'none';
+        if (inputMonto) inputMonto.value = '';
+    }
+});
+
+// Guardar el pago de cobranza
+document.getElementById('form-registrar-pago')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const idOrden = document.getElementById('pago-id-orden').value;
+    const monto = parseFloat(document.getElementById('pago-monto').value);
+    const metodo = document.getElementById('pago-metodo').value;
+    const fecha = document.getElementById('pago-fecha').value;
+    const ref = document.getElementById('pago-referencia').value;
+    const notas = document.getElementById('pago-notas').value;
+
+    if (!idOrden || isNaN(monto) || monto <= 0) {
+        alert("Por favor ingrese un monto válido mayor a $0.00.");
+        return;
+    }
+
+    const btn = document.getElementById('btn-guardar-pago');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Registrando pago...`;
+
+    try {
+        const payload = {
+            id_orden: idOrden,
+            monto: monto,
+            metodo_pago: metodo,
+            referencia: ref,
+            fecha_pago: fecha,
+            notas: notas,
+            id_usuario: localStorage.getItem('idUsuario')
+        };
+
+        const res = await fetch(`${BASE_URL}/api/cobranza/registrar-pago`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.exito) {
+            const modalEl = document.getElementById('modalRegistrarPago');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            alert("¡Pago registrado y balance del servicio actualizado exitosamente!");
+            await cargarCobranza();
+
+            if (window.calendarioPrincipal) {
+                window.calendarioPrincipal.refetchEvents();
+            }
+        } else {
+            alert("Error al registrar pago: " + (data.error || 'Error desconocido'));
+        }
+    } catch (err) {
+        console.error("Error al registrar pago:", err);
+        alert("Error de conexión al registrar el pago.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `💾 Guardar y Aplicar Pago`;
+    }
+});
+
+// Listeners para filtros en tiempo real
+document.getElementById('buscador-cobranza')?.addEventListener('input', () => {
+    if (typeof window.filtrarCobranza === 'function') window.filtrarCobranza();
+});
+document.getElementById('filtro-metodo-cobranza')?.addEventListener('change', () => {
+    if (typeof window.filtrarCobranza === 'function') window.filtrarCobranza();
 });
