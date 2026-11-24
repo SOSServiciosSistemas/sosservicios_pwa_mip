@@ -6,7 +6,7 @@ const BASE_URL = 'https://api.sosservicios.com.mx';
 // ============================================================================
 (function() {
     const originalFetch = window.fetch;
-    window.fetch = function(url, options = {}) {
+    window.fetch = async function(url, options = {}) {
         const token = localStorage.getItem('tokenAuth');
         if (token) {
             options.headers = options.headers || {};
@@ -22,12 +22,42 @@ const BASE_URL = 'https://api.sosservicios.com.mx';
                 }
             }
         }
-        return originalFetch(url, options);
+        
+        const response = await originalFetch.call(window, url, options);
+
+        // Si la petición retorna 401 por falta de token o token expirado, y no estamos en la página de login
+        if (response.status === 401) {
+            const esLogin = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname === '';
+            if (!esLogin) {
+                try {
+                    const clone = response.clone();
+                    const data = await clone.json();
+                    if (data && data.error && (data.error.includes('token') || data.error.includes('autenticado') || data.error.includes('sesión') || data.error.includes('expirado'))) {
+                        console.warn("Sesión caducada o token no válido:", data.error);
+                        localStorage.clear();
+                        const esSubcarpeta = window.location.pathname.includes('/view') || window.location.pathname.includes('/documentos');
+                        alert("Tu sesión ha expirado o requiere autenticación actualizada. Por favor inicia sesión nuevamente.");
+                        window.location.href = esSubcarpeta ? '../index.html' : 'index.html';
+                    }
+                } catch(e) {}
+            }
+        }
+
+        return response;
     };
 })();
 
 // ============================================================================
-// 2. GUARDA DE SEGURIDAD Y VALIDACIÓN DE ROL CONTRA EL SERVIDOR
+// 2. FUNCIÓN GLOBAL PARA CIERRE DE SESIÓN LIMPIO
+// ============================================================================
+window.cerrarSesion = function() {
+    localStorage.clear();
+    const esSubcarpeta = window.location.pathname.includes('/view') || window.location.pathname.includes('/documentos');
+    window.location.href = esSubcarpeta ? '../index.html' : 'index.html';
+};
+
+// ============================================================================
+// 3. GUARDA DE SEGURIDAD Y VALIDACIÓN DE ROL CONTRA EL SERVIDOR
 // ============================================================================
 window.validarAccesoVista = async function(rolesPermitidos = []) {
     const token = localStorage.getItem('tokenAuth');
@@ -38,6 +68,7 @@ window.validarAccesoVista = async function(rolesPermitidos = []) {
 
     // 1. Si no hay sesión local o token, expulsar al login
     if (!token || !idUsuario) {
+        alert('Se ha actualizado la seguridad del sistema. Por favor inicia sesión nuevamente para generar tu clave de acceso.');
         localStorage.clear();
         window.location.href = rutaLogin;
         return false;
