@@ -1254,7 +1254,7 @@ window.abrirVisorReporte = async function(idOrden) {
                 tablaQuimicosHTML += `
                     <tr>
                         <td style="border: 1px solid black; padding: 3px; font-weight: bold; text-align: center;">${letras[i]}</td>
-                        <td style="border: 1px solid black; padding: 3px;">${prod.nombre_comercial || ''}</td>
+                        <td style="border: 1px solid black; padding: 3px;">${prod.ingrediente_activo || prod.nombre_comercial || ''}</td>
                         <td style="border: 1px solid black; padding: 3px; text-align: center;">${prod.dosis || ''}</td>
                         <td style="border: 1px solid black; padding: 3px;"></td>
                         <td style="border: 1px solid black; padding: 3px;"></td>
@@ -1476,8 +1476,9 @@ window.cargarCatalogoParaCompras = async function() {
         if(datos.exito && Array.isArray(datos.productos)) {
             const productosActivos = datos.productos.filter(p => p.activo !== false);
             productosActivos.forEach(prod => {
+                const nombreAMostrar = (prod.ingrediente_activo && prod.ingrediente_activo !== 'N/A') ? prod.ingrediente_activo : prod.nombre_comercial;
                 const opcion = `<option value="${prod.id_producto}" data-categoria="${prod.categoria}">
-                                    ${prod.clave_producto} - ${prod.nombre_comercial}
+                                    ${prod.clave_producto} - ${nombreAMostrar}
                                 </option>`;
                 selectProducto.innerHTML += opcion;
             });
@@ -1593,10 +1594,12 @@ window.cargarInventarioOficina = async function() {
                 // Formato de moneda
                 const costo = parseFloat(item.costo_promedio).toFixed(2);
 
+                const nombreAMostrar = (item.ingrediente_activo && item.ingrediente_activo !== 'N/A') ? item.ingrediente_activo : item.nombre_comercial;
+
                 const fila = `
                     <tr>
                         <td class="fw-bold text-secondary">${item.clave_producto}</td>
-                        <td class="text-primary fw-bold">${item.nombre_comercial}</td>
+                        <td class="text-primary fw-bold">${nombreAMostrar}</td>
                         <td class="align-middle">${stockTexto}</td>
                         <td class="text-success fw-bold align-middle">$${costo}</td>
                         <td class="align-middle">${caducidad}</td>
@@ -1652,11 +1655,13 @@ window.cargarInventarioTecnicos = async function() {
                     stockTexto = `${cantDispTec} ${item.unidad_medida}`;
                 }
 
+                const nombreAMostrar = (item.ingrediente_activo && item.ingrediente_activo !== 'N/A') ? item.ingrediente_activo : item.nombre_comercial;
+
                 // Agregamos un data-atributo a la fila para poder filtrarla fácilmente
                 const fila = `
                     <tr class="fila-inv-tecnico" data-tecnico="${item.nombre_almacen}">
                         <td class="fw-bold text-secondary align-middle">${item.nombre_almacen}</td>
-                        <td class="text-primary fw-bold align-middle">${item.nombre_comercial}</td>
+                        <td class="text-primary fw-bold align-middle">${nombreAMostrar}</td>
                         <td class="align-middle">${stockTexto}</td>
                     </tr>
                 `;
@@ -1743,14 +1748,16 @@ document.getElementById('btn-traspasar-stock')?.addEventListener('click', async 
                     textoDisp = `${stockBase} ${item.unidad_medida}`;
                 }
                 
+                const nombreAMostrar = (item.ingrediente_activo && item.ingrediente_activo !== 'N/A') ? item.ingrediente_activo : item.nombre_comercial;
+
                 selectProd.innerHTML += `
                     <option value="${item.clave_producto}" 
                             data-unidad="${item.unidad_medida}"
                             data-capacidad="${capacidad}"
                             data-stock-base="${stockBase}"
                             data-stock-envases="${stockEnvasesFmt}"
-                            data-nombre="${item.nombre_comercial}">
-                        ${item.clave_producto} - ${item.nombre_comercial} (Disp: ${textoDisp})
+                            data-nombre="${nombreAMostrar}">
+                        ${item.clave_producto} - ${nombreAMostrar} (Disp: ${textoDisp})
                     </option>`;
             });
         }

@@ -399,12 +399,12 @@
                 // Si no hay específicos en camioneta, ofrecer lista completa del inventario técnico
                 selectInv.innerHTML = '<option value="">Sin stock de este tipo (Seleccione otro)...</option>';
                 inventarioTecnico.forEach(it => {
-                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || it.nombre_comercial}" data-reg="${it.registro_sanitario || ''}">${it.nombre_comercial} (${it.clave_producto})</option>`;
+                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || ''}" data-reg="${it.registro_sanitario || ''}">${it.clave_producto}</option>`;
                 });
             } else {
-                selectInv.innerHTML = '<option value="">Seleccione producto...</option>';
+                selectInv.innerHTML = '<option value="">Seleccione clave de producto...</option>';
                 itemsFiltrados.forEach(it => {
-                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || it.nombre_comercial}" data-reg="${it.registro_sanitario || ''}">${it.nombre_comercial} - Disp: ${parseFloat(it.cantidad_disponible).toFixed(1)} ${it.unidad_medida}</option>`;
+                    selectInv.innerHTML += `<option value="${it.clave_producto}" data-ia="${it.ingrediente_activo || ''}" data-reg="${it.registro_sanitario || ''}">${it.clave_producto} - Disp: ${parseFloat(it.cantidad_disponible).toFixed(1)} ${it.unidad_medida}</option>`;
                 });
             }
         }
