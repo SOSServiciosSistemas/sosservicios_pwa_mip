@@ -29,7 +29,7 @@
             align-items: center;
         }
 
-        /* Dimensiones fijas que emulan exactamente la hoja física Carta / Letter */
+        /* Dimensiones fijas para emular con precisión la hoja física Carta / Letter */
         .hoja-impresion {
             background: white;
             width: 820px;
@@ -51,7 +51,7 @@
         .tabla-oficial th,
         .tabla-oficial td {
             border: 1px solid #000;
-            padding: 2px 3px;
+            padding: 2px 4px;
             vertical-align: middle;
         }
 
@@ -84,6 +84,19 @@
             background: #fff;
         }
 
+        .banner-cordon {
+            background-color: #343a40;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            font-size: 0.72rem;
+            letter-spacing: 0.5px;
+        }
+
+        .espacio-entre-cordones {
+            height: 14px;
+        }
+
         .linea-firma {
             border-top: 1px solid #000;
             margin-top: 4px;
@@ -91,12 +104,6 @@
             font-weight: bold;
             text-align: center;
             font-size: 0.65rem;
-        }
-
-        .fila-dispositivo-celda {
-            height: 14px;
-            padding: 1px 2px !important;
-            line-height: 1.1;
         }
 
         @media print {
@@ -139,32 +146,31 @@
             </div>
         </div>
 
-        <!-- EL DOCUMENTO OFICIAL (Idéntico a la Hoja Física) -->
+        <!-- EL DOCUMENTO OFICIAL -->
         <div class="hoja-impresion" id="hoja-reporte">
 
             <!-- ENCABEZADO -->
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px;">
                 <tr>
                     <!-- LOGO Y WEB -->
-                    <td style="width: 24%; vertical-align: top;">
+                    <td style="width: 25%; vertical-align: top;">
                         <img src="../img/logo-SOS-Plagas.webp" alt="SOS Logo" style="max-width: 135px; height: auto;">
                         <div style="font-size: 0.60rem; color: #0056b3; font-weight: bold; margin-top: 2px;">www.sosservicios.com.mx</div>
                     </td>
 
-                    <!-- DATOS FISCALES SOS -->
-                    <td style="width: 46%; text-align: center; vertical-align: top;">
+                    <!-- DATOS FISCALES SOS (SIN R.D.C.-001) -->
+                    <td style="width: 45%; text-align: center; vertical-align: top;">
                         <div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;">S.O.S. SERVICIOS</div>
                         <div style="font-size: 0.65rem; line-height: 1.2;">Av. Pradera # 2716, Col. Parques del Sur</div>
                         <div style="font-size: 0.65rem; line-height: 1.2;">León, Gto. México &nbsp; C.P. 37536</div>
                         <div style="font-size: 0.65rem; line-height: 1.2;">Tel. +52 477 273 19 07 / +52 477 363 95 30</div>
-                        <div style="font-size: 0.62rem; color: #444;">R.D.C.-001</div>
                         
-                        <div style="background-color: #d9d9d9; border: 1px solid #000; font-weight: bold; font-size: 0.76rem; padding: 2px 4px; margin-top: 3px;">
+                        <div style="background-color: #d9d9d9; border: 1px solid #000; font-weight: bold; font-size: 0.76rem; padding: 2px 4px; margin-top: 4px;">
                             REPORTE DISPOSITIVOS DE CONTROL
                         </div>
                     </td>
 
-                    <!-- FOLIO, FECHA Y MATRIZ DE CHECKS -->
+                    <!-- FOLIO, FECHA Y MATRIZ DE CASILLAS -->
                     <td style="width: 30%; vertical-align: top; padding-left: 10px;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold" style="font-size: 0.85rem;">FOLIO:</span>
@@ -176,28 +182,28 @@
                         </div>
 
                         <!-- Matriz 2x3 de checkboxes del formato físico -->
-                        <table style="border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 0.60rem; line-height: 1.3; background: #fff;">
+                        <table style="border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 0.62rem; line-height: 1.35; background: #fff;">
                             <tr>
-                                <td style="padding: 1px 3px; border-right: 1px solid #000; border-bottom: 1px solid #000; width: 50%;">
+                                <td style="padding: 2px 4px; border-right: 1px solid #000; border-bottom: 1px solid #000; width: 50%;">
                                     <span class="caja-check" id="chk-cordon"></span> Cordón
                                 </td>
-                                <td style="padding: 1px 3px; border-bottom: 1px solid #000; width: 50%;">
+                                <td style="padding: 2px 4px; border-bottom: 1px solid #000; width: 50%;">
                                     <span class="caja-check" id="chk-cebaderos"></span> Cebaderos
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding: 1px 3px; border-right: 1px solid #000; border-bottom: 1px solid #000;">
+                                <td style="padding: 2px 4px; border-right: 1px solid #000; border-bottom: 1px solid #000;">
                                     <span class="caja-check" id="chk-monitoreo"></span> Monitoreo
                                 </td>
-                                <td style="padding: 1px 3px; border-bottom: 1px solid #000;">
+                                <td style="padding: 2px 4px; border-bottom: 1px solid #000;">
                                     <span class="caja-check" id="chk-trampa-mec"></span> Trampa Mecánica
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding: 1px 3px; border-right: 1px solid #000;">
+                                <td style="padding: 2px 4px; border-right: 1px solid #000;">
                                     <span class="caja-check" id="chk-especie-mayor"></span> Especie Mayor
                                 </td>
-                                <td style="padding: 1px 3px;">
+                                <td style="padding: 2px 4px;">
                                     <span class="caja-check" id="chk-trampa-adh"></span> Trampa Adhesiva
                                 </td>
                             </tr>
@@ -235,7 +241,7 @@
                 </tr>
             </table>
 
-            <!-- DETALLE DE PRODUCTO A UTILIZAR Y TIPO DE PRODUCTO (TABLA UNIFICADA EXACTA AL FÍSICO) -->
+            <!-- DETALLE DE PRODUCTO A UTILIZAR Y TIPO DE PRODUCTO (TABLA UNIFICADA CON QUÍMICOS 1, 2, 3...) -->
             <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr class="bg-gris" style="font-size: 0.65rem;">
@@ -243,7 +249,7 @@
                         <th style="width: 24%;" class="text-center py-1">TIPO DE PRODUCTO</th>
                     </tr>
                     <tr class="bg-gris" style="font-size: 0.60rem;">
-                        <th style="width: 6%;">TIPO</th>
+                        <th style="width: 6%;">No.</th>
                         <th style="width: 38%;">INGREDIENTE ACTIVO</th>
                         <th style="width: 22%;">REGISTRO CICOPLAFEST</th>
                         <th style="width: 10%;">DÓSIS</th>
@@ -252,30 +258,30 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody style="font-size: 0.63rem;">
+                <tbody id="tabla-productos-cuerpo" style="font-size: 0.63rem;">
                     <tr>
-                        <td class="text-center fw-bold">A</td>
-                        <td id="prod-A-ia">-</td>
-                        <td id="prod-A-reg">-</td>
-                        <td class="text-center" id="prod-A-dosis">-</td>
+                        <td class="text-center fw-bold">1</td>
+                        <td id="prod-1-ia">-</td>
+                        <td id="prod-1-reg">-</td>
+                        <td class="text-center" id="prod-1-dosis">-</td>
                         <td style="text-align: left; padding: 2px 6px;">
                             <span class="caja-check" id="chk-placa-goma"></span> Placa de Goma
                         </td>
                     </tr>
                     <tr>
-                        <td class="text-center fw-bold">B</td>
-                        <td id="prod-B-ia">-</td>
-                        <td id="prod-B-reg">-</td>
-                        <td class="text-center" id="prod-B-dosis">-</td>
+                        <td class="text-center fw-bold">2</td>
+                        <td id="prod-2-ia">-</td>
+                        <td id="prod-2-reg">-</td>
+                        <td class="text-center" id="prod-2-dosis">-</td>
                         <td style="text-align: left; padding: 2px 6px;">
                             <span class="caja-check" id="chk-mecanico"></span> Mecánico
                         </td>
                     </tr>
                     <tr>
-                        <td class="text-center fw-bold">C</td>
-                        <td id="prod-C-ia">-</td>
-                        <td id="prod-C-reg">-</td>
-                        <td class="text-center" id="prod-C-dosis">-</td>
+                        <td class="text-center fw-bold">3</td>
+                        <td id="prod-3-ia">-</td>
+                        <td id="prod-3-reg">-</td>
+                        <td class="text-center" id="prod-3-dosis">-</td>
                         <td style="background-color: #f8f9fa;"></td>
                     </tr>
                 </tbody>
@@ -286,36 +292,10 @@
                 <strong>PLAGAS ENCONTRADAS:</strong> MM-Mus Musculus, RN-Rattus Norvegicus, RR-Rattus Rattus, BG-Cucaracha Alemana, PA-Cucaracha Americana, H-Hormiga, A-Araña, AL-Alacrán, T-Tijerilla, O-Otro:
             </div>
 
-            <!-- TABLA GEMELA DE DISPOSITIVOS DE CONTROL (DOS PANELES PARALELOS DE 20 RENGLONES C/U) -->
-            <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr class="bg-gris" style="font-size: 0.60rem;">
-                        <th rowspan="2" style="width: 4%;">No.</th>
-                        <th rowspan="2" style="width: 9%;">TIPO DE MATERIAL</th>
-                        <th colspan="3" style="width: 22%;">ACTIVIDAD</th>
-                        <th rowspan="2" style="width: 10%;">TIPO DE PLAGA</th>
-                        <th rowspan="2" style="width: 5%;">CAPTURA</th>
-
-                        <th rowspan="2" style="width: 4%; border-left: 2px solid #000;">No.</th>
-                        <th rowspan="2" style="width: 9%;">TIPO DE MATERIAL</th>
-                        <th colspan="3" style="width: 22%;">ACTIVIDAD</th>
-                        <th rowspan="2" style="width: 10%;">TIPO DE PLAGA</th>
-                        <th rowspan="2" style="width: 5%;">CAPTURA</th>
-                    </tr>
-                    <tr class="bg-gris" style="font-size: 0.58rem;">
-                        <th style="width: 6%;">S/N</th>
-                        <th style="width: 8%;">%</th>
-                        <th style="width: 8%;">CM</th>
-
-                        <th style="width: 6%; border-left: 2px solid #000;">S/N</th>
-                        <th style="width: 8%;">%</th>
-                        <th style="width: 8%;">CM</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpo-tabla-dispositivos" style="font-size: 0.60rem;">
-                    <!-- Se inyectan dinámicamente con JS 20 renglones + 4 extras -->
-                </tbody>
-            </table>
+            <!-- CONTENEDOR DINÁMICO DE TABLAS POR CORDÓN (UNA SOLA TABLA EXTENDIDA CON ESPACIO AMPLIO PARA OBSERVACIONES) -->
+            <div id="contenedor-tablas-cordones">
+                <!-- Se inyectan dinámicamente con JS -->
+            </div>
 
             <!-- SECCIÓN INFERIOR: ACCIONES Y OBSERVACIONES / COSTO Y SEGUIMIENTO -->
             <table class="tabla-oficial mt-1" style="width: 100%; border-collapse: collapse;">
@@ -383,10 +363,6 @@
                 </tr>
             </table>
 
-            <div class="d-flex justify-content-end text-muted mt-1" style="font-size: 0.55rem;">
-                V-2 / 2019
-            </div>
-
         </div>
 
         <!-- BOTÓN INFERIOR FLOTANTE PARA FIRMA CON CLIENTE -->
@@ -427,7 +403,7 @@
     </div>
 
     <!-- Script de Carga de Datos y Manejo de Firma -->
-    <script src="../config.js?v=25"></script>
+    <script src="../config.js?v=26"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const folio = urlParams.get('folio');
@@ -621,169 +597,139 @@
                 document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
                 document.getElementById('rep-hora-salida').innerText = formatHora24(o.hora_fin);
 
-                // Químicos / Productos: Mapear a Tipo A, B, C
+                // Químicos / Productos: Mapear a Orden Numérico (1, 2, 3...)
                 const prods = (det.productos && Array.isArray(det.productos) && det.productos.length > 0)
                     ? det.productos
                     : [];
 
-                const mapLetras = ['A', 'B', 'C'];
-                mapLetras.forEach((letra, idx) => {
-                    const p = prods[idx];
-                    document.getElementById(`prod-${letra}-ia`).innerText = p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-';
-                    document.getElementById(`prod-${letra}-reg`).innerText = p ? (p.cicoplafest || p.registro_sanitario || '-') : '-';
-                    document.getElementById(`prod-${letra}-dosis`).innerText = p ? (p.dosis || '-') : '-';
-                });
+                for (let num = 1; num <= 3; num++) {
+                    const p = prods[num - 1];
+                    const elemIa = document.getElementById(`prod-${num}-ia`);
+                    const elemReg = document.getElementById(`prod-${num}-reg`);
+                    const elemDosis = document.getElementById(`prod-${num}-dosis`);
+
+                    if (elemIa) elemIa.innerText = p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-';
+                    if (elemReg) elemReg.innerText = p ? (p.cicoplafest || p.registro_sanitario || '-') : '-';
+                    if (elemDosis) elemDosis.innerText = p ? (p.dosis || '-') : '-';
+                }
 
                 // Checkboxes de Tipo de Producto
                 document.getElementById('chk-rodenticida').innerText = (det.check_rodenticida || prods.length > 0) ? 'X' : '';
                 document.getElementById('chk-placa-goma').innerText = det.check_placa_goma ? 'X' : '';
                 document.getElementById('chk-mecanico').innerText = det.check_mecanico ? 'X' : '';
 
-                // Agrupar todos los dispositivos registrados
-                let todosLosDispositivos = [];
+                // RENDERIZAR TABLAS POR CORDÓN (UNA SOLA TABLA EXTENDIDA CON COLUMNA DE OBSERVACIONES)
+                const contenedorCordones = document.getElementById('contenedor-tablas-cordones');
+                contenedorCordones.innerHTML = '';
+
+                // Agrupar lecturas por cordón
+                const gruposCordon = {};
                 if (data.lecturas && data.lecturas.length > 0) {
-                    todosLosDispositivos = data.lecturas;
+                    data.lecturas.forEach(l => {
+                        const numC = l.cordon || 1;
+                        if (!gruposCordon[numC]) gruposCordon[numC] = [];
+                        gruposCordon[numC].push(l);
+                    });
                 } else if (det.cordones && Array.isArray(det.cordones)) {
                     det.cordones.forEach(c => {
-                        if (c.dispositivos && Array.isArray(c.dispositivos)) {
-                            c.dispositivos.forEach(d => {
-                                todosLosDispositivos.push({ ...d, cordon: c.cordon || 1 });
-                            });
-                        }
+                        gruposCordon[c.cordon || 1] = c.dispositivos || [];
                     });
-                }
-
-                // Renderizado de la Tabla Gemela (Panel Izquierdo 1-20 y Panel Derecho 1-20 o 21-40)
-                const tbodyDisp = document.getElementById('cuerpo-tabla-dispositivos');
-                tbodyDisp.innerHTML = '';
-
-                // Dividir en Panel Izquierdo y Panel Derecho
-                let panelIzq = [];
-                let panelDer = [];
-
-                // Si hay varios cordones, el cordón 1 va a la izquierda y el cordón 2 a la derecha
-                const numCordones = [...new Set(todosLosDispositivos.map(d => d.cordon || 1))];
-                if (numCordones.length > 1) {
-                    panelIzq = todosLosDispositivos.filter(d => (d.cordon || 1) == numCordones[0]);
-                    panelDer = todosLosDispositivos.filter(d => (d.cordon || 1) == numCordones[1]);
                 } else {
-                    panelIzq = todosLosDispositivos.slice(0, 20);
-                    panelDer = todosLosDispositivos.slice(20, 40);
+                    gruposCordon[1] = [];
                 }
 
-                // Función auxiliar para renderizar una celda de dispositivo (7 columnas por panel)
-                const renderDatosDispositivo = (d, numFila, esDerecha = false) => {
-                    const estiloBordeIzq = esDerecha ? 'border-left: 2px solid #000;' : '';
+                const listaCordones = Object.keys(gruposCordon).sort((a,b) => parseInt(a) - parseInt(b));
 
-                    if (!d) {
-                        return `
-                            <td class="text-center fw-bold fila-dispositivo-celda" style="${estiloBordeIzq}">${numFila}</td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                        `;
+                listaCordones.forEach((numCord, idxCordon) => {
+                    const dispArray = gruposCordon[numCord];
+                    
+                    if (idxCordon > 0) {
+                        const divSeparador = document.createElement('div');
+                        divSeparador.className = 'espacio-entre-cordones';
+                        contenedorCordones.appendChild(divSeparador);
                     }
 
-                    // Material: Mapear '1' -> 'A', '2' -> 'B', '3' -> 'C'
-                    let matTxt = d.tipo_material || 'A';
-                    if (matTxt === '1' || matTxt === 1) matTxt = 'A';
-                    if (matTxt === '2' || matTxt === 2) matTxt = 'B';
-                    if (matTxt === '3' || matTxt === 3) matTxt = 'C';
+                    // Título del Cordón
+                    const banner = document.createElement('div');
+                    banner.className = 'banner-cordon d-flex justify-content-between align-items-center mb-1';
+                    banner.innerHTML = `<span>CORDÓN ${numCord}</span> <span style="font-size: 0.65rem; font-weight: normal;">Dispositivos asignados: ${dispArray.length}</span>`;
+                    contenedorCordones.appendChild(banner);
 
-                    // Formatear porcentaje de consumo
-                    const cNum = parseFloat(d.consumo_cebo) || 0;
-                    const porcTxt = `${cNum}%`;
+                    // Tabla Extendida Oficial
+                    let filasHTML = '';
+                    if (dispArray.length === 0) {
+                        filasHTML = `<tr><td colspan="7" class="text-center text-muted py-2">Sin dispositivos registrados en este cordón</td></tr>`;
+                    } else {
+                        dispArray.forEach((d, idx) => {
+                            const cVal = (d.consumo_cebo !== undefined && d.consumo_cebo !== null && d.consumo_cebo !== '') ? d.consumo_cebo : '';
+                            const consumoTxt = cVal !== '' ? `${cVal}%` : '0%';
 
-                    // Formatear Cambio Material (CM): 'N/A' o cantidad numérica
-                    let cmTxt = 'N/A';
-                    const cmVal = d.cambio_material;
-                    if (cmVal !== undefined && cmVal !== null) {
-                        if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '' || cmVal === 0 || cmVal === '0') {
-                            cmTxt = 'N/A';
-                        } else if (typeof cmVal === 'number') {
-                            cmTxt = cmVal.toString();
-                        } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
-                            cmTxt = parseFloat(cmVal).toString();
-                        } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
-                            cmTxt = '1';
-                        } else {
-                            cmTxt = cmVal.toString();
-                        }
+                            // Manejo de Cambio Material (CM)
+                            let cmTxt = 'N/A';
+                            const cmVal = d.cambio_material;
+                            if (cmVal !== undefined && cmVal !== null) {
+                                if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '' || cmVal === 0 || cmVal === '0') {
+                                    cmTxt = 'N/A';
+                                } else if (typeof cmVal === 'number') {
+                                    cmTxt = cmVal.toString();
+                                } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
+                                    cmTxt = parseFloat(cmVal).toString();
+                                } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
+                                    cmTxt = '1';
+                                } else {
+                                    cmTxt = cmVal.toString();
+                                }
+                            }
+
+                            // Material en orden numérico (1, 2, 3...)
+                            let matTxt = d.tipo_material || (idx + 1).toString();
+                            if (matTxt === 'A' || matTxt === 'a') matTxt = '1';
+                            if (matTxt === 'B' || matTxt === 'b') matTxt = '2';
+                            if (matTxt === 'C' || matTxt === 'c') matTxt = '3';
+
+                            filasHTML += `
+                                <tr>
+                                    <td class="text-center fw-bold" style="width: 5%;">${d.numero_dispositivo || (idx + 1)}</td>
+                                    <td class="text-center fw-bold" style="width: 11%;">${matTxt}</td>
+                                    <td class="text-center fw-bold" style="width: 9%; color: #0056b3;">${consumoTxt}</td>
+                                    <td class="text-center fw-bold" style="width: 8%;">${cmTxt}</td>
+                                    <td class="text-center" style="width: 13%; font-size: 0.60rem;">${d.tipo_plaga || '-'}</td>
+                                    <td class="text-center fw-bold" style="width: 7%;">${d.captura !== undefined ? d.captura : '0'}</td>
+                                    <td style="width: 47%; font-size: 0.62rem; text-align: left; padding-left: 6px;">${d.observaciones || ''}</td>
+                                </tr>
+                            `;
+                        });
                     }
 
-                    // Columna S/N (¿Hubo actividad? Si hay consumo > 0 o se cambió cebo: S, sino N)
-                    let snTxt = 'N';
-                    if (cNum > 0 || (cmTxt !== 'N/A' && cmTxt !== '0')) {
-                        snTxt = 'S';
-                    }
-
-                    // Plaga y Captura
-                    const plagaTxt = d.tipo_plaga || '-';
-                    const capNum = (d.captura !== undefined && d.captura !== null && d.captura > 0) ? d.captura : '0';
-
-                    return `
-                        <td class="text-center fw-bold fila-dispositivo-celda" style="${estiloBordeIzq}">${d.numero_dispositivo || numFila}</td>
-                        <td class="text-center fw-bold fila-dispositivo-celda">${matTxt}</td>
-                        <td class="text-center fw-bold fila-dispositivo-celda">${snTxt}</td>
-                        <td class="text-center fw-bold fila-dispositivo-celda" style="color: #0056b3;">${porcTxt}</td>
-                        <td class="text-center fw-bold fila-dispositivo-celda">${cmTxt}</td>
-                        <td class="text-center fila-dispositivo-celda" style="font-size: 0.58rem;">${plagaTxt}</td>
-                        <td class="text-center fw-bold fila-dispositivo-celda">${capNum}</td>
+                    const tablaHTML = `
+                        <table class="tabla-oficial mb-2" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr class="bg-gris" style="font-size: 0.62rem;">
+                                    <th rowspan="2" style="width: 5%;">No.</th>
+                                    <th rowspan="2" style="width: 11%;">TIPO DE MATERIAL</th>
+                                    <th colspan="2" style="width: 17%;">ACTIVIDAD</th>
+                                    <th rowspan="2" style="width: 13%;">TIPO DE PLAGA</th>
+                                    <th rowspan="2" style="width: 7%;">CAPTURA</th>
+                                    <th rowspan="2" style="width: 47%;">OBSERVACIONES</th>
+                                </tr>
+                                <tr class="bg-gris" style="font-size: 0.60rem;">
+                                    <th style="width: 9%;">%</th>
+                                    <th style="width: 8%;">CM</th>
+                                </tr>
+                            </thead>
+                            <tbody style="font-size: 0.62rem;">
+                                ${filasHTML}
+                            </tbody>
+                        </table>
                     `;
-                };
 
-                // Inyectar 20 renglones principales
-                let tablaHTML = '';
-                for (let i = 0; i < 20; i++) {
-                    const itemIzq = panelIzq[i] || null;
-                    const itemDer = panelDer[i] || null;
+                    const contTabla = document.createElement('div');
+                    contTabla.innerHTML = tablaHTML;
+                    contenedorCordones.appendChild(contTabla);
+                });
 
-                    tablaHTML += `
-                        <tr>
-                            ${renderDatosDispositivo(itemIzq, i + 1, false)}
-                            ${renderDatosDispositivo(itemDer, i + 1, true)}
-                        </tr>
-                    `;
-                }
-
-                // Inyectar 4 renglones extras inferiores (numerados 1, 2, 3, 4 como en el físico)
-                for (let k = 1; k <= 4; k++) {
-                    tablaHTML += `
-                        <tr style="background-color: #fafafa;">
-                            <td class="text-center fw-bold fila-dispositivo-celda">${k}</td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fw-bold fila-dispositivo-celda" style="border-left: 2px solid #000;">${k}</td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                            <td class="text-center fila-dispositivo-celda"></td>
-                        </tr>
-                    `;
-                }
-
-                tbodyDisp.innerHTML = tablaHTML;
-
-                // Acciones y Observaciones (unificando observaciones individuales de dispositivos si las hay)
-                let textoAcciones = det.acciones_observaciones || o.observaciones_mesa || 'Se realizó monitoreo conforme al plan de trabajo.';
-                const notasDispositivos = todosLosDispositivos
-                    .filter(d => d.observaciones && d.observaciones.trim() !== '')
-                    .map(d => `Disp #${d.numero_dispositivo}: ${d.observaciones.trim()}`);
-
-                if (notasDispositivos.length > 0) {
-                    textoAcciones += `\nIncidencias en dispositivos: ${notasDispositivos.join('; ')}.`;
-                }
-
-                document.getElementById('rep-acciones').innerText = textoAcciones;
+                // Acciones y Seguimiento
+                document.getElementById('rep-acciones').innerText = det.acciones_observaciones || o.observaciones_mesa || 'Se realizó monitoreo conforme al plan de trabajo.';
                 document.getElementById('rep-seguimiento').innerText = det.seguimiento || 'En caso de continuar actividad se colocarán más estaciones y tal vez reubicar estaciones.';
 
                 // Costo
