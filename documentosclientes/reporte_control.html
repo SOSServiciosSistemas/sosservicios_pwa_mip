@@ -592,10 +592,16 @@
                 document.getElementById('rep-ciudad').innerText = (o.ciudad || 'León, GTO').toUpperCase();
                 document.getElementById('rep-contacto').innerText = (o.persona_contacto || o.nombre_cliente || 'N/A').toUpperCase();
 
-                // Horas en formato 24 hrs
+                // Horas en formato 24 hrs con ajuste de zona horaria para León, Guanajuato (UTC-6)
                 const formatHora24 = (fechaISO) => {
                     if (!fechaISO) return '--:--';
+                    if (typeof fechaISO === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(fechaISO.trim())) {
+                        return fechaISO.trim().substring(0, 5);
+                    }
                     let d = new Date(fechaISO);
+                    if (isNaN(d.getTime())) return fechaISO;
+                    // Ajuste UTC-6 para sincronizar con la hora local real de León, Guanajuato
+                    d.setHours(d.getHours() - 6);
                     return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
                 };
                 document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
