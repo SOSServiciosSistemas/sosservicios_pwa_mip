@@ -1470,21 +1470,29 @@ window.cargarCatalogoParaCompras = async function() {
         const datos = await respuesta.json();
         
         const selectProducto = document.getElementById('ingreso-producto');
+        if (!selectProducto) return;
         selectProducto.innerHTML = '<option value="">Seleccione un producto...</option>';
 
-        if(datos.exito) {
-            const productosActivos = datos.productos.filter(p => p.activo);
+        if(datos.exito && Array.isArray(datos.productos)) {
+            const productosActivos = datos.productos.filter(p => p.activo !== false);
             productosActivos.forEach(prod => {
                 const opcion = `<option value="${prod.id_producto}" data-categoria="${prod.categoria}">
                                     ${prod.clave_producto} - ${prod.nombre_comercial}
                                 </option>`;
                 selectProducto.innerHTML += opcion;
             });
+        } else {
+            console.warn("No se pudieron cargar productos:", datos.error);
         }
     } catch (error) {
         console.error("Error al cargar catálogo:", error);
     }
 };
+
+// Recargar catálogo cada vez que se abra el modal de ingreso de compra
+document.getElementById('modalIngresoStock')?.addEventListener('show.bs.modal', () => {
+    cargarCatalogoParaCompras();
+});
 
 document.getElementById('ingreso-producto')?.addEventListener('change', function() {
     const opcionSeleccionada = this.options[this.selectedIndex];
