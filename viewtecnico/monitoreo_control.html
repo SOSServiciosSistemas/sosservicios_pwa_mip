@@ -199,14 +199,24 @@
                     <span>5. Cobro del Servicio</span>
                 </div>
                 <div class="row g-2 align-items-center">
-                    <div class="col-7">
-                        <label class="form-label fw-bold text-secondary small">Monto Cobrado ($)</label>
-                        <input type="number" step="any" min="0" class="form-control fw-bold fs-6" id="monto-cobrado" placeholder="0.00">
+                    <div class="col-12 col-md-4">
+                        <label class="form-label fw-bold text-secondary small">Monto Cobrado / Recibido ($)</label>
+                        <input type="number" step="any" min="0" class="form-control fw-bold fs-6" id="monto-cobrado" placeholder="0.00" oninput="alCambiarMontoCobrado(this)">
                     </div>
-                    <div class="col-5">
-                        <div class="form-check mt-3">
+                    <div class="col-12 col-md-5">
+                        <label class="form-label fw-bold text-secondary small">Tipo / Forma de Pago</label>
+                        <select class="form-select fw-bold" id="sel-tipo-pago">
+                            <option value="Efectivo" selected>💵 Efectivo</option>
+                            <option value="Transferencia">📱 Transferencia</option>
+                            <option value="Tarjeta">💳 Tarjeta (Terminal)</option>
+                            <option value="Cheque">📝 Cheque</option>
+                            <option value="Sin Cobro / Pendiente">⏳ Sin Cobro / Pendiente</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="form-check mt-md-4">
                             <input class="form-check-input" type="checkbox" id="chk-requiere-factura">
-                            <label class="form-check-label fw-bold" for="chk-requiere-factura">Requiere Factura</label>
+                            <label class="form-check-label fw-bold small" for="chk-requiere-factura">Requiere Factura</label>
                         </div>
                     </div>
                 </div>
@@ -451,8 +461,14 @@
                 document.getElementById('txt-cliente').innerText = ordenActual.nombre_cliente;
                 document.getElementById('txt-direccion').innerText = `${ordenActual.domicilio}, ${ordenActual.colonia}, ${ordenActual.ciudad}`;
 
-                if (ordenActual.costo) {
-                    document.getElementById('monto-cobrado').value = ordenActual.costo;
+                if (ordenActual.costo !== undefined && ordenActual.costo !== null) {
+                    const c = parseFloat(ordenActual.costo) || 0;
+                    document.getElementById('monto-cobrado').value = c;
+                    if (c <= 0) {
+                        document.getElementById('sel-tipo-pago').value = 'Sin Cobro / Pendiente';
+                    } else {
+                        document.getElementById('sel-tipo-pago').value = 'Efectivo';
+                    }
                 }
 
                 if (ordenActual.id_ubicacion) {
@@ -462,6 +478,16 @@
                 }
             } catch (err) {
                 console.error("Error al cargar orden:", err);
+            }
+        }
+
+        function alCambiarMontoCobrado(input) {
+            const val = parseFloat(input.value) || 0;
+            const sel = document.getElementById('sel-tipo-pago');
+            if (val > 0 && sel.value === 'Sin Cobro / Pendiente') {
+                sel.value = 'Efectivo';
+            } else if (val <= 0) {
+                sel.value = 'Sin Cobro / Pendiente';
             }
         }
 
@@ -827,15 +853,23 @@
             const horaInicio = localStorage.getItem('hora_inicio_' + folio) || new Date().toISOString();
             const horaFin = new Date().toISOString();
 
+            const montoCobradoVal = parseFloat(document.getElementById('monto-cobrado').value) || 0;
+            const tipoPagoVal = document.getElementById('sel-tipo-pago').value || (montoCobradoVal > 0 ? 'Efectivo' : 'Sin Cobro / Pendiente');
+
             const payload = {
                 id_orden: folio,
                 hora_inicio: horaInicio,
                 hora_fin: horaFin,
                 id_tecnico: localStorage.getItem('idUsuario'),
-                monto_cobrado: document.getElementById('monto-cobrado').value || 0,
+                monto_cobrado: montoCobradoVal,
+                tipo_pago: tipoPagoVal,
+                metodo_pago: tipoPagoVal,
                 requiere_factura: document.getElementById('chk-requiere-factura').checked,
                 detalles: {
                     cordon_general: document.getElementById('cfg-cordon-general').value || '01',
+                    monto_cobrado: montoCobradoVal,
+                    tipo_pago: tipoPagoVal,
+                    metodo_pago: tipoPagoVal,
                     check_monitoreo: document.getElementById('chk-cfg-monitoreo').checked,
                     check_especie_mayor: document.getElementById('chk-cfg-especie-mayor').checked,
                     check_cebaderos: document.getElementById('chk-cfg-cebaderos').checked,

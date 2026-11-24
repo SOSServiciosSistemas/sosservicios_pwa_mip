@@ -185,7 +185,7 @@
                         <table style="border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 0.62rem; line-height: 1.35; background: #fff;">
                             <tr>
                                 <td style="padding: 2px 4px; border-right: 1px solid #000; border-bottom: 1px solid #000; width: 50%;">
-                                    <span class="caja-check" id="chk-cordon"></span> Cordón
+                                    <span class="border border-dark px-1 fw-bold bg-light me-1" id="rep-num-cordones">01</span> <strong>Cordones</strong>
                                 </td>
                                 <td style="padding: 2px 4px; border-bottom: 1px solid #000; width: 50%;">
                                     <span class="caja-check" id="chk-cebaderos"></span> Cebaderos
@@ -241,49 +241,22 @@
                 </tr>
             </table>
 
-            <!-- DETALLE DE PRODUCTO A UTILIZAR Y TIPO DE PRODUCTO (TABLA UNIFICADA CON QUÍMICOS 1, 2, 3...) -->
+            <!-- DETALLE DE PRODUCTO A UTILIZAR (CON TIPO DE PRODUCTO POR RENGLÓN INDIVIDUAL) -->
             <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr class="bg-gris" style="font-size: 0.65rem;">
-                        <th colspan="4" style="width: 76%;" class="text-center py-1">DETALLE DE PRODUCTO A UTILIZAR</th>
-                        <th style="width: 24%;" class="text-center py-1">TIPO DE PRODUCTO</th>
+                        <th colspan="5" class="text-center py-1">DETALLE DE PRODUCTO A UTILIZAR</th>
                     </tr>
                     <tr class="bg-gris" style="font-size: 0.60rem;">
-                        <th style="width: 6%;">No.</th>
-                        <th style="width: 38%;">INGREDIENTE ACTIVO</th>
-                        <th style="width: 22%;">REGISTRO CICOPLAFEST</th>
-                        <th style="width: 10%;">DÓSIS</th>
-                        <th style="width: 24%; text-align: left; padding: 2px 6px;">
-                            <span class="caja-check" id="chk-rodenticida"></span> Rodenticida
-                        </th>
+                        <th style="width: 5%;">No.</th>
+                        <th style="width: 18%;">TIPO DE PRODUCTO</th>
+                        <th style="width: 40%;">INGREDIENTE ACTIVO</th>
+                        <th style="width: 25%;">REGISTRO CICOPLAFEST</th>
+                        <th style="width: 12%;">DÓSIS</th>
                     </tr>
                 </thead>
                 <tbody id="tabla-productos-cuerpo" style="font-size: 0.63rem;">
-                    <tr>
-                        <td class="text-center fw-bold">1</td>
-                        <td id="prod-1-ia">-</td>
-                        <td id="prod-1-reg">-</td>
-                        <td class="text-center" id="prod-1-dosis">-</td>
-                        <td style="text-align: left; padding: 2px 6px;">
-                            <span class="caja-check" id="chk-placa-goma"></span> Placa de Goma
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center fw-bold">2</td>
-                        <td id="prod-2-ia">-</td>
-                        <td id="prod-2-reg">-</td>
-                        <td class="text-center" id="prod-2-dosis">-</td>
-                        <td style="text-align: left; padding: 2px 6px;">
-                            <span class="caja-check" id="chk-mecanico"></span> Mecánico
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center fw-bold">3</td>
-                        <td id="prod-3-ia">-</td>
-                        <td id="prod-3-reg">-</td>
-                        <td class="text-center" id="prod-3-dosis">-</td>
-                        <td style="background-color: #f8f9fa;"></td>
-                    </tr>
+                    <!-- Se inyecta dinámicamente con JS (renglones 1, 2, 3...) -->
                 </tbody>
             </table>
 
@@ -297,31 +270,34 @@
                 <!-- Se inyectan dinámicamente con JS -->
             </div>
 
-            <!-- SECCIÓN INFERIOR: ACCIONES Y OBSERVACIONES / COSTO Y SEGUIMIENTO -->
+            <!-- SECCIÓN INFERIOR: ACCIONES Y OBSERVACIONES / COSTO, PAGO RECIBIDO Y SEGUIMIENTO -->
             <table class="tabla-oficial mt-1" style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <!-- ACCIONES Y OBSERVACIONES -->
-                    <td style="width: 65%; vertical-align: top; padding: 0;">
+                    <td style="width: 58%; vertical-align: top; padding: 0;">
                         <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
                             ACCIONES Y OBSERVACIONES
                         </div>
-                        <div style="min-height: 44px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-acciones">
+                        <div style="min-height: 52px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-acciones">
                             -
                         </div>
                     </td>
-                    <!-- COSTO DEL SERVICIO / FACTURA / # SERVICIO -->
-                    <td style="width: 35%; vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                    <!-- COSTO DEL SERVICIO Y PAGO RECIBIDO -->
+                    <td style="width: 42%; vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                        <!-- Costo del Servicio -->
                         <div class="fw-bold mb-1">
-                            COSTO DEL SERVICIO: <span class="float-end" id="rep-costo">$0.00</span>
+                            COSTO DEL SERVICIO: <span class="float-end text-primary" id="rep-costo">$0.00</span>
                             <div style="font-size: 0.56rem; font-weight: normal;" id="rep-costo-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
                         </div>
-                        <div class="mb-1 border-top border-dark pt-1">
-                            <strong>REQUIERE FACTURA:</strong>
-                            <span class="ms-2">SI <span class="caja-check" id="chk-fac-si"></span></span>
-                            <span class="ms-2">NO <span class="caja-check" id="chk-fac-no">X</span></span>
-                        </div>
-                        <div class="border-top border-dark pt-1 text-center">
-                            <strong># SERVICIO:</strong> <span id="rep-num-servicio" class="fw-bold ms-1">1 / 1</span>
+                        <!-- Pago Recibido en Sitio -->
+                        <div class="border-top border-dark pt-1">
+                            <div class="fw-bold">
+                                PAGO RECIBIDO: <span class="float-end text-success" id="rep-pago-recibido">$0.00</span>
+                                <div style="font-size: 0.56rem; font-weight: normal;" id="rep-pago-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
+                            </div>
+                            <div style="font-size: 0.58rem; margin-top: 2px;">
+                                <strong>TIPO / FORMA DE PAGO:</strong> <span class="fw-bold ms-1" id="rep-tipo-pago">Efectivo</span>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -331,14 +307,28 @@
                         <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
                             SEGUIMIENTO
                         </div>
-                        <div style="min-height: 36px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-seguimiento">
+                        <div style="min-height: 40px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-seguimiento">
                             -
                         </div>
                     </td>
-                    <!-- PRÓXIMO SERVICIO -->
-                    <td style="vertical-align: middle; text-align: center; padding: 4px;">
-                        <div class="fw-bold" style="font-size: 0.62rem;">PRÓXIMO SERVICIO</div>
-                        <div class="fw-bold text-primary" style="font-size: 0.85rem;" id="rep-proximo-servicio">--/--/----</div>
+                    <!-- FACTURA, # SERVICIO Y PRÓXIMO SERVICIO (COMPACTO) -->
+                    <td style="vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <strong>REQUIERE FACTURA:</strong>
+                                <span class="ms-1">SI <span class="caja-check" id="chk-fac-si"></span></span>
+                                <span class="ms-1">NO <span class="caja-check" id="chk-fac-no">X</span></span>
+                            </div>
+                            <div>
+                                <strong># SERV:</strong> <span id="rep-num-servicio" class="fw-bold ms-1">1 / 1</span>
+                            </div>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 0.60rem;">PRÓXIMO SERVICIO:</strong>
+                                <span class="fw-bold text-primary" style="font-size: 0.72rem;" id="rep-proximo-servicio">Por programar</span>
+                            </div>
+                        </div>
                     </td>
                 </tr>
             </table>
@@ -573,8 +563,19 @@
                     document.getElementById('rep-fecha').innerText = f.toLocaleDateString('es-MX');
                 }
 
+                // Número de Cordones (ej. 01 Cordones)
+                let cantCordones = 1;
+                if (det.cordones && Array.isArray(det.cordones) && det.cordones.length > 0) {
+                    cantCordones = det.cordones.length;
+                } else if (data.lecturas && data.lecturas.length > 0) {
+                    cantCordones = [...new Set(data.lecturas.map(l => l.cordon || 1))].length;
+                } else if (det.cordon_general) {
+                    cantCordones = parseInt(det.cordon_general) || 1;
+                }
+                const elemNumCord = document.getElementById('rep-num-cordones');
+                if (elemNumCord) elemNumCord.innerText = String(cantCordones).padStart(2, '0');
+
                 // Matriz de Checkboxes Superiores
-                document.getElementById('chk-cordon').innerText = 'X';
                 document.getElementById('chk-monitoreo').innerText = 'X';
                 document.getElementById('chk-cebaderos').innerText = (det.check_cebaderos !== false) ? 'X' : '';
                 document.getElementById('chk-especie-mayor').innerText = det.check_especie_mayor ? 'X' : '';
@@ -597,26 +598,26 @@
                 document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
                 document.getElementById('rep-hora-salida').innerText = formatHora24(o.hora_fin);
 
-                // Químicos / Productos: Mapear a Orden Numérico (1, 2, 3...)
+                // Químicos / Productos: Mapear a Orden Numérico (1, 2, 3...) con Tipo de Producto Individual
                 const prods = (det.productos && Array.isArray(det.productos) && det.productos.length > 0)
                     ? det.productos
                     : [];
 
-                for (let num = 1; num <= 3; num++) {
+                const tbodyProd = document.getElementById('tabla-productos-cuerpo');
+                tbodyProd.innerHTML = '';
+                const maxFilasProd = Math.max(3, prods.length);
+                for (let num = 1; num <= maxFilasProd; num++) {
                     const p = prods[num - 1];
-                    const elemIa = document.getElementById(`prod-${num}-ia`);
-                    const elemReg = document.getElementById(`prod-${num}-reg`);
-                    const elemDosis = document.getElementById(`prod-${num}-dosis`);
-
-                    if (elemIa) elemIa.innerText = p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-';
-                    if (elemReg) elemReg.innerText = p ? (p.cicoplafest || p.registro_sanitario || '-') : '-';
-                    if (elemDosis) elemDosis.innerText = p ? (p.dosis || '-') : '-';
+                    tbodyProd.innerHTML += `
+                        <tr>
+                            <td class="text-center fw-bold">${num}</td>
+                            <td class="text-center fw-bold">${p && p.tipo_producto ? p.tipo_producto : '-'}</td>
+                            <td>${p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-'}</td>
+                            <td>${p ? (p.cicoplafest || p.registro_sanitario || '-') : '-'}</td>
+                            <td class="text-center">${p ? (p.dosis || '-') : '-'}</td>
+                        </tr>
+                    `;
                 }
-
-                // Checkboxes de Tipo de Producto
-                document.getElementById('chk-rodenticida').innerText = (det.check_rodenticida || prods.length > 0) ? 'X' : '';
-                document.getElementById('chk-placa-goma').innerText = det.check_placa_goma ? 'X' : '';
-                document.getElementById('chk-mecanico').innerText = det.check_mecanico ? 'X' : '';
 
                 // RENDERIZAR TABLAS POR CORDÓN (UNA SOLA TABLA EXTENDIDA CON COLUMNA DE OBSERVACIONES)
                 const contenedorCordones = document.getElementById('contenedor-tablas-cordones');
@@ -732,10 +733,19 @@
                 document.getElementById('rep-acciones').innerText = det.acciones_observaciones || o.observaciones_mesa || 'Se realizó monitoreo conforme al plan de trabajo.';
                 document.getElementById('rep-seguimiento').innerText = det.seguimiento || 'En caso de continuar actividad se colocarán más estaciones y tal vez reubicar estaciones.';
 
-                // Costo
-                const costoVal = parseFloat(o.costo_mesa) || parseFloat(o.ingresos_cobrados) || 0;
+                // Costo del Servicio
+                const costoVal = parseFloat(o.costo_mesa) || parseFloat(o.costo) || parseFloat(o.ingresos_cobrados) || 0;
                 document.getElementById('rep-costo').innerText = `$${costoVal.toFixed(2)}`;
                 document.getElementById('rep-costo-letra').innerText = `Importe con letra: (${numeroALetras(costoVal)})`;
+
+                // Pago Recibido en Sitio
+                const pagoRecibidoVal = parseFloat(o.ingresos_cobrados) || parseFloat(det.monto_cobrado) || 0;
+                document.getElementById('rep-pago-recibido').innerText = `$${pagoRecibidoVal.toFixed(2)}`;
+                document.getElementById('rep-pago-letra').innerText = `Importe con letra: (${numeroALetras(pagoRecibidoVal)})`;
+
+                // Tipo / Forma de Pago
+                const tipoPagoTexto = det.tipo_pago || det.metodo_pago || (pagoRecibidoVal > 0 ? 'Efectivo' : 'Sin Cobro / Pendiente');
+                document.getElementById('rep-tipo-pago').innerText = tipoPagoTexto;
 
                 if (o.requiere_factura || det.requiere_factura) {
                     document.getElementById('chk-fac-si').innerText = 'X';
