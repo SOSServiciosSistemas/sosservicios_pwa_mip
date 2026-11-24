@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Viewport fijado a 850px para permitir escalado perfecto en pantalla móvil (sin texto encimado) y con soporte para zoom táctil -->
+    <meta name="viewport" content="width=850, user-scalable=yes">
     <title>Reporte de Dispositivos de Control - SOS Servicios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,41 +13,53 @@
 
     <style>
         body {
-            background-color: #f0f0f0;
-            padding: 20px;
-            font-size: 0.72rem;
-            font-family: Arial, sans-serif;
+            background-color: #525659;
+            margin: 0;
+            padding: 12px 0 60px 0;
+            font-size: 0.68rem;
+            font-family: Arial, Helvetica, sans-serif;
             color: #000;
+            -webkit-text-size-adjust: 100%;
         }
 
+        .contenedor-externo-hoja {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Dimensiones fijas que emulan exactamente la hoja física Carta / Letter */
         .hoja-impresion {
             background: white;
-            width: 100%;
-            max-width: 21.5cm;
+            width: 820px;
+            min-width: 820px;
+            max-width: 820px;
             margin: 0 auto;
-            padding: 0.4cm 0.7cm;
+            padding: 0.4cm 0.6cm;
             box-sizing: border-box;
             position: relative;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
         }
 
         .tabla-oficial {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.68rem;
+            font-size: 0.64rem;
         }
 
         .tabla-oficial th,
         .tabla-oficial td {
             border: 1px solid #000;
-            padding: 3px 4px;
+            padding: 2px 3px;
             vertical-align: middle;
         }
 
         .bg-gris {
-            background-color: #e9ecef !important;
+            background-color: #d9d9d9 !important;
             font-weight: bold;
             text-align: center;
+            color: #000;
         }
 
         .borde-inferior {
@@ -54,56 +67,51 @@
             display: inline-block;
             min-height: 15px;
             font-weight: 500;
+            padding: 0 4px;
         }
 
         .caja-check {
             display: inline-block;
-            width: 12px;
-            height: 12px;
+            width: 11px;
+            height: 11px;
             border: 1px solid #000;
-            margin-right: 4px;
+            margin-right: 3px;
             vertical-align: middle;
             text-align: center;
-            line-height: 11px;
+            line-height: 10px;
             font-weight: bold;
-            font-size: 10px;
-        }
-
-        .banner-cordon {
-            background-color: #343a40;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-        }
-
-        .espacio-entre-cordones {
-            height: 28px; /* Separación equivalente a 2 renglones */
-        }
-
-        .seccion-firmas {
-            margin-top: 15px;
+            font-size: 9px;
+            background: #fff;
         }
 
         .linea-firma {
             border-top: 1px solid #000;
-            margin-top: 45px;
-            padding-top: 4px;
+            margin-top: 4px;
+            padding-top: 3px;
             font-weight: bold;
             text-align: center;
-            font-size: 0.68rem;
+            font-size: 0.65rem;
+        }
+
+        .fila-dispositivo-celda {
+            height: 14px;
+            padding: 1px 2px !important;
+            line-height: 1.1;
         }
 
         @media print {
             body {
-                background: white;
-                padding: 0;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             .hoja-impresion {
-                box-shadow: none;
-                max-width: 100%;
-                padding: 0;
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                padding: 0.2cm 0.4cm !important;
+                margin: 0 !important;
             }
             .no-imprimir {
                 display: none !important;
@@ -114,245 +122,280 @@
 
 <body>
 
-    <!-- Barra Superior Flotante para Acciones -->
-    <div class="d-flex justify-content-center gap-2 mb-3 no-imprimir">
-        <button class="btn btn-secondary btn-sm" onclick="window.location.href='../viewtecnico/tecnico.html'">
-            <i class="fa fa-arrow-left me-1"></i> Inicio Técnico
-        </button>
-        <button class="btn btn-primary btn-sm" onclick="window.print()">
-            <i class="fa fa-print me-1"></i> Imprimir Reporte
-        </button>
-        <button id="btn-top-firmar" class="btn btn-success btn-sm fw-bold">
-            <i class="fas fa-pen me-1"></i> ✍️ Firmar con Cliente
-        </button>
-    </div>
+    <div class="contenedor-externo-hoja">
 
-    <div class="hoja-impresion" id="hoja-reporte">
+        <!-- Barra Superior Flotante para Acciones -->
+        <div class="no-imprimir" style="width: 820px; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='../viewtecnico/tecnico.html'">
+                <i class="fa fa-arrow-left me-1"></i> Inicio Técnico
+            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" onclick="window.print()">
+                    <i class="fa fa-print me-1"></i> Imprimir Reporte
+                </button>
+                <button id="btn-top-firmar" class="btn btn-success btn-sm fw-bold">
+                    <i class="fas fa-pen me-1"></i> ✍️ Firmar con Cliente
+                </button>
+            </div>
+        </div>
 
-        <!-- ENCABEZADO -->
-        <table class="w-100 mb-2">
-            <tr>
-                <td style="width: 25%; vertical-align: top;">
-                    <img src="../img/logo-SOS-Plagas.webp" alt="SOS Logo" style="max-width: 140px; height: auto;">
-                    <div style="font-size: 0.62rem; color: #0056b3; font-weight: bold;">www.sosservicios.com.mx</div>
-                </td>
-                <td style="width: 45%; text-align: center; vertical-align: top;">
-                    <div class="fw-bold" style="font-size: 0.95rem;">S.O.S. SERVICIOS</div>
-                    <div style="font-size: 0.68rem;">Av. Pradera # 2716, Col. Parques del Sur</div>
-                    <div style="font-size: 0.68rem;" class="fw-bold">No Licencia Sanitaria 07-11A173</div>
-                    <div style="font-size: 0.65rem;" class="text-muted">R.D.C.-001</div>
-                    <div class="mt-1 p-1 border border-dark fw-bold" style="font-size: 0.78rem; background-color: #f8f9fa;">
-                        REPORTE DISPOSITIVOS DE CONTROL
-                    </div>
-                </td>
-                <td style="width: 30%; vertical-align: top; text-align: right;">
-                    <div class="mb-1">
-                        <span class="fw-bold">FOLIO:</span>
-                        <span class="text-danger fw-bold ms-1" style="font-size: 0.95rem;" id="rep-folio">-----</span>
-                    </div>
-                    <div class="mb-1">
-                        <span class="fw-bold">FECHA:</span>
-                        <span class="ms-1" id="rep-fecha">--/--/----</span>
-                    </div>
-                    <!-- Cuadro de Cordón y Tipos -->
-                    <div class="border border-dark p-1 text-start" style="font-size: 0.62rem; background: #fff;">
-                        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-dark">
-                            <span><strong id="rep-cordon-cuadro" class="border border-dark px-1 bg-light">01</strong> Cordón</span>
-                            <span><span class="caja-check" id="chk-monitoreo">X</span> Monitoreo</span>
+        <!-- EL DOCUMENTO OFICIAL (Idéntico a la Hoja Física) -->
+        <div class="hoja-impresion" id="hoja-reporte">
+
+            <!-- ENCABEZADO -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px;">
+                <tr>
+                    <!-- LOGO Y WEB -->
+                    <td style="width: 24%; vertical-align: top;">
+                        <img src="../img/logo-SOS-Plagas.webp" alt="SOS Logo" style="max-width: 135px; height: auto;">
+                        <div style="font-size: 0.60rem; color: #0056b3; font-weight: bold; margin-top: 2px;">www.sosservicios.com.mx</div>
+                    </td>
+
+                    <!-- DATOS FISCALES SOS -->
+                    <td style="width: 46%; text-align: center; vertical-align: top;">
+                        <div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;">S.O.S. SERVICIOS</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">Av. Pradera # 2716, Col. Parques del Sur</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">León, Gto. México &nbsp; C.P. 37536</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">Tel. +52 477 273 19 07 / +52 477 363 95 30</div>
+                        <div style="font-size: 0.62rem; color: #444;">R.D.C.-001</div>
+                        
+                        <div style="background-color: #d9d9d9; border: 1px solid #000; font-weight: bold; font-size: 0.76rem; padding: 2px 4px; margin-top: 3px;">
+                            REPORTE DISPOSITIVOS DE CONTROL
                         </div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <span><span class="caja-check" id="chk-especie-mayor"></span> Especie Mayor</span>
-                            <span><span class="caja-check" id="chk-cebaderos">X</span> Cebaderos</span>
+                    </td>
+
+                    <!-- FOLIO, FECHA Y MATRIZ DE CHECKS -->
+                    <td style="width: 30%; vertical-align: top; padding-left: 10px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold" style="font-size: 0.85rem;">FOLIO:</span>
+                            <span class="text-danger fw-bold" style="font-size: 0.95rem;" id="rep-folio">-----</span>
                         </div>
-                        <div class="d-flex justify-content-between">
-                            <span><span class="caja-check" id="chk-trampa-mec"></span> Trampa Mecánica</span>
-                            <span><span class="caja-check" id="chk-trampa-adh"></span> Trampa Adhesiva</span>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span style="font-size: 0.75rem;"><strong>fecha:</strong></span>
+                            <span style="font-size: 0.75rem; font-weight: 500;" id="rep-fecha">--/--/----</span>
                         </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
 
-        <!-- DATOS DEL CLIENTE -->
-        <table class="w-100 mb-2" style="font-size: 0.70rem; line-height: 1.4;">
-            <tr>
-                <td style="width: 65%;"><strong>Nombre del Cliente:</strong> <span class="borde-inferior w-75" id="rep-cliente">---</span></td>
-                <td style="width: 35%;"><strong>Hora de Entrada:</strong> <span class="borde-inferior" style="width: 70px;" id="rep-hora-entrada">--:--</span></td>
-            </tr>
-            <tr>
-                <td><strong>Domicilio:</strong> <span class="borde-inferior" style="width: 82%;" id="rep-domicilio">---</span></td>
-                <td><strong>Hora de Salida:</strong> <span class="borde-inferior" style="width: 70px;" id="rep-hora-salida">--:--</span></td>
-            </tr>
-            <tr>
-                <td>
-                    <strong>Giro del Cliente:</strong> <span class="borde-inferior" style="width: 40%;" id="rep-giro">---</span>
-                    <strong class="ms-2">Ciudad:</strong> <span class="borde-inferior" style="width: 30%;" id="rep-ciudad">---</span>
-                </td>
-                <td><strong>Teléfono:</strong> <span class="borde-inferior" style="width: 75%;" id="rep-telefono">---</span></td>
-            </tr>
-            <tr>
-                <td colspan="2"><strong>Contacto:</strong> <span class="borde-inferior" style="width: 60%;" id="rep-contacto">---</span></td>
-            </tr>
-        </table>
+                        <!-- Matriz 2x3 de checkboxes del formato físico -->
+                        <table style="border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 0.60rem; line-height: 1.3; background: #fff;">
+                            <tr>
+                                <td style="padding: 1px 3px; border-right: 1px solid #000; border-bottom: 1px solid #000; width: 50%;">
+                                    <span class="caja-check" id="chk-cordon"></span> Cordón
+                                </td>
+                                <td style="padding: 1px 3px; border-bottom: 1px solid #000; width: 50%;">
+                                    <span class="caja-check" id="chk-cebaderos"></span> Cebaderos
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 1px 3px; border-right: 1px solid #000; border-bottom: 1px solid #000;">
+                                    <span class="caja-check" id="chk-monitoreo"></span> Monitoreo
+                                </td>
+                                <td style="padding: 1px 3px; border-bottom: 1px solid #000;">
+                                    <span class="caja-check" id="chk-trampa-mec"></span> Trampa Mecánica
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 1px 3px; border-right: 1px solid #000;">
+                                    <span class="caja-check" id="chk-especie-mayor"></span> Especie Mayor
+                                </td>
+                                <td style="padding: 1px 3px;">
+                                    <span class="caja-check" id="chk-trampa-adh"></span> Trampa Adhesiva
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
 
-        <!-- DETALLE DE PRODUCTO A UTILIZAR (Numerado 1, 2, 3...) -->
-        <div class="row g-1 mb-2">
-            <div class="col-8">
-                <table class="tabla-oficial">
-                    <thead>
-                        <tr class="bg-gris">
-                            <th colspan="4" class="text-center py-1">DETALLE DE PRODUCTO A UTILIZAR</th>
-                        </tr>
-                        <tr class="bg-gris" style="font-size: 0.62rem;">
-                            <th style="width: 10%;">No.</th>
-                            <th style="width: 45%;">INGREDIENTE ACTIVO</th>
-                            <th style="width: 30%;">REGISTRO CICOPLAFEST</th>
-                            <th style="width: 15%;">DOSIS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-productos-cuerpo">
-                        <tr>
-                            <td class="text-center fw-bold">1</td>
-                            <td id="prod-1-ia">-</td>
-                            <td id="prod-1-reg">-</td>
-                            <td class="text-center" id="prod-1-dosis">-</td>
-                        </tr>
-                        <tr>
-                            <td class="text-center fw-bold">2</td>
-                            <td id="prod-2-ia">-</td>
-                            <td id="prod-2-reg">-</td>
-                            <td class="text-center" id="prod-2-dosis">-</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- DATOS DEL CLIENTE -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.68rem; line-height: 1.45; margin-bottom: 5px;">
+                <tr>
+                    <td style="width: 65%;">
+                        <strong>Nombre del Cliente:</strong> <span class="borde-inferior" style="width: calc(100% - 130px);" id="rep-cliente">---</span>
+                    </td>
+                    <td style="width: 35%;">
+                        <strong>Hora de Entrada:</strong> <span class="borde-inferior" style="width: calc(100% - 110px); text-align: center;" id="rep-hora-entrada">--:--</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Domicilio:</strong> <span class="borde-inferior" style="width: calc(100% - 75px);" id="rep-domicilio">---</span>
+                    </td>
+                    <td>
+                        <strong>Hora de Salida:</strong> <span class="borde-inferior" style="width: calc(100% - 100px); text-align: center;" id="rep-hora-salida">--:--</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>Giro del Cliente:</strong> <span class="borde-inferior" style="width: 38%;" id="rep-giro">---</span>
+                        <strong style="margin-left: 6px;">Ciudad:</strong> <span class="borde-inferior" style="width: 32%;" id="rep-ciudad">---</span>
+                    </td>
+                    <td>
+                        <strong>Contacto:</strong> <span class="borde-inferior" style="width: calc(100% - 70px);" id="rep-contacto">---</span>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- DETALLE DE PRODUCTO A UTILIZAR Y TIPO DE PRODUCTO (TABLA UNIFICADA EXACTA AL FÍSICO) -->
+            <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="bg-gris" style="font-size: 0.65rem;">
+                        <th colspan="4" style="width: 76%;" class="text-center py-1">DETALLE DE PRODUCTO A UTILIZAR</th>
+                        <th style="width: 24%;" class="text-center py-1">TIPO DE PRODUCTO</th>
+                    </tr>
+                    <tr class="bg-gris" style="font-size: 0.60rem;">
+                        <th style="width: 6%;">TIPO</th>
+                        <th style="width: 38%;">INGREDIENTE ACTIVO</th>
+                        <th style="width: 22%;">REGISTRO CICOPLAFEST</th>
+                        <th style="width: 10%;">DÓSIS</th>
+                        <th style="width: 24%; text-align: left; padding: 2px 6px;">
+                            <span class="caja-check" id="chk-rodenticida"></span> Rodenticida
+                        </th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 0.63rem;">
+                    <tr>
+                        <td class="text-center fw-bold">A</td>
+                        <td id="prod-A-ia">-</td>
+                        <td id="prod-A-reg">-</td>
+                        <td class="text-center" id="prod-A-dosis">-</td>
+                        <td style="text-align: left; padding: 2px 6px;">
+                            <span class="caja-check" id="chk-placa-goma"></span> Placa de Goma
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center fw-bold">B</td>
+                        <td id="prod-B-ia">-</td>
+                        <td id="prod-B-reg">-</td>
+                        <td class="text-center" id="prod-B-dosis">-</td>
+                        <td style="text-align: left; padding: 2px 6px;">
+                            <span class="caja-check" id="chk-mecanico"></span> Mecánico
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center fw-bold">C</td>
+                        <td id="prod-C-ia">-</td>
+                        <td id="prod-C-reg">-</td>
+                        <td class="text-center" id="prod-C-dosis">-</td>
+                        <td style="background-color: #f8f9fa;"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- LEYENDA DE PLAGAS ENCONTRADAS -->
+            <div class="border border-dark p-1 mb-1 text-start" style="font-size: 0.58rem; background-color: #fff; line-height: 1.2;">
+                <strong>PLAGAS ENCONTRADAS:</strong> MM-Mus Musculus, RN-Rattus Norvegicus, RR-Rattus Rattus, BG-Cucaracha Alemana, PA-Cucaracha Americana, H-Hormiga, A-Araña, AL-Alacrán, T-Tijerilla, O-Otro:
             </div>
-            <div class="col-4">
-                <table class="tabla-oficial h-100">
-                    <thead>
-                        <tr class="bg-gris">
-                            <th class="text-center py-1">TIPO DE PRODUCTO</th>
-                        </tr>
-                    </thead>
-                    <tbody style="font-size: 0.65rem;">
-                        <tr>
-                            <td><span class="caja-check" id="chk-rodenticida"></span> Rodenticida</td>
-                        </tr>
-                        <tr>
-                            <td><span class="caja-check" id="chk-placa-goma"></span> Placa de Goma</td>
-                        </tr>
-                        <tr>
-                            <td><span class="caja-check" id="chk-mecanico"></span> Mecánico</td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <!-- TABLA GEMELA DE DISPOSITIVOS DE CONTROL (DOS PANELES PARALELOS DE 20 RENGLONES C/U) -->
+            <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="bg-gris" style="font-size: 0.60rem;">
+                        <th rowspan="2" style="width: 4%;">No.</th>
+                        <th rowspan="2" style="width: 9%;">TIPO DE MATERIAL</th>
+                        <th colspan="3" style="width: 22%;">ACTIVIDAD</th>
+                        <th rowspan="2" style="width: 10%;">TIPO DE PLAGA</th>
+                        <th rowspan="2" style="width: 5%;">CAPTURA</th>
+
+                        <th rowspan="2" style="width: 4%; border-left: 2px solid #000;">No.</th>
+                        <th rowspan="2" style="width: 9%;">TIPO DE MATERIAL</th>
+                        <th colspan="3" style="width: 22%;">ACTIVIDAD</th>
+                        <th rowspan="2" style="width: 10%;">TIPO DE PLAGA</th>
+                        <th rowspan="2" style="width: 5%;">CAPTURA</th>
+                    </tr>
+                    <tr class="bg-gris" style="font-size: 0.58rem;">
+                        <th style="width: 6%;">S/N</th>
+                        <th style="width: 8%;">%</th>
+                        <th style="width: 8%;">CM</th>
+
+                        <th style="width: 6%; border-left: 2px solid #000;">S/N</th>
+                        <th style="width: 8%;">%</th>
+                        <th style="width: 8%;">CM</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpo-tabla-dispositivos" style="font-size: 0.60rem;">
+                    <!-- Se inyectan dinámicamente con JS 20 renglones + 4 extras -->
+                </tbody>
+            </table>
+
+            <!-- SECCIÓN INFERIOR: ACCIONES Y OBSERVACIONES / COSTO Y SEGUIMIENTO -->
+            <table class="tabla-oficial mt-1" style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <!-- ACCIONES Y OBSERVACIONES -->
+                    <td style="width: 65%; vertical-align: top; padding: 0;">
+                        <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
+                            ACCIONES Y OBSERVACIONES
+                        </div>
+                        <div style="min-height: 44px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-acciones">
+                            -
+                        </div>
+                    </td>
+                    <!-- COSTO DEL SERVICIO / FACTURA / # SERVICIO -->
+                    <td style="width: 35%; vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                        <div class="fw-bold mb-1">
+                            COSTO DEL SERVICIO: <span class="float-end" id="rep-costo">$0.00</span>
+                            <div style="font-size: 0.56rem; font-weight: normal;" id="rep-costo-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
+                        </div>
+                        <div class="mb-1 border-top border-dark pt-1">
+                            <strong>REQUIERE FACTURA:</strong>
+                            <span class="ms-2">SI <span class="caja-check" id="chk-fac-si"></span></span>
+                            <span class="ms-2">NO <span class="caja-check" id="chk-fac-no">X</span></span>
+                        </div>
+                        <div class="border-top border-dark pt-1 text-center">
+                            <strong># SERVICIO:</strong> <span id="rep-num-servicio" class="fw-bold ms-1">1 / 1</span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <!-- SEGUIMIENTO -->
+                    <td style="vertical-align: top; padding: 0;">
+                        <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
+                            SEGUIMIENTO
+                        </div>
+                        <div style="min-height: 36px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-seguimiento">
+                            -
+                        </div>
+                    </td>
+                    <!-- PRÓXIMO SERVICIO -->
+                    <td style="vertical-align: middle; text-align: center; padding: 4px;">
+                        <div class="fw-bold" style="font-size: 0.62rem;">PRÓXIMO SERVICIO</div>
+                        <div class="fw-bold text-primary" style="font-size: 0.85rem;" id="rep-proximo-servicio">--/--/----</div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- SECCIÓN DE FIRMAS (CLIENTE Y TÉCNICO ESPECIALISTA) -->
+            <table class="tabla-oficial mt-2" style="width: 100%; border: none;">
+                <tr>
+                    <!-- FIRMA CLIENTE -->
+                    <td style="width: 50%; border: none; text-align: center; vertical-align: bottom; padding: 0 25px;">
+                        <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                            <img id="img-firma-cliente" src="" alt="Firma Cliente" style="max-height: 55px; max-width: 90%; display: none;">
+                        </div>
+                        <div class="linea-firma" id="lbl-firma-cliente">NOMBRE Y FIRMA DEL CLIENTE</div>
+                    </td>
+                    <!-- FIRMA TÉCNICO -->
+                    <td style="width: 50%; border: none; text-align: center; vertical-align: bottom; padding: 0 25px;">
+                        <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                            <img id="img-firma-tecnico" src="" alt="Firma Técnico" style="max-height: 55px; max-width: 90%; display: none;">
+                        </div>
+                        <div class="linea-firma" id="lbl-firma-tecnico">NOMBRE Y FIRMA TÉCNICO ESPECIALISTA</div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="d-flex justify-content-end text-muted mt-1" style="font-size: 0.55rem;">
+                V-2 / 2019
             </div>
+
         </div>
 
-        <!-- LEYENDA DE PLAGAS ENCONTRADAS -->
-        <div class="border border-dark p-1 mb-2" style="font-size: 0.60rem; background-color: #fcfcfc;">
-            <strong>PLAGAS ENCONTRADAS:</strong> MM-Mus Musculus, RN-Rattus Norvegicus, RR-Rattus Rattus, BG-Cucaracha Alemana, PA-Cucaracha Americana, H-Hormiga, A-Araña, AL-Alacrán, T-Tijerilla, O-Otro.
+        <!-- BOTÓN INFERIOR FLOTANTE PARA FIRMA CON CLIENTE -->
+        <div class="no-imprimir text-center" style="position: sticky; bottom: 15px; width: 820px; margin: 15px auto; z-index: 99;" id="zona-boton-firmar">
+            <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow-lg rounded-pill fw-bold" style="font-size: 1.05rem; border: 2px solid #fff;">
+                <i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente
+            </button>
         </div>
 
-        <!-- CONTENEDOR DINÁMICO DE TABLAS POR CORDÓN (A TODO EL ANCHO, SIN COLUMNA S/N, CON OBSERVACIONES) -->
-        <div id="contenedor-tablas-cordones">
-            <!-- Se inyectan dinámicamente con JS -->
-        </div>
-
-        <!-- SECCIÓN INFERIOR: ACCIONES, SEGUIMIENTO, COSTO Y FIRMAS -->
-        <div class="row g-1 mt-2">
-            <div class="col-8">
-                <table class="tabla-oficial mb-1">
-                    <thead>
-                        <tr class="bg-gris">
-                            <th class="text-start py-1">ACCIONES Y OBSERVACIONES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="min-height: 40px; height: 42px; vertical-align: top;" id="rep-acciones">
-                                -
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <table class="tabla-oficial">
-                    <thead>
-                        <tr class="bg-gris">
-                            <th class="text-start py-1">SEGUIMIENTO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="min-height: 35px; height: 35px; vertical-align: top;" id="rep-seguimiento">
-                                -
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="col-4">
-                <table class="tabla-oficial h-100">
-                    <tbody>
-                        <tr>
-                            <td class="fw-bold">
-                                COSTO DEL SERVICIO: <span class="float-end" id="rep-costo">$0.00</span>
-                                <div style="font-size: 0.58rem; font-weight: normal;" id="rep-costo-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <strong>REQUIERE FACTURA:</strong> 
-                                <span class="ms-1">SI <span class="caja-check" id="chk-fac-si"></span></span>
-                                <span class="ms-2">NO <span class="caja-check" id="chk-fac-no">X</span></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-center">
-                                <strong># SERVICIO:</strong> <span id="rep-num-servicio" class="fw-bold ms-1">-</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- PRÓXIMO SERVICIO Y FIRMAS -->
-        <div class="row g-2 mt-2 align-items-center">
-            <div class="col-4 text-center">
-                <div class="border border-dark p-1">
-                    <div class="fw-bold" style="font-size: 0.65rem;">PRÓXIMO SERVICIO</div>
-                    <div class="fw-bold text-primary" style="font-size: 0.85rem;" id="rep-proximo-servicio">--/--/----</div>
-                </div>
-            </div>
-
-            <div class="col-4 text-center">
-                <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
-                    <img id="img-firma-cliente" src="" alt="Firma Cliente" style="max-height: 55px; max-width: 90%; display: none;">
-                </div>
-                <div class="linea-firma" id="lbl-firma-cliente">NOMBRE Y FIRMA DEL CLIENTE</div>
-            </div>
-
-            <div class="col-4 text-center">
-                <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
-                    <img id="img-firma-tecnico" src="" alt="Firma Técnico" style="max-height: 55px; max-width: 90%; display: none;">
-                </div>
-                <div class="linea-firma" id="lbl-firma-tecnico">NOMBRE Y FIRMA TÉCNICO</div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end text-muted mt-2" style="font-size: 0.58rem;">
-            V-2 / 2019
-        </div>
-
-    </div>
-
-    <!-- BOTÓN INFERIOR PARA FIRMAR A PANTALLA COMPLETA -->
-    <div class="container text-center mt-3 mb-5 no-imprimir" id="zona-boton-firmar">
-        <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow rounded-pill fw-bold">
-            <i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente
-        </button>
     </div>
 
     <!-- MODAL DE FIRMA A PANTALLA COMPLETA -->
@@ -384,7 +427,7 @@
     </div>
 
     <!-- Script de Carga de Datos y Manejo de Firma -->
-    <script src="../config.js?v=24"></script>
+    <script src="../config.js?v=25"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const folio = urlParams.get('folio');
@@ -455,38 +498,39 @@
             });
         }
 
-        // Redimensionar el canvas manteniendo proporciones
+        // Ajusta el tamaño real del canvas según el viewport
         function redimensionarCanvas() {
-            if (!canvas || !signaturePad) return;
+            if (!canvas) return;
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio;
-            canvas.height = canvas.offsetHeight * ratio;
-            canvas.getContext("2d").scale(ratio, ratio);
-            signaturePad.clear();
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            const ctx = canvas.getContext("2d");
+            ctx.scale(ratio, ratio);
+            if (signaturePad) signaturePad.clear();
         }
 
-        // Recorte inteligente de espacios en blanco de la firma
+        // Recorta el lienzo de la firma eliminando bordes blancos
         function recortarFirma(canvasSrc) {
             const ctx = canvasSrc.getContext('2d');
             const w = canvasSrc.width;
             const h = canvasSrc.height;
-
             const imgData = ctx.getImageData(0, 0, w, h);
             const data = imgData.data;
 
             let minX = w, minY = h, maxX = 0, maxY = 0;
-            let hayTrazo = false;
+            let pixelEncontrado = false;
 
-            for (let y = 0; y < h; y += 2) {
-                for (let x = 0; x < w; x += 2) {
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
                     const idx = (y * w + x) * 4;
                     const r = data[idx];
                     const g = data[idx + 1];
                     const b = data[idx + 2];
                     const a = data[idx + 3];
 
-                    if (a > 30 && (r < 225 || g < 225 || b < 225)) {
-                        hayTrazo = true;
+                    if (a > 20 && (r < 240 || g < 240 || b < 240)) {
+                        pixelEncontrado = true;
                         if (x < minX) minX = x;
                         if (x > maxX) maxX = x;
                         if (y < minY) minY = y;
@@ -495,7 +539,7 @@
                 }
             }
 
-            if (!hayTrazo) {
+            if (!pixelEncontrado) {
                 return canvasSrc.toDataURL("image/png");
             }
 
@@ -553,20 +597,19 @@
                     document.getElementById('rep-fecha').innerText = f.toLocaleDateString('es-MX');
                 }
 
-                // Checkboxes superiores
-                document.getElementById('rep-cordon-cuadro').innerText = det.cordon_general || '01';
-                if (det.check_monitoreo !== false) document.getElementById('chk-monitoreo').innerText = 'X';
-                if (det.check_especie_mayor) document.getElementById('chk-especie-mayor').innerText = 'X';
-                if (det.check_cebaderos !== false) document.getElementById('chk-cebaderos').innerText = 'X';
-                if (det.check_trampa_mecanica) document.getElementById('chk-trampa-mec').innerText = 'X';
-                if (det.check_trampa_adhesiva) document.getElementById('chk-trampa-adh').innerText = 'X';
+                // Matriz de Checkboxes Superiores
+                document.getElementById('chk-cordon').innerText = 'X';
+                document.getElementById('chk-monitoreo').innerText = 'X';
+                document.getElementById('chk-cebaderos').innerText = (det.check_cebaderos !== false) ? 'X' : '';
+                document.getElementById('chk-especie-mayor').innerText = det.check_especie_mayor ? 'X' : '';
+                document.getElementById('chk-trampa-mec').innerText = det.check_trampa_mecanica ? 'X' : '';
+                document.getElementById('chk-trampa-adh').innerText = det.check_trampa_adhesiva ? 'X' : '';
 
                 // Datos del Cliente
                 document.getElementById('rep-cliente').innerText = o.nombre_cliente || 'N/A';
                 document.getElementById('rep-domicilio').innerText = `${o.direccion_completa || ''}, ${o.colonia || ''}`;
                 document.getElementById('rep-giro').innerText = o.giro_comercial || 'Comercial';
                 document.getElementById('rep-ciudad').innerText = o.ciudad || 'León, GTO';
-                document.getElementById('rep-telefono').innerText = o.telefono || 'N/A';
                 document.getElementById('rep-contacto').innerText = o.persona_contacto || o.nombre_cliente || 'N/A';
 
                 // Horas en formato 24 hrs
@@ -578,137 +621,170 @@
                 document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
                 document.getElementById('rep-hora-salida').innerText = formatHora24(o.hora_fin);
 
-                // Químicos / Productos dinámicos numerados 1, 2, 3...
-                const tbodyProd = document.getElementById('tabla-productos-cuerpo');
-                tbodyProd.innerHTML = '';
+                // Químicos / Productos: Mapear a Tipo A, B, C
                 const prods = (det.productos && Array.isArray(det.productos) && det.productos.length > 0)
                     ? det.productos
                     : [];
 
-                const totalFilas = Math.max(2, prods.length);
-                for (let i = 0; i < totalFilas; i++) {
-                    const p = prods[i];
-                    tbodyProd.innerHTML += `
+                const mapLetras = ['A', 'B', 'C'];
+                mapLetras.forEach((letra, idx) => {
+                    const p = prods[idx];
+                    document.getElementById(`prod-${letra}-ia`).innerText = p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-';
+                    document.getElementById(`prod-${letra}-reg`).innerText = p ? (p.cicoplafest || p.registro_sanitario || '-') : '-';
+                    document.getElementById(`prod-${letra}-dosis`).innerText = p ? (p.dosis || '-') : '-';
+                });
+
+                // Checkboxes de Tipo de Producto
+                document.getElementById('chk-rodenticida').innerText = (det.check_rodenticida || prods.length > 0) ? 'X' : '';
+                document.getElementById('chk-placa-goma').innerText = det.check_placa_goma ? 'X' : '';
+                document.getElementById('chk-mecanico').innerText = det.check_mecanico ? 'X' : '';
+
+                // Agrupar todos los dispositivos registrados
+                let todosLosDispositivos = [];
+                if (data.lecturas && data.lecturas.length > 0) {
+                    todosLosDispositivos = data.lecturas;
+                } else if (det.cordones && Array.isArray(det.cordones)) {
+                    det.cordones.forEach(c => {
+                        if (c.dispositivos && Array.isArray(c.dispositivos)) {
+                            c.dispositivos.forEach(d => {
+                                todosLosDispositivos.push({ ...d, cordon: c.cordon || 1 });
+                            });
+                        }
+                    });
+                }
+
+                // Renderizado de la Tabla Gemela (Panel Izquierdo 1-20 y Panel Derecho 1-20 o 21-40)
+                const tbodyDisp = document.getElementById('cuerpo-tabla-dispositivos');
+                tbodyDisp.innerHTML = '';
+
+                // Dividir en Panel Izquierdo y Panel Derecho
+                let panelIzq = [];
+                let panelDer = [];
+
+                // Si hay varios cordones, el cordón 1 va a la izquierda y el cordón 2 a la derecha
+                const numCordones = [...new Set(todosLosDispositivos.map(d => d.cordon || 1))];
+                if (numCordones.length > 1) {
+                    panelIzq = todosLosDispositivos.filter(d => (d.cordon || 1) == numCordones[0]);
+                    panelDer = todosLosDispositivos.filter(d => (d.cordon || 1) == numCordones[1]);
+                } else {
+                    panelIzq = todosLosDispositivos.slice(0, 20);
+                    panelDer = todosLosDispositivos.slice(20, 40);
+                }
+
+                // Función auxiliar para renderizar una celda de dispositivo (7 columnas por panel)
+                const renderDatosDispositivo = (d, numFila, esDerecha = false) => {
+                    const estiloBordeIzq = esDerecha ? 'border-left: 2px solid #000;' : '';
+
+                    if (!d) {
+                        return `
+                            <td class="text-center fw-bold fila-dispositivo-celda" style="${estiloBordeIzq}">${numFila}</td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                        `;
+                    }
+
+                    // Material: Mapear '1' -> 'A', '2' -> 'B', '3' -> 'C'
+                    let matTxt = d.tipo_material || 'A';
+                    if (matTxt === '1' || matTxt === 1) matTxt = 'A';
+                    if (matTxt === '2' || matTxt === 2) matTxt = 'B';
+                    if (matTxt === '3' || matTxt === 3) matTxt = 'C';
+
+                    // Formatear porcentaje de consumo
+                    const cNum = parseFloat(d.consumo_cebo) || 0;
+                    const porcTxt = `${cNum}%`;
+
+                    // Formatear Cambio Material (CM): 'N/A' o cantidad numérica
+                    let cmTxt = 'N/A';
+                    const cmVal = d.cambio_material;
+                    if (cmVal !== undefined && cmVal !== null) {
+                        if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '' || cmVal === 0 || cmVal === '0') {
+                            cmTxt = 'N/A';
+                        } else if (typeof cmVal === 'number') {
+                            cmTxt = cmVal.toString();
+                        } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
+                            cmTxt = parseFloat(cmVal).toString();
+                        } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
+                            cmTxt = '1';
+                        } else {
+                            cmTxt = cmVal.toString();
+                        }
+                    }
+
+                    // Columna S/N (¿Hubo actividad? Si hay consumo > 0 o se cambió cebo: S, sino N)
+                    let snTxt = 'N';
+                    if (cNum > 0 || (cmTxt !== 'N/A' && cmTxt !== '0')) {
+                        snTxt = 'S';
+                    }
+
+                    // Plaga y Captura
+                    const plagaTxt = d.tipo_plaga || '-';
+                    const capNum = (d.captura !== undefined && d.captura !== null && d.captura > 0) ? d.captura : '0';
+
+                    return `
+                        <td class="text-center fw-bold fila-dispositivo-celda" style="${estiloBordeIzq}">${d.numero_dispositivo || numFila}</td>
+                        <td class="text-center fw-bold fila-dispositivo-celda">${matTxt}</td>
+                        <td class="text-center fw-bold fila-dispositivo-celda">${snTxt}</td>
+                        <td class="text-center fw-bold fila-dispositivo-celda" style="color: #0056b3;">${porcTxt}</td>
+                        <td class="text-center fw-bold fila-dispositivo-celda">${cmTxt}</td>
+                        <td class="text-center fila-dispositivo-celda" style="font-size: 0.58rem;">${plagaTxt}</td>
+                        <td class="text-center fw-bold fila-dispositivo-celda">${capNum}</td>
+                    `;
+                };
+
+                // Inyectar 20 renglones principales
+                let tablaHTML = '';
+                for (let i = 0; i < 20; i++) {
+                    const itemIzq = panelIzq[i] || null;
+                    const itemDer = panelDer[i] || null;
+
+                    tablaHTML += `
                         <tr>
-                            <td class="text-center fw-bold">${i + 1}</td>
-                            <td>${p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-'}</td>
-                            <td>${p ? (p.cicoplafest || p.registro_sanitario || '-') : '-'}</td>
-                            <td class="text-center">${p ? (p.dosis || '-') : '-'}</td>
+                            ${renderDatosDispositivo(itemIzq, i + 1, false)}
+                            ${renderDatosDispositivo(itemDer, i + 1, true)}
                         </tr>
                     `;
                 }
 
-                if (det.check_rodenticida) document.getElementById('chk-rodenticida').innerText = 'X';
-                if (det.check_placa_goma) document.getElementById('chk-placa-goma').innerText = 'X';
-                if (det.check_mecanico) document.getElementById('chk-mecanico').innerText = 'X';
-
-                // RENDERIZAR TABLAS POR CORDÓN (SIN COLUMNA S/N, CON OBSERVACIONES INDIVIDUALES A TODO EL ANCHO)
-                const contenedorCordones = document.getElementById('contenedor-tablas-cordones');
-                contenedorCordones.innerHTML = '';
-
-                // Agrupar lecturas por cordón
-                const gruposCordon = {};
-                if (data.lecturas && data.lecturas.length > 0) {
-                    data.lecturas.forEach(l => {
-                        const numC = l.cordon || 1;
-                        if (!gruposCordon[numC]) gruposCordon[numC] = [];
-                        gruposCordon[numC].push(l);
-                    });
-                } else if (det.cordones && Array.isArray(det.cordones)) {
-                    det.cordones.forEach(c => {
-                        gruposCordon[c.cordon || 1] = c.dispositivos || [];
-                    });
-                } else {
-                    gruposCordon[1] = [];
+                // Inyectar 4 renglones extras inferiores (numerados 1, 2, 3, 4 como en el físico)
+                for (let k = 1; k <= 4; k++) {
+                    tablaHTML += `
+                        <tr style="background-color: #fafafa;">
+                            <td class="text-center fw-bold fila-dispositivo-celda">${k}</td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fw-bold fila-dispositivo-celda" style="border-left: 2px solid #000;">${k}</td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                            <td class="text-center fila-dispositivo-celda"></td>
+                        </tr>
+                    `;
                 }
 
-                const listaCordones = Object.keys(gruposCordon).sort((a,b) => parseInt(a) - parseInt(b));
+                tbodyDisp.innerHTML = tablaHTML;
 
-                listaCordones.forEach((numCord, idxCordon) => {
-                    const dispArray = gruposCordon[numCord];
-                    
-                    // Si no es el primer cordón, agregamos la separación equivalente a 2 renglones en blanco
-                    if (idxCordon > 0) {
-                        const divSeparador = document.createElement('div');
-                        divSeparador.className = 'espacio-entre-cordones';
-                        contenedorCordones.appendChild(divSeparador);
-                    }
+                // Acciones y Observaciones (unificando observaciones individuales de dispositivos si las hay)
+                let textoAcciones = det.acciones_observaciones || o.observaciones_mesa || 'Se realizó monitoreo conforme al plan de trabajo.';
+                const notasDispositivos = todosLosDispositivos
+                    .filter(d => d.observaciones && d.observaciones.trim() !== '')
+                    .map(d => `Disp #${d.numero_dispositivo}: ${d.observaciones.trim()}`);
 
-                    // Título del Cordón
-                    const banner = document.createElement('div');
-                    banner.className = 'banner-cordon d-flex justify-content-between align-items-center mb-1';
-                    banner.innerHTML = `<span>CORDÓN ${numCord}</span> <span style="font-size: 0.65rem; font-weight: normal;">Dispositivos asignados: ${dispArray.length}</span>`;
-                    contenedorCordones.appendChild(banner);
+                if (notasDispositivos.length > 0) {
+                    textoAcciones += `\nIncidencias en dispositivos: ${notasDispositivos.join('; ')}.`;
+                }
 
-                    // Tabla Ancha
-                    let filasHTML = '';
-                    if (dispArray.length === 0) {
-                        filasHTML = `<tr><td colspan="7" class="text-center text-muted py-2">Sin dispositivos registrados en este cordón</td></tr>`;
-                    } else {
-                        dispArray.forEach(d => {
-                            const cVal = (d.consumo_cebo !== undefined && d.consumo_cebo !== null && d.consumo_cebo !== '') ? d.consumo_cebo : '';
-                            const consumoTxt = cVal !== '' ? `${cVal}%` : '-';
-
-                            let cmTxt = 'N/A';
-                            const cmVal = d.cambio_material;
-                            if (cmVal !== undefined && cmVal !== null) {
-                                if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '') {
-                                    cmTxt = 'N/A';
-                                } else if (typeof cmVal === 'number') {
-                                    cmTxt = cmVal.toString();
-                                } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
-                                    cmTxt = parseFloat(cmVal).toString();
-                                } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
-                                    cmTxt = '1';
-                                } else {
-                                    cmTxt = cmVal.toString();
-                                }
-                            }
-
-                            filasHTML += `
-                                <tr>
-                                    <td class="text-center fw-bold" style="width: 6%;">${d.numero_dispositivo || '-'}</td>
-                                    <td class="text-center fw-bold" style="width: 14%;">${d.tipo_material || '-'}</td>
-                                    <td class="text-center fw-bold" style="width: 10%; color: #0056b3;">${consumoTxt}</td>
-                                    <td class="text-center" style="width: 8%;">${cmTxt}</td>
-                                    <td class="text-center" style="width: 14%; font-weight: 500;">${d.tipo_plaga || '-'}</td>
-                                    <td class="text-center fw-bold" style="width: 10%;">${d.captura !== undefined ? d.captura : '0'}</td>
-                                    <td style="width: 38%; font-size: 0.64rem;">${d.observaciones || ''}</td>
-                                </tr>
-                            `;
-                        });
-                    }
-
-                    const tablaHTML = `
-                        <table class="tabla-oficial mb-1">
-                            <thead>
-                                <tr class="bg-gris" style="font-size: 0.62rem;">
-                                    <th rowspan="2" style="width: 6%;">No.</th>
-                                    <th rowspan="2" style="width: 14%;">TIPO DE MATERIAL</th>
-                                    <th colspan="2" style="width: 18%;">ACTIVIDAD</th>
-                                    <th rowspan="2" style="width: 14%;">TIPO DE PLAGA</th>
-                                    <th rowspan="2" style="width: 10%;">CAPTURA</th>
-                                    <th rowspan="2" style="width: 38%;">OBSERVACIONES</th>
-                                </tr>
-                                <tr class="bg-gris" style="font-size: 0.60rem;">
-                                    <th style="width: 10%;">%</th>
-                                    <th style="width: 8%;">CM</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${filasHTML}
-                            </tbody>
-                        </table>
-                    `;
-
-                    const contTabla = document.createElement('div');
-                    contTabla.innerHTML = tablaHTML;
-                    contenedorCordones.appendChild(contTabla);
-                });
-
-                // Acciones y Seguimiento
-                document.getElementById('rep-acciones').innerText = det.acciones_observaciones || o.observaciones_mesa || 'Se realizó monitoreo conforme al plan de trabajo.';
-                document.getElementById('rep-seguimiento').innerText = det.seguimiento || 'Continuar con el programa de monitoreo preventivo.';
+                document.getElementById('rep-acciones').innerText = textoAcciones;
+                document.getElementById('rep-seguimiento').innerText = det.seguimiento || 'En caso de continuar actividad se colocarán más estaciones y tal vez reubicar estaciones.';
 
                 // Costo
                 const costoVal = parseFloat(o.costo_mesa) || parseFloat(o.ingresos_cobrados) || 0;
@@ -755,7 +831,7 @@
                     imgT.src = firmaTec;
                     imgT.style.display = 'block';
                 }
-                document.getElementById('lbl-firma-tecnico').innerText = `${o.nombre_tecnico || ''}\nNOMBRE Y FIRMA TÉCNICO`;
+                document.getElementById('lbl-firma-tecnico').innerText = `${o.nombre_tecnico || ''}\nNOMBRE Y FIRMA TÉCNICO ESPECIALISTA`;
 
             } catch (err) {
                 console.error("Error al cargar reporte:", err);
@@ -811,10 +887,10 @@
 
                             const elementoHoja = document.getElementById('hoja-reporte');
                             const opciones = {
-                                margin:       [0, 0.4, 0, 0.4],
+                                margin:       [0.2, 0.4, 0.2, 0.4],
                                 filename:     `Reporte_Control_${folio}.pdf`,
                                 image:        { type: 'jpeg', quality: 0.98 },
-                                html2canvas:  { scale: 2 },
+                                html2canvas:  { scale: 2, useCORS: true },
                                 jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
                             };
 
