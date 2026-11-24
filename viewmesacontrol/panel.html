@@ -832,6 +832,45 @@
         </div>
     </div>
 
+    <!-- Modal para EDITAR UBICACIÓN EXISTENTE -->
+    <div class="modal fade" id="modalEditarUbicacion" tabindex="-1" aria-hidden="true" style="z-index: 1060;">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold">📍 Editar Domicilio / Ubicación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light">
+                    <form id="form-editar-ubicacion">
+                        <input type="hidden" id="eu-id">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Nombre de la Ubicación *</label>
+                            <input type="text" class="form-control shadow-sm" id="eu-nombre" required
+                                placeholder="Ej. Matriz, Sucursal Centro, Casa 2...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary">Calle y Número *</label>
+                            <input type="text" class="form-control shadow-sm" id="eu-domicilio" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Colonia *</label>
+                                <input type="text" class="form-control shadow-sm" id="eu-colonia" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-secondary">Ciudad *</label>
+                                <input type="text" class="form-control shadow-sm" id="eu-ciudad" required value="León">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm"
+                            id="btn-actualizar-ubicacion">💾 Guardar Cambios en Domicilio</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para NUEVA ORDEN DE SERVICIO -->
     <div class="modal fade" id="modalNuevaOrden" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">

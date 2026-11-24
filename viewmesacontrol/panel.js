@@ -338,34 +338,50 @@ window.abrirModalEditar = async function(idCliente) {
             document.getElementById('ec-rfc').value = cliente.rfc || '';
             document.getElementById('ec-domiciliofiscal').value = cliente.domicilio_fiscal || '';
 
-            const divUbicaciones = document.getElementById('lista-ubicaciones-cliente');
-            divUbicaciones.innerHTML = '<span class="text-muted small">Cargando...</span>';
-            
-            const resUbi = await fetch(BASE_URL + `/api/ubicaciones/${idCliente}`);
-            const datosUbi = await resUbi.json();
-            
-            if (datosUbi.exito && datosUbi.ubicaciones.length > 0) {
-                let htmlUbi = '<ul class="list-group list-group-flush border shadow-sm rounded">';
-                datosUbi.ubicaciones.forEach(u => {
-                    htmlUbi += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center" style="font-size: 0.9rem;">
-                            <div>
-                                <strong class="text-dark">${u.nombre_ubicacion}</strong><br>
-                                <span class="text-muted">${u.domicilio}, ${u.colonia}, ${u.ciudad}</span>
-                            </div>
-                        </li>`;
-                });
-                htmlUbi += '</ul>';
-                divUbicaciones.innerHTML = htmlUbi;
-            } else {
-                divUbicaciones.innerHTML = '<div class="alert alert-light text-center small border mb-0">No hay ubicaciones registradas.</div>';
-            }
+            await recargarUbicacionesCliente(idCliente);
 
             const modal = new bootstrap.Modal(document.getElementById('modalEditarCliente'));
             modal.show();
         }
     } catch (error) {
         alert("Error al cargar los datos del cliente.");
+    }
+};
+
+window.ubicacionesClienteActual = [];
+
+window.recargarUbicacionesCliente = async function(idCliente) {
+    const divUbicaciones = document.getElementById('lista-ubicaciones-cliente');
+    if (!divUbicaciones) return;
+    divUbicaciones.innerHTML = '<span class="text-muted small">Cargando ubicaciones...</span>';
+
+    try {
+        const resUbi = await fetch(BASE_URL + `/api/ubicaciones/${idCliente}`);
+        const datosUbi = await resUbi.json();
+
+        if (datosUbi.exito && datosUbi.ubicaciones.length > 0) {
+            window.ubicacionesClienteActual = datosUbi.ubicaciones;
+            let htmlUbi = '<ul class="list-group list-group-flush border shadow-sm rounded">';
+            datosUbi.ubicaciones.forEach(u => {
+                htmlUbi += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2" style="font-size: 0.9rem;">
+                        <div class="me-2">
+                            <strong class="text-dark">${u.nombre_ubicacion}</strong><br>
+                            <span class="text-muted">${u.domicilio}, ${u.colonia}, ${u.ciudad}</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold shadow-sm" onclick="abrirModalEditarUbicacion(${u.id_ubicacion})">
+                            ✏️ Editar
+                        </button>
+                    </li>`;
+            });
+            htmlUbi += '</ul>';
+            divUbicaciones.innerHTML = htmlUbi;
+        } else {
+            window.ubicacionesClienteActual = [];
+            divUbicaciones.innerHTML = '<div class="alert alert-light text-center small border mb-0">No hay ubicaciones registradas.</div>';
+        }
+    } catch (e) {
+        divUbicaciones.innerHTML = '<div class="alert alert-danger text-center small border mb-0">Error al cargar ubicaciones.</div>';
     }
 };
 
@@ -520,10 +536,11 @@ document.getElementById('form-nueva-ubicacion').addEventListener('submit', async
         if (datos.exito) {
             const modalElement = document.getElementById('modalNuevaUbicacion');
             const modal = bootstrap.Modal.getInstance(modalElement);
-            modal.hide();
+            if (modal) modal.hide();
             
-            abrirModalEditar(idCliente);
+            await recargarUbicacionesCliente(idCliente);
             if (typeof window.cargarFormularioAgenda === 'function') window.cargarFormularioAgenda();
+            if (typeof window.cargarClientes === 'function') window.cargarClientes();
         } else {
             alert("Error: " + datos.error);
         }
@@ -531,6 +548,68 @@ document.getElementById('form-nueva-ubicacion').addEventListener('submit', async
         alert("Error de conexión al guardar la ubicación.");
     } finally {
         btnGuardar.innerText = "Guardar Ubicación"; btnGuardar.disabled = false;
+    }
+});
+
+// ==========================================
+// MODAL Y LÓGICA PARA EDITAR UBICACIÓN
+// ==========================================
+window.abrirModalEditarUbicacion = function(idUbicacion) {
+    const u = (window.ubicacionesClienteActual || []).find(x => x.id_ubicacion == idUbicacion);
+    if (!u) {
+        alert("No se encontró la información de la ubicación.");
+        return;
+    }
+
+    document.getElementById('eu-id').value = u.id_ubicacion;
+    document.getElementById('eu-nombre').value = u.nombre_ubicacion || '';
+    document.getElementById('eu-domicilio').value = u.domicilio || '';
+    document.getElementById('eu-colonia').value = u.colonia || '';
+    document.getElementById('eu-ciudad').value = u.ciudad || 'León';
+
+    const modalEditarUbi = new bootstrap.Modal(document.getElementById('modalEditarUbicacion'));
+    modalEditarUbi.show();
+};
+
+document.getElementById('form-editar-ubicacion')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnGuardar = document.getElementById('btn-actualizar-ubicacion');
+    btnGuardar.innerText = "Guardando..."; btnGuardar.disabled = true;
+
+    const idUbicacion = document.getElementById('eu-id').value;
+    const idCliente = document.getElementById('ec-id').value;
+
+    const datosEditados = {
+        nombre_ubicacion: capitalizarTexto(document.getElementById('eu-nombre').value),
+        domicilio: document.getElementById('eu-domicilio').value.trim(),
+        colonia: document.getElementById('eu-colonia').value.trim(),
+        ciudad: document.getElementById('eu-ciudad').value.trim()
+    };
+
+    try {
+        const respuesta = await fetch(BASE_URL + `/api/ubicaciones/${idUbicacion}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosEditados)
+        });
+
+        const datos = await respuesta.json();
+
+        if (datos.exito) {
+            const modalElement = document.getElementById('modalEditarUbicacion');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+
+            await recargarUbicacionesCliente(idCliente);
+            if (typeof window.cargarFormularioAgenda === 'function') window.cargarFormularioAgenda();
+            if (typeof window.cargarClientes === 'function') window.cargarClientes();
+        } else {
+            alert("Error al actualizar ubicación: " + (datos.error || 'Desconocido'));
+        }
+    } catch (error) {
+        alert("Error de conexión al actualizar la ubicación.");
+    } finally {
+        btnGuardar.innerText = "💾 Guardar Cambios en Domicilio"; btnGuardar.disabled = false;
     }
 });
 
