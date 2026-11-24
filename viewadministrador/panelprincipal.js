@@ -528,14 +528,22 @@ function limpiarCanvasFirma(idCanvas) {
 // MÓDULO DE CLIENTES 
 // ==========================================
 async function cargarClientes() {
+    const tbody = document.getElementById('tabla-clientes');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Cargando clientes...</td></tr>';
+
     try {
         const respuesta = await fetch(BASE_URL + '/api/admin/clientes');
         const datos = await respuesta.json();
 
-        const tbody = document.getElementById('tabla-clientes');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
-        if (datos.exito) {
+        if (datos.exito && Array.isArray(datos.clientes)) {
+            if (datos.clientes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay clientes registrados en el sistema.</td></tr>';
+                return;
+            }
+
             datos.clientes.forEach(cliente => {
                 const fila = `
                     <tr>
@@ -556,9 +564,12 @@ async function cargarClientes() {
                 `;
                 tbody.innerHTML += fila;
             });
+        } else {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">Error al cargar clientes: ${datos.error || 'Respuesta inválida'}</td></tr>`;
         }
     } catch (error) {
         console.error("Error al cargar clientes:", error);
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">Error de conexión al cargar clientes.</td></tr>';
     }
 }
 
