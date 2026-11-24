@@ -586,10 +586,14 @@
 
                     <div class="col-4">
                         <label class="form-label small fw-bold mb-1 text-secondary">Cambio (CM)</label>
-                        <select class="form-select form-select-sm disp-cm">
+                        <select class="form-select form-select-sm disp-cm" onchange="alCambiarOpcionCM(this)">
                             <option value="N" selected>No (N)</option>
                             <option value="S">Sí (S)</option>
                         </select>
+                        <div class="cont-cm-cant mt-1 d-none">
+                            <input type="number" step="any" min="0.1" inputmode="decimal" class="form-control form-control-sm disp-cm-cant" placeholder="Cant. (Ej. 2.5)" value="1">
+                            <small class="text-muted d-block text-center" style="font-size: 0.65rem;">Cant. / Piezas</small>
+                        </div>
                     </div>
                 </div>
 
@@ -625,6 +629,56 @@
 
             contDispositivos.appendChild(divDisp);
             actualizarSelectoresMaterialDispositivos();
+
+            if (datosPrevios) {
+                if (datosPrevios.tipo_material) {
+                    const selMat = divDisp.querySelector('.disp-material');
+                    if (selMat) selMat.value = datosPrevios.tipo_material;
+                }
+                if (datosPrevios.consumo_cebo !== undefined && datosPrevios.consumo_cebo !== null) {
+                    divDisp.querySelector('.disp-consumo').value = datosPrevios.consumo_cebo;
+                }
+                if (datosPrevios.cambio_material !== undefined && datosPrevios.cambio_material !== null) {
+                    const cmVal = datosPrevios.cambio_material;
+                    const cmSelect = divDisp.querySelector('.disp-cm');
+                    const contCant = divDisp.querySelector('.cont-cm-cant');
+                    const inputCant = divDisp.querySelector('.disp-cm-cant');
+                    if (cmVal !== 'N' && cmVal !== false && cmVal !== 'No' && cmVal !== 'N/A' && cmVal !== '') {
+                        cmSelect.value = 'S';
+                        contCant.classList.remove('d-none');
+                        inputCant.value = (!isNaN(parseFloat(cmVal)) && parseFloat(cmVal) > 0) ? parseFloat(cmVal) : 1;
+                    } else {
+                        cmSelect.value = 'N';
+                        contCant.classList.add('d-none');
+                        inputCant.value = '';
+                    }
+                }
+                if (datosPrevios.captura !== undefined && datosPrevios.captura !== null) {
+                    divDisp.querySelector('.disp-captura').value = datosPrevios.captura;
+                }
+                if (datosPrevios.observaciones) {
+                    divDisp.querySelector('.disp-observacion').value = datosPrevios.observaciones;
+                }
+            }
+        }
+
+        // Manejador para Cambio de Material (CM): al seleccionar Sí (S), muestra el campo para especificar piezas/fracción
+        function alCambiarOpcionCM(selectEl) {
+            const contenedor = selectEl.closest('.col-4') || selectEl.parentElement;
+            const contCant = contenedor.querySelector('.cont-cm-cant');
+            const inputCant = contenedor.querySelector('.disp-cm-cant');
+            if (!contCant || !inputCant) return;
+
+            if (selectEl.value === 'S') {
+                contCant.classList.remove('d-none');
+                if (!inputCant.value || parseFloat(inputCant.value) <= 0) {
+                    inputCant.value = '1';
+                }
+                inputCant.focus();
+            } else {
+                contCant.classList.add('d-none');
+                inputCant.value = '';
+            }
         }
 
         // Validador de número entero de consumo entre 0 y 100
@@ -740,11 +794,24 @@
                         }
                     });
 
+                    const cmSel = dCard.querySelector('.disp-cm')?.value || 'N';
+                    const cmCantInput = dCard.querySelector('.disp-cm-cant')?.value;
+                    let cambioMaterialFinal = 'N';
+
+                    if (cmSel === 'S') {
+                        const parsedCant = parseFloat(cmCantInput);
+                        if (!isNaN(parsedCant) && parsedCant > 0) {
+                            cambioMaterialFinal = parsedCant;
+                        } else {
+                            cambioMaterialFinal = 1;
+                        }
+                    }
+
                     dispList.push({
                         numero_dispositivo: parseInt(dCard.querySelector('.disp-numero').value) || 1,
                         tipo_material: dCard.querySelector('.disp-material').value || '1',
                         consumo_cebo: parseFloat(dCard.querySelector('.disp-consumo').value) || 0,
-                        cambio_material: dCard.querySelector('.disp-cm').value,
+                        cambio_material: cambioMaterialFinal,
                         tipo_plaga: plagasArr.join(', '),
                         captura: parseInt(dCard.querySelector('.disp-captura').value) || 0,
                         observaciones: dCard.querySelector('.disp-observacion').value

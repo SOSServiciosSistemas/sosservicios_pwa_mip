@@ -648,7 +648,23 @@
                         dispArray.forEach(d => {
                             const cVal = (d.consumo_cebo !== undefined && d.consumo_cebo !== null && d.consumo_cebo !== '') ? d.consumo_cebo : '';
                             const consumoTxt = cVal !== '' ? `${cVal}%` : '-';
-                            const cmTxt = d.cambio_material === 'S' || d.cambio_material === true ? 'S' : (d.cambio_material === 'N' || d.cambio_material === false ? 'N' : (d.cambio_material || '-'));
+
+                            let cmTxt = 'N/A';
+                            const cmVal = d.cambio_material;
+                            if (cmVal !== undefined && cmVal !== null) {
+                                if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '') {
+                                    cmTxt = 'N/A';
+                                } else if (typeof cmVal === 'number') {
+                                    cmTxt = cmVal.toString();
+                                } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
+                                    cmTxt = parseFloat(cmVal).toString();
+                                } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
+                                    cmTxt = '1';
+                                } else {
+                                    cmTxt = cmVal.toString();
+                                }
+                            }
+
                             filasHTML += `
                                 <tr>
                                     <td class="text-center fw-bold" style="width: 6%;">${d.numero_dispositivo || '-'}</td>
