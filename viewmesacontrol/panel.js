@@ -182,17 +182,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Mostrar Tipo de Servicio formateado (ej. Monitoreo - Reporte dispositivos de control)
             const elTipoServicioTexto = document.getElementById('do-tipo-servicio-texto');
             if (elTipoServicioTexto) {
-                elTipoServicioTexto.innerText = formatearTipoServicioTexto(tipoServicio, subtipo);
-                if (!tipoServicio) {
+                if (tipoServicio) {
+                    elTipoServicioTexto.innerText = formatearTipoServicioTexto(tipoServicio, subtipo);
+                } else {
+                    elTipoServicioTexto.innerText = 'Cargando servicio...';
                     fetch(BASE_URL + `/api/orden/${idOrden}`)
                         .then(r => r.json())
                         .then(data => {
                             if (data.exito && data.orden) {
                                 const o = data.orden;
-                                elTipoServicioTexto.innerText = formatearTipoServicioTexto(o.tipo_servicio, o.subtipo_monitoreo || o.subtipo_servicio);
+                                const tipoFmt = formatearTipoServicioTexto(o.tipo_servicio, o.subtipo_monitoreo || o.subtipo_servicio);
+                                elTipoServicioTexto.innerText = tipoFmt;
+                                if (info.event && info.event.setExtendedProp) {
+                                    info.event.setExtendedProp('tipo_servicio', o.tipo_servicio);
+                                    info.event.setExtendedProp('subtipo_servicio', o.subtipo_servicio);
+                                    info.event.setExtendedProp('subtipo_monitoreo', o.subtipo_monitoreo);
+                                }
+                            } else {
+                                elTipoServicioTexto.innerText = 'Servicio';
                             }
                         })
-                        .catch(() => {});
+                        .catch(() => {
+                            elTipoServicioTexto.innerText = 'Servicio';
+                        });
                 }
             }
             
