@@ -29,14 +29,13 @@
             align-items: center;
         }
 
-        /* Dimensiones fijas para emular con precisión la hoja física Carta / Letter */
+        /* Dimensiones ajustadas para hoja física Carta / Letter y evitar desbordes al exportar a PDF */
         .hoja-impresion {
             background: white;
-            width: 820px;
-            min-width: 820px;
-            max-width: 820px;
+            width: 100%;
+            max-width: 20.2cm;
             margin: 0 auto;
-            padding: 0.4cm 0.6cm;
+            padding: 0.2cm 0.4cm;
             box-sizing: border-box;
             position: relative;
             box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
@@ -132,7 +131,7 @@
     <div class="contenedor-externo-hoja">
 
         <!-- Barra Superior Flotante para Acciones -->
-        <div class="no-imprimir" style="width: 820px; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center;">
+        <div class="no-imprimir" style="width: 100%; max-width: 20.2cm; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center;">
             <button class="btn btn-secondary btn-sm" onclick="window.location.href='../viewtecnico/tecnico.html'">
                 <i class="fa fa-arrow-left me-1"></i> Inicio Técnico
             </button>
@@ -851,15 +850,25 @@
                             window.scrollTo(0, 0);
 
                             const elementoHoja = document.getElementById('hoja-reporte');
+                            const sombraOriginal = elementoHoja.style.boxShadow;
+                            elementoHoja.style.boxShadow = 'none';
+
                             const opciones = {
-                                margin:       [0.2, 0.4, 0.2, 0.4],
+                                margin:       [0.2, 0.3, 0.2, 0.3],
                                 filename:     `Reporte_Control_${folio}.pdf`,
                                 image:        { type: 'jpeg', quality: 0.98 },
-                                html2canvas:  { scale: 2, useCORS: true },
+                                html2canvas:  { 
+                                    scale: 2, 
+                                    useCORS: true,
+                                    scrollX: 0,
+                                    scrollY: 0,
+                                    windowWidth: 1024
+                                },
                                 jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
                             };
 
                             const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
+                            elementoHoja.style.boxShadow = sombraOriginal;
                             
                             await fetch(`${BASE_URL}/api/reportes/guardar-pdf`, {
                                 method: 'POST',
