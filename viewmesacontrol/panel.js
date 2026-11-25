@@ -169,6 +169,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const idOrden = info.event.id;
             const tituloLimpio = info.event.title.replace('✔ ', '').replace('🕒 ', ''); 
             const estatusActual = info.event.extendedProps.estatus;
+            const tipoServicio = info.event.extendedProps.tipo_servicio;
+            const subtipo = info.event.extendedProps.subtipo_monitoreo || info.event.extendedProps.subtipo_servicio;
             
             const opcionesFecha = { weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             const fechaFormateada = info.event.start.toLocaleString('es-ES', opcionesFecha);
@@ -176,6 +178,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('do-id-orden').value = idOrden;
             document.getElementById('do-cliente').innerText = tituloLimpio;
             document.getElementById('do-fecha').innerText = capitalizarTexto(fechaFormateada);
+            
+            // Mostrar Tipo de Servicio formateado (ej. Monitoreo - Reporte dispositivos de control)
+            const elTipoServicioTexto = document.getElementById('do-tipo-servicio-texto');
+            if (elTipoServicioTexto) {
+                elTipoServicioTexto.innerText = formatearTipoServicioTexto(tipoServicio, subtipo);
+                if (!tipoServicio) {
+                    fetch(BASE_URL + `/api/orden/${idOrden}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.exito && data.orden) {
+                                const o = data.orden;
+                                elTipoServicioTexto.innerText = formatearTipoServicioTexto(o.tipo_servicio, o.subtipo_monitoreo || o.subtipo_servicio);
+                            }
+                        })
+                        .catch(() => {});
+                }
+            }
             
             const badgeEstatus = document.getElementById('do-estatus');
             badgeEstatus.innerText = estatusActual;
@@ -391,6 +410,42 @@ function capitalizarTexto(texto) {
     return texto.toLowerCase().split(' ').map(palabra => {
         return palabra.charAt(0).toUpperCase() + palabra.slice(1);
     }).join(' ');
+}
+
+// Formatea el tipo de servicio y subtipo para mostrar en vistas y modales (ej. Monitoreo - Reporte dispositivos de control)
+function formatearTipoServicioTexto(tipo, subtipo) {
+    if (!tipo) return 'Servicio General';
+    const tipoNorm = tipo.toString().trim();
+    const subtipoNorm = (subtipo || '').toString().trim();
+
+    if (tipoNorm.toLowerCase().includes('monitoreo')) {
+        let subtipoDesc = 'Reporte dispositivos de control';
+        if (subtipoNorm.toLowerCase() === 'luz' || subtipoNorm.toLowerCase().includes('luz')) {
+            subtipoDesc = 'Reporte dispositivos de luz';
+        } else if (subtipoNorm.toLowerCase() === 'control' || subtipoNorm.toLowerCase().includes('control')) {
+            subtipoDesc = 'Reporte dispositivos de control';
+        } else if (subtipoNorm) {
+            subtipoDesc = subtipoNorm;
+        }
+        return `Monitoreo - ${subtipoDesc}`;
+    }
+
+    if (tipoNorm.toLowerCase().includes('inspecc') || tipoNorm.toLowerCase().includes('diagnost')) {
+        if (subtipoNorm.toLowerCase().includes('riesgo')) {
+            return 'Inspección - Análisis de riesgos';
+        }
+        return 'Diagnóstico';
+    }
+
+    if (tipoNorm.toLowerCase().includes('aplicac')) {
+        return 'Aplicación';
+    }
+
+    if (subtipoNorm) {
+        return `${tipoNorm} - ${subtipoNorm}`;
+    }
+
+    return tipoNorm;
 }
 
 document.getElementById('nc-nombre').addEventListener('blur', function() {
