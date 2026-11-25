@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport fijado a 850px para permitir escalado perfecto en pantalla móvil (sin texto encimado) y con soporte para zoom táctil -->
+    <meta name="viewport" content="width=850, user-scalable=yes">
+    <title>Reporte de Dispositivos de Luz - SOS Servicios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #525659;
+            margin: 0;
+            padding: 12px 0 60px 0;
+            font-size: 0.68rem;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .contenedor-externo-hoja {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Dimensiones ajustadas para hoja física Carta / Letter y evitar desbordes al exportar a PDF */
+        .hoja-impresion {
+            background: white;
+            width: 100%;
+            max-width: 20.2cm;
+            margin: 0 auto;
+            padding: 0.2cm 0.4cm;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .tabla-oficial {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.64rem;
+        }
+
+        .tabla-oficial th,
+        .tabla-oficial td {
+            border: 1px solid #000;
+            padding: 2px 3px;
+            vertical-align: middle;
+        }
+
+        .bg-gris {
+            background-color: #d9d9d9 !important;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+        }
+
+        .caja-check {
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            border: 1px solid #000;
+            margin-right: 3px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 10px;
+            font-weight: bold;
+            font-size: 9px;
+            background: #fff;
+        }
+
+        .linea-firma {
+            border-top: 1px solid #000;
+            margin-top: 4px;
+            padding-top: 3px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.65rem;
+        }
+
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .hoja-impresion {
+                box-shadow: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                padding: 0.2cm 0.4cm !important;
+                margin: 0 !important;
+            }
+            .no-imprimir {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor-externo-hoja">
+
+        <!-- Barra Superior Flotante para Acciones -->
+        <div class="no-imprimir" style="width: 100%; max-width: 20.2cm; margin: 0 auto 10px auto; display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="window.location.href='../viewtecnico/tecnico.html'">
+                <i class="fa fa-arrow-left me-1"></i> Inicio Técnico
+            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm" onclick="window.print()">
+                    <i class="fa fa-print me-1"></i> Imprimir Reporte
+                </button>
+                <button id="btn-top-firmar" class="btn btn-success btn-sm fw-bold">
+                    <i class="fas fa-pen me-1"></i> ✍️ Firmar con Cliente
+                </button>
+            </div>
+        </div>
+
+        <!-- EL DOCUMENTO OFICIAL -->
+        <div class="hoja-impresion" id="hoja-reporte">
+
+            <!-- ENCABEZADO -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+                <tr>
+                    <!-- LOGO Y WEB -->
+                    <td style="width: 25%; vertical-align: top;">
+                        <img src="../img/logo-SOS-Plagas.webp" alt="SOS Logo" style="max-width: 135px; height: auto;">
+                        <div style="font-size: 0.60rem; color: #0056b3; font-weight: bold; margin-top: 2px;">www.sosservicios.com.mx</div>
+                    </td>
+
+                    <!-- DATOS FISCALES SOS -->
+                    <td style="width: 45%; text-align: center; vertical-align: top;">
+                        <div class="fw-bold" style="font-size: 0.95rem; line-height: 1.1;">S.O.S. SERVICIOS</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">Av. Pradera # 2716, Col. Parques del Sur</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">León, Gto. México &nbsp; C.P. 37536</div>
+                        <div style="font-size: 0.65rem; line-height: 1.2;">Tel. +52 477 273 19 07 / +52 477 363 95 30</div>
+                        
+                        <div style="background-color: #d9d9d9; border: 1px solid #000; font-weight: bold; font-size: 0.76rem; padding: 2px 4px; margin-top: 4px;">
+                            REPORTE DISPOSITIVOS DE LUZ
+                        </div>
+                    </td>
+
+                    <!-- FOLIO, FECHA Y MATRIZ DE CASILLAS -->
+                    <td style="width: 30%; vertical-align: top; padding-left: 10px;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold" style="font-size: 0.85rem;">FOLIO:</span>
+                            <span class="text-danger fw-bold" style="font-size: 0.95rem;" id="rep-folio">-----</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span style="font-size: 0.75rem;"><strong>FECHA:</strong></span>
+                            <span style="font-size: 0.75rem; font-weight: 500;" id="rep-fecha">--/--/----</span>
+                        </div>
+
+                        <!-- Matriz 2x3 de checkboxes del formato físico de Luz -->
+                        <table style="border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 0.62rem; line-height: 1.35; background: #fff;">
+                            <tr>
+                                <td style="padding: 2px 4px; border-right: 1px solid #000; border-bottom: 1px solid #000; width: 50%;">
+                                    <span class="caja-check" id="chk-control-plagas"></span> Control de Plagas
+                                </td>
+                                <td style="padding: 2px 4px; border-bottom: 1px solid #000; width: 50%;">
+                                    <span class="caja-check" id="chk-trampa-luz">X</span> Trampa de Luz
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 4px; border-right: 1px solid #000; border-bottom: 1px solid #000;">
+                                    <span class="caja-check" id="chk-monitoreo">X</span> Monitoreo
+                                </td>
+                                <td style="padding: 2px 4px; border-bottom: 1px solid #000;">
+                                    <span class="caja-check" id="chk-trampa-mosca"></span> Trampa de Mosca
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 4px; border-right: 1px solid #000;">
+                                    <span class="caja-check" id="chk-eq-provisional"></span> Eq. Provisional
+                                </td>
+                                <td style="padding: 2px 4px;">
+                                    &nbsp;
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- DATOS DEL CLIENTE -->
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.62rem; line-height: 1.45; margin-bottom: 5px;">
+                <tr>
+                    <td style="width: 65%; padding: 1px 0;">
+                        <span>Nombre del Cliente:</span> <strong class="ms-1" id="rep-cliente">---</strong>
+                    </td>
+                    <td style="width: 35%; padding: 1px 0;">
+                        <span>Hora de Entrada:</span> <strong class="ms-1" id="rep-hora-entrada">--:--</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px 0;">
+                        <span>Domicilio:</span> <strong class="ms-1" id="rep-domicilio">---</strong>
+                    </td>
+                    <td style="padding: 1px 0;">
+                        <span>Hora de Salida:</span> <strong class="ms-1" id="rep-hora-salida">--:--</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 1px 0;">
+                        <span>Giro del Cliente:</span> <strong class="ms-1" id="rep-giro">---</strong>
+                        <span style="margin-left: 20px;">Ciudad:</span> <strong class="ms-1" id="rep-ciudad">---</strong>
+                    </td>
+                    <td style="padding: 1px 0;">
+                        <span>Teléfono:</span> <strong class="ms-1" id="rep-telefono">---</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" style="padding: 1px 0;">
+                        <span>Contacto:</span> <strong class="ms-1" id="rep-contacto">---</strong>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- DETALLE DE PRODUCTO A UTILIZAR -->
+            <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="bg-gris" style="font-size: 0.62rem;">
+                        <th colspan="4" class="text-center py-1" style="width: 75%;">DETALLE DE PRODUCTO A UTILIZAR</th>
+                        <th class="text-center py-1" style="width: 25%;">TIPO DE PRODUCTO</th>
+                    </tr>
+                    <tr class="bg-gris" style="font-size: 0.58rem;">
+                        <th style="width: 6%;">TIPO</th>
+                        <th style="width: 36%;">INGREDIENTE ACTIVO</th>
+                        <th style="width: 21%;">REGISTRO COFEPRIS</th>
+                        <th style="width: 12%;">DOSIS</th>
+                        <th style="width: 25%;">
+                            <span class="me-2"><span class="caja-check" id="chk-prod-cebo"></span> Cebo</span>
+                            <span class="me-2"><span class="caja-check" id="chk-prod-placa">X</span> Placa de Goma</span>
+                            <span><span class="caja-check" id="chk-prod-fero"></span> Feromonas</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-productos-cuerpo" style="font-size: 0.62rem;">
+                    <!-- Se inyecta con JS -->
+                </tbody>
+            </table>
+
+            <!-- LEYENDA OFICIAL DE PLAGAS Y ABREVIATURAS -->
+            <div class="border border-dark p-1 mb-1 text-start" style="font-size: 0.54rem; background-color: #fff; line-height: 1.25;">
+                <strong>C/M-Cambio Material &nbsp; MD-Mosca Doméstica &nbsp; PM-Palomilla &nbsp; MA-Mosquito Aedes &nbsp; MC-Mosquito Culex &nbsp; MF-Mosca de la Fruta &nbsp; PL-Polilla &nbsp; MT-Mosca Metálica &nbsp; MDR-Mosca de Drenaje &nbsp; AB-Abeja &nbsp; AV-Avispa &nbsp; MV-Mosquito Verde &nbsp; H-Hormiga &nbsp; O-Otro</strong>
+            </div>
+
+            <!-- TABLA PRINCIPAL: EQUIPOS Y TRAMPAS / PLAGAS -->
+            <table class="tabla-oficial mb-1" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr class="bg-gris" style="font-size: 0.60rem;">
+                        <th colspan="3" style="width: 38%;">EQUIPOS Y TRAMPAS</th>
+                        <th colspan="14" style="width: 62%;">PLAGAS</th>
+                    </tr>
+                    <tr class="bg-gris" style="font-size: 0.58rem;">
+                        <th style="width: 24%;">ÁREAS</th>
+                        <th style="width: 7%;">Equipo</th>
+                        <th style="width: 7%;">C/M</th>
+                        <!-- 13 columnas de insectos -->
+                        <th style="width: 4%;">MD</th>
+                        <th style="width: 4%;">PM</th>
+                        <th style="width: 4%;">MA</th>
+                        <th style="width: 4%;">MC</th>
+                        <th style="width: 4%;">MF</th>
+                        <th style="width: 4%;">PL</th>
+                        <th style="width: 4%;">MT</th>
+                        <th style="width: 4%;">MDR</th>
+                        <th style="width: 4%;">AB</th>
+                        <th style="width: 4%;">AV</th>
+                        <th style="width: 4%;">MV</th>
+                        <th style="width: 4%;">H</th>
+                        <th style="width: 4%;">O</th>
+                        <th style="width: 10%;">TOTAL INSECTOS</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-equipos-cuerpo" style="font-size: 0.62rem;">
+                    <!-- Se inyecta con JS -->
+                </tbody>
+                <tfoot id="tabla-equipos-pie" style="font-size: 0.60rem;" class="bg-gris">
+                    <!-- Totales automáticos -->
+                </tfoot>
+            </table>
+
+            <!-- SECCIÓN INFERIOR: ACCIONES Y OBSERVACIONES / COSTO, PAGO RECIBIDO Y SEGUIMIENTO (IDÉNTICO A CONTROL) -->
+            <table class="tabla-oficial mt-1" style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <!-- ACCIONES Y OBSERVACIONES -->
+                    <td style="width: 58%; vertical-align: top; padding: 0;">
+                        <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
+                            ACCIONES Y OBSERVACIONES
+                        </div>
+                        <div style="min-height: 52px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-acciones">
+                            NO OBSTRUIR O DAÑAR LAMPARAS YA QUE HAY CARGO
+                        </div>
+                    </td>
+                    <!-- COSTO DEL SERVICIO Y PAGO RECIBIDO -->
+                    <td style="width: 42%; vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                        <!-- Costo del Servicio -->
+                        <div class="fw-bold mb-1">
+                            COSTO DEL SERVICIO: <span class="float-end text-primary" id="rep-costo">$0.00</span>
+                            <div style="font-size: 0.56rem; font-weight: normal;" id="rep-costo-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
+                        </div>
+                        <!-- Pago Recibido en Sitio -->
+                        <div class="border-top border-dark pt-1">
+                            <div class="fw-bold">
+                                PAGO RECIBIDO: <span class="float-end text-success" id="rep-pago-recibido">$0.00</span>
+                                <div style="font-size: 0.56rem; font-weight: normal;" id="rep-pago-letra">Importe con letra: (Cero pesos 00/100 M.N.)</div>
+                            </div>
+                            <div style="font-size: 0.58rem; margin-top: 2px;">
+                                <strong>TIPO / FORMA DE PAGO:</strong> <span class="fw-bold ms-1" id="rep-tipo-pago">Efectivo</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <!-- SEGUIMIENTO -->
+                    <td style="vertical-align: top; padding: 0;">
+                        <div class="bg-gris py-1 px-2 border-bottom border-dark text-start fw-bold" style="font-size: 0.62rem;">
+                            SEGUIMIENTO
+                        </div>
+                        <div style="min-height: 40px; padding: 3px 5px; font-size: 0.62rem; white-space: pre-wrap; line-height: 1.25;" id="rep-seguimiento">
+                            Revisión periódica de tubos de luz UV y reemplazo de placas adhesivas.
+                        </div>
+                    </td>
+                    <!-- FACTURA, # SERVICIO Y PRÓXIMO SERVICIO -->
+                    <td style="vertical-align: top; padding: 3px 5px; font-size: 0.62rem;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <strong>REQUIERE FACTURA:</strong>
+                                <span class="ms-1">SI <span class="caja-check" id="chk-fac-si"></span></span>
+                                <span class="ms-1">NO <span class="caja-check" id="chk-fac-no">X</span></span>
+                            </div>
+                            <div>
+                                <strong># SERV:</strong> <span id="rep-num-servicio" class="fw-bold ms-1">1 / 1</span>
+                            </div>
+                        </div>
+                        <div class="border-top border-dark pt-1 mt-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong style="font-size: 0.60rem;">PRÓXIMO SERVICIO:</strong>
+                                <span class="fw-bold text-primary" style="font-size: 0.72rem;" id="rep-proximo-servicio">Por programar</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- SECCIÓN DE FIRMAS (CLIENTE Y TÉCNICO ESPECIALISTA) -->
+            <table class="tabla-oficial mt-2" style="width: 100%; border: none;">
+                <tr>
+                    <!-- FIRMA CLIENTE -->
+                    <td style="width: 50%; border: none; text-align: center; vertical-align: bottom; padding: 0 25px;">
+                        <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                            <img id="img-firma-cliente" src="" alt="Firma Cliente" style="max-height: 55px; max-width: 90%; display: none;">
+                        </div>
+                        <div class="linea-firma" id="lbl-firma-cliente">NOMBRE Y FIRMA DEL CLIENTE</div>
+                    </td>
+                    <!-- FIRMA TÉCNICO -->
+                    <td style="width: 50%; border: none; text-align: center; vertical-align: bottom; padding: 0 25px;">
+                        <div style="height: 55px; display: flex; align-items: flex-end; justify-content: center;">
+                            <img id="img-firma-tecnico" src="" alt="Firma Técnico" style="max-height: 55px; max-width: 90%; display: none;">
+                        </div>
+                        <div class="linea-firma" id="lbl-firma-tecnico">NOMBRE Y FIRMA TÉCNICO ESPECIALISTA</div>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+
+        <!-- BOTÓN INFERIOR FLOTANTE PARA FIRMA CON CLIENTE -->
+        <div class="no-imprimir text-center" style="position: sticky; bottom: 15px; width: 820px; margin: 15px auto; z-index: 99;" id="zona-boton-firmar">
+            <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow-lg rounded-pill fw-bold" style="font-size: 1.05rem; border: 2px solid #fff;">
+                <i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MODAL DE FIRMA A PANTALLA COMPLETA -->
+    <div id="modal-firma" class="d-none no-imprimir"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 9999; display: flex; flex-direction: column;">
+
+        <!-- Encabezado del modal -->
+        <div class="p-2 bg-dark text-white d-flex justify-content-between align-items-center shadow"
+            style="flex-shrink: 0;">
+            <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Gire su dispositivo para firmar cómodamente</h6>
+            <button id="btn-cerrar-firma" class="btn btn-danger btn-sm">Cancelar</button>
+        </div>
+
+        <!-- Área del Canvas de Firma -->
+        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
+            <canvas id="pizarra-firma" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+        </div>
+
+        <!-- Botones de acción del modal -->
+        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg"
+            style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
+            <button id="btn-borrar-firma" class="btn btn-warning fw-bold shadow-sm">
+                <i class="fas fa-eraser me-1"></i> Borrar
+            </button>
+            <button id="btn-guardar-firma" class="btn btn-success fw-bold shadow-sm">
+                <i class="fas fa-check-circle me-1"></i> Guardar Firma y Finalizar
+            </button>
+        </div>
+    </div>
+
+    <!-- Script de Carga de Datos y Manejo de Firma -->
+    <script src="../config.js?v=26"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const folio = urlParams.get('folio');
+
+        let signaturePad = null;
+        const canvas = document.getElementById('pizarra-firma');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!folio) {
+                alert("No se especificó ningún folio de servicio.");
+                return;
+            }
+
+            // Inicializar SignaturePad
+            if (canvas) {
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgb(255, 255, 255)',
+                    minWidth: 4,
+                    maxWidth: 8
+                });
+            }
+
+            // Configurar eventos del modal de firma
+            configurarEventosFirma();
+
+            // Cargar los datos del reporte
+            await cargarReporteLuz(folio);
+        });
+
+        // Configuración de eventos para firma
+        function configurarEventosFirma() {
+            const modalFirma = document.getElementById('modal-firma');
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const btnTopFirmar = document.getElementById('btn-top-firmar');
+            const btnCerrarFirma = document.getElementById('btn-cerrar-firma');
+            const btnBorrarFirma = document.getElementById('btn-borrar-firma');
+            const btnGuardarFirma = document.getElementById('btn-guardar-firma');
+
+            const abrirModal = () => {
+                modalFirma.classList.remove('d-none');
+                document.body.style.overflow = 'hidden';
+                setTimeout(redimensionarCanvas, 100);
+            };
+
+            const cerrarModal = () => {
+                modalFirma.classList.add('d-none');
+                document.body.style.overflow = 'auto';
+            };
+
+            if (btnAbrirFirma) btnAbrirFirma.addEventListener('click', abrirModal);
+            if (btnTopFirmar) btnTopFirmar.addEventListener('click', abrirModal);
+            if (btnCerrarFirma) btnCerrarFirma.addEventListener('click', cerrarModal);
+
+            if (btnBorrarFirma) {
+                btnBorrarFirma.addEventListener('click', () => {
+                    if (signaturePad) signaturePad.clear();
+                });
+            }
+
+            if (btnGuardarFirma) {
+                btnGuardarFirma.addEventListener('click', guardarFirmaYFinalizar);
+            }
+
+            window.addEventListener("resize", () => {
+                if (modalFirma && !modalFirma.classList.contains('d-none')) {
+                    redimensionarCanvas();
+                }
+            });
+        }
+
+        // Ajusta el tamaño real del canvas según el viewport
+        function redimensionarCanvas() {
+            if (!canvas) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            const ctx = canvas.getContext("2d");
+            ctx.scale(ratio, ratio);
+            if (signaturePad) signaturePad.clear();
+        }
+
+        // Recorta el lienzo de la firma eliminando bordes blancos
+        function recortarFirma(canvasSrc) {
+            const ctx = canvasSrc.getContext('2d');
+            const w = canvasSrc.width;
+            const h = canvasSrc.height;
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let pixelEncontrado = false;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const idx = (y * w + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    const a = data[idx + 3];
+
+                    if (a > 20 && (r < 240 || g < 240 || b < 240)) {
+                        pixelEncontrado = true;
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (!pixelEncontrado) {
+                return canvasSrc.toDataURL("image/png");
+            }
+
+            const padding = Math.max(15, Math.round(w * 0.02));
+            minX = Math.max(0, minX - padding);
+            minY = Math.max(0, minY - padding);
+            maxX = Math.min(w, maxX + padding);
+            maxY = Math.min(h, maxY + padding);
+
+            const cropW = maxX - minX;
+            const cropH = maxY - minY;
+
+            const cropped = document.createElement('canvas');
+            cropped.width = cropW;
+            cropped.height = cropH;
+            const cCtx = cropped.getContext('2d');
+
+            cCtx.fillStyle = '#ffffff';
+            cCtx.fillRect(0, 0, cropW, cropH);
+
+            cCtx.drawImage(
+                canvasSrc,
+                minX, minY, cropW, cropH,
+                0, 0, cropW, cropH
+            );
+
+            return cropped.toDataURL("image/png");
+        }
+
+        // Conversor de números a letras para pesos mexicanos
+        function numeroALetras(numero) {
+            const num = Math.floor(numero);
+            const centavos = Math.round((numero - num) * 100).toString().padStart(2, '0');
+            return `${num.toLocaleString()} PESOS ${centavos}/100 M.N.`;
+        }
+
+        // Cargar datos de la orden y reporte de luz
+        async function cargarReporteLuz(idOrden) {
+            try {
+                const res = await fetch(`${BASE_URL}/api/monitoreo/reporte-luz/${idOrden}`);
+                const data = await res.json();
+
+                if (!data.exito) {
+                    alert("Error al cargar el reporte: " + (data.error || 'Desconocido'));
+                    return;
+                }
+
+                const o = data.orden;
+                const det = o.detalles_ejecucion || {};
+
+                // Folio y Fecha
+                document.getElementById('rep-folio').innerText = o.id_orden.toString().padStart(5, '0');
+                if (o.fecha_servicio) {
+                    const f = new Date(o.fecha_servicio);
+                    document.getElementById('rep-fecha').innerText = f.toLocaleDateString('es-MX');
+                }
+
+                // Matriz de Checkboxes Superiores
+                document.getElementById('chk-control-plagas').innerText = det.check_control_plagas ? 'X' : '';
+                document.getElementById('chk-trampa-luz').innerText = (det.check_trampa_luz !== false) ? 'X' : '';
+                document.getElementById('chk-monitoreo').innerText = (det.check_monitoreo !== false) ? 'X' : '';
+                document.getElementById('chk-trampa-mosca').innerText = det.check_trampa_mosca ? 'X' : '';
+                document.getElementById('chk-eq-provisional').innerText = det.check_eq_provisional ? 'X' : '';
+
+                // Datos del Cliente (en mayúsculas y negritas como formato oficial)
+                document.getElementById('rep-cliente').innerText = (o.nombre_cliente || 'N/A').toUpperCase();
+                const domParts = [o.direccion_completa, o.colonia].filter(Boolean);
+                document.getElementById('rep-domicilio').innerText = (domParts.join(', ') || '---').toUpperCase();
+                document.getElementById('rep-giro').innerText = (o.giro_comercial || 'EMPRESA').toUpperCase();
+                document.getElementById('rep-ciudad').innerText = (o.ciudad || 'LEÓN, GTO').toUpperCase();
+                document.getElementById('rep-contacto').innerText = (o.persona_contacto || o.nombre_cliente || 'N/A').toUpperCase();
+                document.getElementById('rep-telefono').innerText = o.telefono || '---';
+
+                // Horas en formato 24 hrs con ajuste de zona horaria para León, Guanajuato (UTC-6)
+                const formatHora24 = (fechaISO) => {
+                    if (!fechaISO) return '--:--';
+                    if (typeof fechaISO === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(fechaISO.trim())) {
+                        return fechaISO.trim().substring(0, 5);
+                    }
+                    let d = new Date(fechaISO);
+                    if (isNaN(d.getTime())) return fechaISO;
+                    // Ajuste UTC-6 para sincronizar con la hora local real de León, Guanajuato
+                    d.setHours(d.getHours() - 6);
+                    return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+                };
+                document.getElementById('rep-hora-entrada').innerText = formatHora24(o.hora_inicio);
+                document.getElementById('rep-hora-salida').innerText = formatHora24(o.hora_fin);
+
+                // Químicos / Insumos
+                const prods = (det.productos && Array.isArray(det.productos) && det.productos.length > 0)
+                    ? det.productos
+                    : [
+                        { tipo: 'A', ingrediente_activo: 'GOMA ULV', registro_cofepris: 'N/A', dosis: '1/1', tipo_producto: 'Placa de goma' }
+                    ];
+
+                // Checkboxes de Tipo de Producto en encabezado
+                let hayCebo = false, hayPlaca = false, hayFero = false;
+                prods.forEach(p => {
+                    const tp = (p.tipo_producto || '').toLowerCase();
+                    if (tp.includes('cebo')) hayCebo = true;
+                    if (tp.includes('placa') || tp.includes('goma')) hayPlaca = true;
+                    if (tp.includes('feromon')) hayFero = true;
+                });
+                if (!hayCebo && !hayPlaca && !hayFero) hayPlaca = true;
+
+                document.getElementById('chk-prod-cebo').innerText = hayCebo ? 'X' : '';
+                document.getElementById('chk-prod-placa').innerText = hayPlaca ? 'X' : '';
+                document.getElementById('chk-prod-fero').innerText = hayFero ? 'X' : '';
+
+                const tbodyProd = document.getElementById('tabla-productos-cuerpo');
+                tbodyProd.innerHTML = '';
+                const maxFilasProd = Math.max(2, prods.length);
+                for (let num = 1; num <= maxFilasProd; num++) {
+                    const p = prods[num - 1];
+                    const letra = String.fromCharCode(64 + num);
+                    tbodyProd.innerHTML += `
+                        <tr>
+                            <td class="text-center fw-bold">${p ? (p.tipo || letra) : letra}</td>
+                            <td>${p ? (p.ingrediente_activo || p.nombre_comercial || '-') : '-'}</td>
+                            <td class="text-center">${p ? (p.registro_cofepris || p.cicoplafest || '-') : '-'}</td>
+                            <td class="text-center">${p ? (p.dosis || '-') : '-'}</td>
+                            <td class="text-center fw-bold">${p && p.tipo_producto ? p.tipo_producto : '-'}</td>
+                        </tr>
+                    `;
+                }
+
+                // RENDERIZAR TABLA DE EQUIPOS / LÁMPARAS Y PLAGAS
+                const tbodyEquipos = document.getElementById('tabla-equipos-cuerpo');
+                tbodyEquipos.innerHTML = '';
+
+                let listaEquipos = [];
+                if (det.equipos && Array.isArray(det.equipos) && det.equipos.length > 0) {
+                    listaEquipos = det.equipos;
+                } else if (data.lecturas && data.lecturas.length > 0) {
+                    // Mapear desde lecturas de base de datos
+                    listaEquipos = data.lecturas.map(l => {
+                        return {
+                            area_ubicacion: l.area_ubicacion || 'ÁREA DE PRODUCCIÓN',
+                            numero_dispositivo: l.numero_dispositivo || 1,
+                            cambio_material: l.cambio_material || 'N/A',
+                            md: 0, pm: 0, ma: 0, mc: 0, mf: 0, pl: 0, mt: 0, mdr: 0, ab: 0, av: 0, mv: 0, h: 0, o: 0,
+                            total_insectos: l.captura || 0,
+                            observaciones: l.observaciones || ''
+                        };
+                    });
+                }
+
+                // Si no hay datos aún, mostrar renglones plantilla
+                if (listaEquipos.length === 0) {
+                    listaEquipos = [
+                        { area_ubicacion: 'ÁREA DE PRODUCCIÓN', numero_dispositivo: 1, cambio_material: 'N/A', total_insectos: 0 },
+                        { area_ubicacion: 'ÁREA DE PRODUCCIÓN', numero_dispositivo: 2, cambio_material: 'N/A', total_insectos: 0 }
+                    ];
+                }
+
+                // Variables para acumuladores de totales por columna
+                let sumMD = 0, sumPM = 0, sumMA = 0, sumMC = 0, sumMF = 0;
+                let sumPL = 0, sumMT = 0, sumMDR = 0, sumAB = 0, sumAV = 0;
+                let sumMV = 0, sumH = 0, sumO = 0, sumTotalGeneral = 0;
+
+                listaEquipos.forEach((eq, idx) => {
+                    const md = parseInt(eq.md) || 0;
+                    const pm = parseInt(eq.pm) || 0;
+                    const ma = parseInt(eq.ma) || 0;
+                    const mc = parseInt(eq.mc) || 0;
+                    const mf = parseInt(eq.mf) || 0;
+                    const pl = parseInt(eq.pl) || 0;
+                    const mt = parseInt(eq.mt) || 0;
+                    const mdr = parseInt(eq.mdr) || 0;
+                    const ab = parseInt(eq.ab) || 0;
+                    const av = parseInt(eq.av) || 0;
+                    const mv = parseInt(eq.mv) || 0;
+                    const h = parseInt(eq.h) || 0;
+                    const o = parseInt(eq.o) || 0;
+
+                    let totalFila = md + pm + ma + mc + mf + pl + mt + mdr + ab + av + mv + h + o;
+                    if (totalFila === 0 && eq.total_insectos) {
+                        totalFila = parseInt(eq.total_insectos) || 0;
+                    }
+
+                    sumMD += md; sumPM += pm; sumMA += ma; sumMC += mc; sumMF += mf;
+                    sumPL += pl; sumMT += mt; sumMDR += mdr; sumAB += ab; sumAV += av;
+                    sumMV += mv; sumH += h; sumO += o; sumTotalGeneral += totalFila;
+
+                    // Formatear C/M
+                    let cmTxt = 'N/A';
+                    const cmVal = eq.cambio_material;
+                    if (cmVal !== undefined && cmVal !== null) {
+                        if (cmVal === 'N' || cmVal === false || cmVal === 'No' || cmVal === 'N/A' || cmVal === '' || cmVal === 0 || cmVal === '0') {
+                            cmTxt = 'N/A';
+                        } else if (typeof cmVal === 'number') {
+                            cmTxt = cmVal.toString();
+                        } else if (!isNaN(parseFloat(cmVal)) && isFinite(cmVal)) {
+                            cmTxt = parseFloat(cmVal).toString();
+                        } else if (cmVal === 'S' || cmVal === true || cmVal === 'Si' || cmVal === 'Sí') {
+                            cmTxt = '1';
+                        } else {
+                            cmTxt = cmVal.toString();
+                        }
+                    }
+
+                    const valOrDash = (v) => v > 0 ? v : '';
+
+                    tbodyEquipos.innerHTML += `
+                        <tr>
+                            <td class="fw-bold" style="text-align: left; padding-left: 5px;">${(eq.area_ubicacion || 'ÁREA DE PRODUCCIÓN').toUpperCase()}</td>
+                            <td class="text-center fw-bold">${eq.numero_dispositivo || (idx + 1)}</td>
+                            <td class="text-center fw-bold">${cmTxt}</td>
+                            <td class="text-center">${valOrDash(md)}</td>
+                            <td class="text-center">${valOrDash(pm)}</td>
+                            <td class="text-center">${valOrDash(ma)}</td>
+                            <td class="text-center">${valOrDash(mc)}</td>
+                            <td class="text-center">${valOrDash(mf)}</td>
+                            <td class="text-center">${valOrDash(pl)}</td>
+                            <td class="text-center">${valOrDash(mt)}</td>
+                            <td class="text-center">${valOrDash(mdr)}</td>
+                            <td class="text-center">${valOrDash(ab)}</td>
+                            <td class="text-center">${valOrDash(av)}</td>
+                            <td class="text-center">${valOrDash(mv)}</td>
+                            <td class="text-center">${valOrDash(h)}</td>
+                            <td class="text-center">${valOrDash(o)}</td>
+                            <td class="text-center fw-bold" style="color: #0b5394;">${totalFila}</td>
+                        </tr>
+                    `;
+                });
+
+                // Fila de totales en el pie de tabla
+                const valOrDashTotal = (v) => v > 0 ? v : '';
+                document.getElementById('tabla-equipos-pie').innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold px-2">TOTALES:</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMD)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumPM)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMA)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMC)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMF)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumPL)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMT)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMDR)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumAB)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumAV)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumMV)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumH)}</td>
+                        <td class="text-center fw-bold">${valOrDashTotal(sumO)}</td>
+                        <td class="text-center fw-bold text-primary" style="font-size: 0.70rem;">${sumTotalGeneral}</td>
+                    </tr>
+                `;
+
+                // Acciones y Seguimiento
+                document.getElementById('rep-acciones').innerText = det.acciones_observaciones || o.observaciones_mesa || 'NO OBSTRUIR O DAÑAR LAMPARAS YA QUE HAY CARGO';
+                document.getElementById('rep-seguimiento').innerText = det.seguimiento || 'Revisión periódica de tubos de luz UV y reemplazo de placas adhesivas.';
+
+                // Costo del Servicio
+                const costoVal = parseFloat(o.costo_mesa) || parseFloat(o.costo) || parseFloat(o.ingresos_cobrados) || 0;
+                document.getElementById('rep-costo').innerText = `$${costoVal.toFixed(2)}`;
+                document.getElementById('rep-costo-letra').innerText = `Importe con letra: (${numeroALetras(costoVal)})`;
+
+                // Pago Recibido en Sitio
+                const pagoRecibidoVal = parseFloat(o.ingresos_cobrados) || parseFloat(det.monto_cobrado) || 0;
+                document.getElementById('rep-pago-recibido').innerText = `$${pagoRecibidoVal.toFixed(2)}`;
+                document.getElementById('rep-pago-letra').innerText = `Importe con letra: (${numeroALetras(pagoRecibidoVal)})`;
+
+                // Tipo / Forma de Pago
+                const tipoPagoTexto = det.tipo_pago || det.metodo_pago || (pagoRecibidoVal > 0 ? 'Efectivo' : 'Sin Cobro / Pendiente');
+                document.getElementById('rep-tipo-pago').innerText = tipoPagoTexto;
+
+                if (o.requiere_factura || det.requiere_factura) {
+                    document.getElementById('chk-fac-si').innerText = 'X';
+                    document.getElementById('chk-fac-no').innerText = '';
+                } else {
+                    document.getElementById('chk-fac-si').innerText = '';
+                    document.getElementById('chk-fac-no').innerText = 'X';
+                }
+
+                // # Servicio
+                document.getElementById('rep-num-servicio').innerText = `${o.num_tratamiento || 1} / ${o.total_tratamientos || 1}`;
+
+                // Próximo Servicio
+                if (data.proximo_servicio) {
+                    const prox = new Date(data.proximo_servicio);
+                    document.getElementById('rep-proximo-servicio').innerText = prox.toLocaleDateString('es-MX');
+                } else {
+                    document.getElementById('rep-proximo-servicio').innerText = 'Por programar';
+                }
+
+                // Firmas
+                if (det.firma_cliente) {
+                    const imgC = document.getElementById('img-firma-cliente');
+                    imgC.src = det.firma_cliente;
+                    imgC.style.display = 'block';
+
+                    const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+                    if (btnAbrirFirma) {
+                        btnAbrirFirma.innerHTML = `<i class="fas fa-check-circle me-2"></i> Reporte Firmado (Modificar)`;
+                        btnAbrirFirma.classList.remove('btn-success');
+                        btnAbrirFirma.classList.add('btn-outline-success');
+                    }
+                }
+                document.getElementById('lbl-firma-cliente').innerText = `${o.nombre_cliente || ''}\nNOMBRE Y FIRMA DEL CLIENTE`;
+
+                const firmaTec = det.firma_tecnico || o.firma_tecnico_default;
+                if (firmaTec) {
+                    const imgT = document.getElementById('img-firma-tecnico');
+                    imgT.src = firmaTec;
+                    imgT.style.display = 'block';
+                }
+                document.getElementById('lbl-firma-tecnico').innerText = `${o.nombre_tecnico || ''}\nNOMBRE Y FIRMA TÉCNICO ESPECIALISTA`;
+
+            } catch (err) {
+                console.error("Error al cargar reporte:", err);
+                alert("Error de conexión al cargar el reporte de luz.");
+            }
+        }
+
+        // Guardar Firma a Pantalla Completa y Finalizar
+        async function guardarFirmaYFinalizar() {
+            if (!signaturePad || signaturePad.isEmpty()) {
+                alert("Por favor solicite al cliente que firme en el recuadro antes de guardar.");
+                return;
+            }
+
+            const modalFirma = document.getElementById('modal-firma');
+            modalFirma.classList.add('d-none');
+            document.body.style.overflow = 'auto';
+
+            const btnAbrirFirma = document.getElementById('btn-abrir-firma');
+            const btnTopFirmar = document.getElementById('btn-top-firmar');
+            const zonaBotonFirmar = document.getElementById('zona-boton-firmar');
+
+            if (btnAbrirFirma) {
+                btnAbrirFirma.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> Guardando firma y generando PDF...`;
+                btnAbrirFirma.disabled = true;
+            }
+            if (btnTopFirmar) btnTopFirmar.disabled = true;
+
+            const imagenFirma = recortarFirma(canvas);
+            const imgElement = document.getElementById('img-firma-cliente');
+            imgElement.src = imagenFirma;
+            imgElement.style.display = 'block';
+
+            // Pausa estratégica de 500ms para asegurar el render de la imagen en el DOM
+            setTimeout(async () => {
+                try {
+                    // 1. Guardar firma en la base de datos
+                    const resFirma = await fetch(`${BASE_URL}/api/monitoreo/firmar`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_orden: folio, firma_cliente: imagenFirma })
+                    });
+                    const dataFirma = await resFirma.json();
+                    if (!dataFirma.exito) {
+                        console.warn("Aviso al guardar firma en BD:", dataFirma.error);
+                    }
+
+                    // 2. Generar PDF y enviar al servidor si html2pdf está disponible
+                    if (typeof html2pdf !== 'undefined') {
+                        try {
+                            if (zonaBotonFirmar) zonaBotonFirmar.style.display = 'none';
+                            window.scrollTo(0, 0);
+
+                            const elementoHoja = document.getElementById('hoja-reporte');
+                            const sombraOriginal = elementoHoja.style.boxShadow;
+                            elementoHoja.style.boxShadow = 'none';
+
+                            const opciones = {
+                                margin:       [0.2, 0.3, 0.2, 0.3],
+                                filename:     `Reporte_Luz_${folio}.pdf`,
+                                image:        { type: 'jpeg', quality: 0.98 },
+                                html2canvas:  { 
+                                    scale: 2, 
+                                    useCORS: true,
+                                    scrollX: 0,
+                                    scrollY: 0,
+                                    windowWidth: 1024
+                                },
+                                jsPDF:        { unit: 'cm', format: 'letter', orientation: 'portrait' }
+                            };
+
+                            const pdfBase64 = await html2pdf().set(opciones).from(elementoHoja).output('datauristring');
+                            elementoHoja.style.boxShadow = sombraOriginal;
+                            
+                            await fetch(`${BASE_URL}/api/reportes/guardar-pdf`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ folio: folio, pdfBase64: pdfBase64, firma_cliente: imagenFirma })
+                            });
+                        } catch (errPdf) {
+                            console.warn("Aviso al generar PDF en servidor:", errPdf);
+                        } finally {
+                            if (zonaBotonFirmar) zonaBotonFirmar.style.display = 'block';
+                        }
+                    }
+
+                    alert("¡Reporte de Dispositivos de Luz firmado y guardado exitosamente!");
+                    window.location.href = "../viewtecnico/tecnico.html";
+
+                } catch (err) {
+                    console.error("Error al guardar firma:", err);
+                    alert("Ocurrió un error al guardar la firma: " + err.message);
+                    if (btnAbrirFirma) {
+                        btnAbrirFirma.innerHTML = `<i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente`;
+                        btnAbrirFirma.disabled = false;
+                    }
+                    if (btnTopFirmar) btnTopFirmar.disabled = false;
+                }
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>
