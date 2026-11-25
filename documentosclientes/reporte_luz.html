@@ -565,6 +565,10 @@
         async function cargarReporteLuz(idOrden) {
             try {
                 const res = await fetch(`${BASE_URL}/api/monitoreo/reporte-luz/${idOrden}`);
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => '');
+                    throw new Error(`Código ${res.status}: ${res.statusText}. ${txt.includes('Cannot') ? 'Ruta no encontrada en el servidor backend.' : ''}`);
+                }
                 const data = await res.json();
 
                 if (!data.exito) {
