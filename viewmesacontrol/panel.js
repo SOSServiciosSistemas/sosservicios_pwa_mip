@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editable: true,
         eventDisplay: 'block',
         displayEventTime: true,
+        nextDayThreshold: '09:00:00', // Evita que servicios nocturnos (ej. 23:30) que terminan pasada la medianoche se extiendan visualmente al día siguiente
         
         events: BASE_URL + '/api/agenda-general',
         
