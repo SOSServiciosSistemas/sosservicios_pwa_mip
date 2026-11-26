@@ -132,29 +132,22 @@
                 info@sosservicios.com.mx
             </div>
             <div style="width: 30%; text-align: right;">
-                <div class="d-flex align-items-end justify-content-end mb-2" style="font-size: 0.75rem;">
-                    <span class="me-2">FECHA:</span>
-                    <span id="rep-fecha" class="borde-inferior" style="width: 60%;"></span>
+                <div class="d-flex align-items-center justify-content-end mb-1" style="font-size: 0.75rem;">
+                    <span class="me-2"><strong>FECHA:</strong></span>
+                    <span id="rep-fecha" class="fw-bold">--/--/----</span>
                 </div>
                 <h3 class="text-danger fw-bold m-0">FOLIO</h3>
                 <h4 class="text-danger fw-bold m-0" id="rep-folio"></h4>
             </div>
         </div>
 
-        <!-- Bloque del Título (Ocupa el 100% del ancho) -->
+        <!-- Bloque del Título Dinámico (Ocupa el 100% del ancho) -->
         <div class="w-100 mb-2">
             <div class="bg-gris border border-dark p-1 text-center"
+                id="rep-titulo-servicio"
                 style="font-size: 0.8rem; font-weight: bold; letter-spacing: 1px;">
-                REPORTE DE SERVICIO
+                REPORTE DE SERVICIO APLICACIÓN
             </div>
-        </div>
-
-        <!-- Bloque de Checkboxes: 3 Tipos de Servicio (Aplicación, Monitoreo, Garantía) -->
-        <div class="d-flex justify-content-around align-items-center w-100 mb-2"
-            style="font-size: 0.72rem; padding: 2px 10px; font-weight: bold;">
-            <div><span class="caja-check text-center fw-bold" id="chk-serv-aplicacion" style="line-height: 10px;"></span> Aplicación</div>
-            <div><span class="caja-check text-center fw-bold" id="chk-serv-monitoreo" style="line-height: 10px;"></span> Monitoreo</div>
-            <div><span class="caja-check text-center fw-bold" id="chk-serv-garantia" style="line-height: 10px;"></span> Garantía</div>
         </div>
 
         <!-- Datos del Cliente (sin renglones subrayados, textos en negritas y distribución igual a monitoreo) -->
@@ -341,7 +334,7 @@
     </div>
 
     <!-- Referenciamos config.js un nivel arriba -->
-    <script src="../config.js?v=30"></script>
-    <script src="reportecliente.js?v=30"></script>
+    <script src="../config.js?v=31"></script>
+    <script src="reportecliente.js?v=31"></script>
 </body>
 </html>

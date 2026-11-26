@@ -83,17 +83,15 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-folio').innerText = orden.id_orden.toString().padStart(5, '0');
             document.getElementById('rep-fecha').innerText = new Date(orden.fecha_servicio).toLocaleDateString('es-MX');
 
-            // Tipo de Servicio (Aplicación, Monitoreo, Garantía)
+            // Título dinámico según Tipo de Servicio (Aplicación o Garantía)
             const tipoServicioNorm = (orden.tipo_servicio || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            if (tipoServicioNorm.includes('aplic')) {
-                const el = document.getElementById('chk-serv-aplicacion');
-                if (el) el.innerText = 'X';
-            } else if (tipoServicioNorm.includes('monit')) {
-                const el = document.getElementById('chk-serv-monitoreo');
-                if (el) el.innerText = 'X';
-            } else if (tipoServicioNorm.includes('garant')) {
-                const el = document.getElementById('chk-serv-garantia');
-                if (el) el.innerText = 'X';
+            const elTituloServicio = document.getElementById('rep-titulo-servicio');
+            if (elTituloServicio) {
+                if (tipoServicioNorm.includes('garant')) {
+                    elTituloServicio.innerText = 'REPORTE DE SERVICIO GARANTÍA';
+                } else {
+                    elTituloServicio.innerText = 'REPORTE DE SERVICIO APLICACIÓN';
+                }
             }
 
             document.getElementById('rep-cliente').innerText = (orden.nombre_cliente || 'N/A').toUpperCase();
