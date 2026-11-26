@@ -8,9 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     cargarClientes();
     cargarProductos();
 
-    // Inicializar lienzos de firma digital
-    configurarCanvasFirma('canvas-firma-nuevo', 'btn-limpiar-firma-nuevo');
-    configurarCanvasFirma('canvas-firma-actualizar', 'btn-limpiar-firma-actualizar');
+    // Inicializar pizarra de firma digital a pantalla completa
+    inicializarPizarraFirmaPantallaCompleta();
 });
 
 // Cerrar sesión
@@ -166,7 +165,7 @@ document.getElementById('btn-nuevo-usuario')?.addEventListener('click', () => {
 
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     document.getElementById('form-nuevo-usuario').reset();
-    limpiarCanvasFirma('canvas-firma-nuevo');
+    limpiarFirmaCapturada('nuevo');
 
     const alertaError = document.getElementById('user-error-alert');
     if (alertaError) {
@@ -221,14 +220,12 @@ document.getElementById('form-nuevo-usuario')?.addEventListener('submit', async 
         return;
     }
 
-    const canvasNuevo = document.getElementById('canvas-firma-nuevo');
-    if (!canvasNuevo || canvasNuevo.getAttribute('data-firmada') !== 'true') {
+    const firmaDigital = document.getElementById('firma-nuevo-base64')?.value || '';
+    if (!firmaDigital) {
         alertaError.textContent = 'Es obligatorio registrar la firma digital oficial del usuario.';
         alertaError.classList.remove('d-none');
         return;
     }
-
-    const firmaDigital = canvasNuevo.toDataURL('image/png');
 
     const btnGuardar = document.getElementById('btn-guardar-usuario');
     const textoOriginal = btnGuardar.innerHTML;
@@ -360,7 +357,7 @@ window.abrirModalFirma = function (idUsuario, nombreCompleto, firmaActual) {
     document.getElementById('firma-id-usuario').value = idUsuario;
     document.getElementById('firma-nombre-usuario').value = nombreCompleto;
 
-    limpiarCanvasFirma('canvas-firma-actualizar');
+    limpiarFirmaCapturada('actualizar');
 
     const contPrevia = document.getElementById('contenedor-firma-previa');
     const imgPrevia = document.getElementById('img-firma-previa');
@@ -390,15 +387,13 @@ document.getElementById('form-actualizar-firma')?.addEventListener('submit', asy
     alertaError.textContent = '';
 
     const idUsuario = document.getElementById('firma-id-usuario').value;
-    const canvas = document.getElementById('canvas-firma-actualizar');
+    const firmaDigital = document.getElementById('firma-actualizar-base64')?.value || '';
 
-    if (!canvas || canvas.getAttribute('data-firmada') !== 'true') {
+    if (!firmaDigital) {
         alertaError.textContent = 'Por favor dibuja la nueva firma oficial antes de guardar.';
         alertaError.classList.remove('d-none');
         return;
     }
-
-    const firmaDigital = canvas.toDataURL('image/png');
 
     const btnGuardar = document.getElementById('btn-guardar-firma');
     const textoOriginal = btnGuardar.innerHTML;
@@ -452,76 +447,209 @@ document.getElementById('form-actualizar-firma')?.addEventListener('submit', asy
 });
 
 // ----------------------------------------------------
-// Utilidades de Canvas para Firma
+// Pizarra de Firma a Pantalla Completa y Recorte Automático
 // ----------------------------------------------------
-function configurarCanvasFirma(idCanvas, idBotonLimpiar) {
-    const canvas = document.getElementById(idCanvas);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#000000';
-    let dibujando = false;
+const FIRMA_MODOS = {
+    nuevo: {
+        inputId: 'firma-nuevo-base64',
+        previewContId: 'contenedor-preview-firma-nuevo',
+        previewImgId: 'preview-firma-nuevo',
+        btnAbrirId: 'btn-abrir-firma-nuevo',
+        btnLimpiarId: 'btn-limpiar-firma-nuevo',
+        textoInicial: 'Firmar en Pantalla Completa'
+    },
+    actualizar: {
+        inputId: 'firma-actualizar-base64',
+        previewContId: 'contenedor-preview-firma-actualizar',
+        previewImgId: 'preview-firma-actualizar',
+        btnAbrirId: 'btn-abrir-firma-actualizar',
+        btnLimpiarId: 'btn-limpiar-firma-actualizar',
+        textoInicial: 'Dibujar Nueva Firma en Pantalla Completa'
+    }
+};
 
-    const getPos = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
-    };
+let signaturePadAdmin = null;
+let modoFirmaActivo = null;
 
-    const iniciar = (e) => {
-        e.preventDefault();
-        dibujando = true;
-        canvas.setAttribute('data-firmada', 'true');
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-    };
+function inicializarPizarraFirmaPantallaCompleta() {
+    const pizarra = document.getElementById('pizarra-firma-usuario');
+    const modalPizarra = document.getElementById('modal-firma-pantalla-completa');
+    const btnCerrar = document.getElementById('btn-cerrar-pizarra-firma');
+    const btnBorrar = document.getElementById('btn-borrar-pizarra-firma');
+    const btnAplicar = document.getElementById('btn-aplicar-pizarra-firma');
 
-    const dibujar = (e) => {
-        e.preventDefault();
-        if (!dibujando) return;
-        const p = getPos(e);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-    };
-
-    const detener = () => {
-        dibujando = false;
-        ctx.closePath();
-    };
-
-    canvas.addEventListener('mousedown', iniciar);
-    canvas.addEventListener('mousemove', dibujar);
-    canvas.addEventListener('mouseup', detener);
-    canvas.addEventListener('mouseleave', detener);
-
-    canvas.addEventListener('touchstart', iniciar, { passive: false });
-    canvas.addEventListener('touchmove', dibujar, { passive: false });
-    canvas.addEventListener('touchend', detener);
-
-    const btnLimpiar = document.getElementById(idBotonLimpiar);
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', (e) => {
-            e.preventDefault();
-            limpiarCanvasFirma(idCanvas);
+    if (pizarra && typeof SignaturePad !== 'undefined') {
+        signaturePadAdmin = new SignaturePad(pizarra, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            minWidth: 4,
+            maxWidth: 8
         });
+    }
+
+    Object.entries(FIRMA_MODOS).forEach(([modo, cfg]) => {
+        document.getElementById(cfg.btnAbrirId)?.addEventListener('click', () => {
+            abrirPizarraFirmaPantallaCompleta(modo);
+        });
+        document.getElementById(cfg.btnLimpiarId)?.addEventListener('click', (e) => {
+            e.preventDefault();
+            limpiarFirmaCapturada(modo);
+        });
+    });
+
+    const cerrarPizarra = () => {
+        if (modalPizarra) modalPizarra.classList.add('d-none');
+        modoFirmaActivo = null;
+    };
+
+    btnCerrar?.addEventListener('click', cerrarPizarra);
+
+    btnBorrar?.addEventListener('click', () => {
+        if (signaturePadAdmin) signaturePadAdmin.clear();
+    });
+
+    btnAplicar?.addEventListener('click', () => {
+        if (!signaturePadAdmin || signaturePadAdmin.isEmpty()) {
+            alert('Por favor dibuja la firma en el recuadro antes de aplicar.');
+            return;
+        }
+        const imagenRecortada = recortarYRedimensionarFirma(pizarra);
+        if (modoFirmaActivo) {
+            establecerFirmaCapturada(modoFirmaActivo, imagenRecortada);
+        }
+        cerrarPizarra();
+    });
+
+    window.addEventListener('resize', () => {
+        if (modalPizarra && !modalPizarra.classList.contains('d-none')) {
+            redimensionarPizarraUsuario();
+        }
+    });
+}
+
+function abrirPizarraFirmaPantallaCompleta(modo) {
+    const modalPizarra = document.getElementById('modal-firma-pantalla-completa');
+    if (!modalPizarra) return;
+    modoFirmaActivo = modo;
+    modalPizarra.classList.remove('d-none');
+    setTimeout(redimensionarPizarraUsuario, 100);
+}
+
+function redimensionarPizarraUsuario() {
+    const canvas = document.getElementById('pizarra-firma-usuario');
+    if (!canvas) return;
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * ratio;
+    canvas.height = rect.height * ratio;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(ratio, ratio);
+    if (signaturePadAdmin) signaturePadAdmin.clear();
+}
+
+// Recorta márgenes en blanco y ajusta el tamaño para que luzca nítida y proporcional en reportes
+function recortarYRedimensionarFirma(canvasSrc) {
+    const ctx = canvasSrc.getContext('2d');
+    const w = canvasSrc.width;
+    const h = canvasSrc.height;
+    const imgData = ctx.getImageData(0, 0, w, h);
+    const data = imgData.data;
+
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let pixelEncontrado = false;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            const a = data[idx + 3];
+
+            if (a > 20 && (r < 240 || g < 240 || b < 240)) {
+                pixelEncontrado = true;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (!pixelEncontrado) {
+        return canvasSrc.toDataURL('image/png');
+    }
+
+    const padding = Math.max(15, Math.round(w * 0.02));
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(w, maxX + padding);
+    maxY = Math.min(h, maxY + padding);
+
+    const cropW = maxX - minX;
+    const cropH = maxY - minY;
+
+    // Escalar proporcionalmente a un tamaño óptimo para reportes (alta nitidez sin peso excesivo)
+    const escala = Math.min(1, 600 / cropW, 220 / cropH);
+    const outW = Math.max(1, Math.round(cropW * escala));
+    const outH = Math.max(1, Math.round(cropH * escala));
+
+    const cropped = document.createElement('canvas');
+    cropped.width = outW;
+    cropped.height = outH;
+    const cCtx = cropped.getContext('2d');
+
+    cCtx.fillStyle = '#ffffff';
+    cCtx.fillRect(0, 0, outW, outH);
+
+    cCtx.drawImage(
+        canvasSrc,
+        minX, minY, cropW, cropH,
+        0, 0, outW, outH
+    );
+
+    return cropped.toDataURL('image/png');
+}
+
+function establecerFirmaCapturada(modo, dataUrl) {
+    const cfg = FIRMA_MODOS[modo];
+    if (!cfg) return;
+
+    const input = document.getElementById(cfg.inputId);
+    const cont = document.getElementById(cfg.previewContId);
+    const img = document.getElementById(cfg.previewImgId);
+    const btnAbrir = document.getElementById(cfg.btnAbrirId);
+    const btnLimpiar = document.getElementById(cfg.btnLimpiarId);
+
+    if (input) input.value = dataUrl;
+    if (img) img.src = dataUrl;
+    if (cont) cont.classList.remove('d-none');
+    if (btnLimpiar) btnLimpiar.classList.remove('d-none');
+    if (btnAbrir) {
+        btnAbrir.classList.remove('btn-success');
+        btnAbrir.classList.add('btn-outline-success');
+        btnAbrir.innerHTML = `<i class="fas fa-pen me-2"></i> Cambiar / Volver a Firmar`;
     }
 }
 
-function limpiarCanvasFirma(idCanvas) {
-    const canvas = document.getElementById(idCanvas);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    canvas.setAttribute('data-firmada', 'false');
+function limpiarFirmaCapturada(modo) {
+    const cfg = FIRMA_MODOS[modo];
+    if (!cfg) return;
+
+    const input = document.getElementById(cfg.inputId);
+    const cont = document.getElementById(cfg.previewContId);
+    const img = document.getElementById(cfg.previewImgId);
+    const btnAbrir = document.getElementById(cfg.btnAbrirId);
+    const btnLimpiar = document.getElementById(cfg.btnLimpiarId);
+
+    if (input) input.value = '';
+    if (img) img.src = '';
+    if (cont) cont.classList.add('d-none');
+    if (btnLimpiar) btnLimpiar.classList.add('d-none');
+    if (btnAbrir) {
+        btnAbrir.classList.remove('btn-outline-success');
+        btnAbrir.classList.add('btn-success');
+        btnAbrir.innerHTML = `<i class="fas fa-pen me-2"></i> ${cfg.textoInicial}`;
+    }
 }
 
 // ==========================================

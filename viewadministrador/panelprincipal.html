@@ -8,7 +8,9 @@
     <link rel="icon" href="../img/logo-SOS-Plagas.webp" type="image/webp">
     <!-- CSS de Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="panelprincipal.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 </head>
 
 <body class="bg-light">
@@ -274,7 +276,7 @@
     <!-- MODAL: NUEVO USUARIO                       -->
     <!-- ========================================== -->
     <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="modalNuevoUsuarioLabel"
-        aria-hidden="true">
+        aria-hidden="true" data-bs-focus="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-dark text-white">
@@ -335,12 +337,16 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label fw-bold mb-0">Firma Oficial Digital *</label>
-                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none py-0" id="btn-limpiar-firma-nuevo">Borrar firma</button>
+                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none py-0 d-none" id="btn-limpiar-firma-nuevo">Borrar firma</button>
                             </div>
-                            <div class="border rounded bg-white shadow-sm p-1" style="touch-action: none;">
-                                <canvas id="canvas-firma-nuevo" width="400" height="120" class="w-100" style="cursor: crosshair; display: block;"></canvas>
+                            <input type="hidden" id="firma-nuevo-base64">
+                            <div id="contenedor-preview-firma-nuevo" class="border rounded bg-light p-2 text-center mb-2 d-none">
+                                <img id="preview-firma-nuevo" src="" alt="Vista previa de firma" style="max-height: 85px; max-width: 100%; object-fit: contain; background: #fff; border-radius: 4px;">
                             </div>
-                            <div class="form-text">Dibuja la firma oficial que se estampará en los documentos al validar con contraseña.</div>
+                            <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btn-abrir-firma-nuevo">
+                                <i class="fas fa-pen me-2"></i> Firmar en Pantalla Completa
+                            </button>
+                            <div class="form-text">Abre la pizarra a pantalla completa para capturar cómodamente la firma oficial que se estampará en los reportes.</div>
                         </div>
 
                         <!-- Alerta de validación o error -->
@@ -410,7 +416,7 @@
     <!-- MODAL: ACTUALIZAR FIRMA DIGITAL           -->
     <!-- ========================================== -->
     <div class="modal fade" id="modalActualizarFirma" tabindex="-1" aria-labelledby="modalActualizarFirmaLabel"
-        aria-hidden="true">
+        aria-hidden="true" data-bs-focus="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-dark text-white">
@@ -438,12 +444,16 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label fw-bold mb-0">Nueva Firma Oficial *</label>
-                                <button type="button" class="btn btn-sm btn-link text-muted text-decoration-none py-0" id="btn-limpiar-firma-actualizar">Borrar trazo</button>
+                                <button type="button" class="btn btn-sm btn-link text-danger text-decoration-none py-0 d-none" id="btn-limpiar-firma-actualizar">Borrar nueva firma</button>
                             </div>
-                            <div class="border rounded bg-white shadow-sm p-1" style="touch-action: none;">
-                                <canvas id="canvas-firma-actualizar" width="400" height="120" class="w-100" style="cursor: crosshair; display: block;"></canvas>
+                            <input type="hidden" id="firma-actualizar-base64">
+                            <div id="contenedor-preview-firma-actualizar" class="border rounded bg-light p-2 text-center mb-2 d-none">
+                                <img id="preview-firma-actualizar" src="" alt="Vista previa de nueva firma" style="max-height: 85px; max-width: 100%; object-fit: contain; background: #fff; border-radius: 4px;">
                             </div>
-                            <div class="form-text">Dibuja la firma oficial con el dedo o mouse. Esta firma se estampará al validar con contraseña.</div>
+                            <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btn-abrir-firma-actualizar">
+                                <i class="fas fa-pen me-2"></i> Dibujar Nueva Firma en Pantalla Completa
+                            </button>
+                            <div class="form-text">Abre la pizarra a pantalla completa para dibujar cómodamente la firma oficial que se estampará en los reportes.</div>
                         </div>
 
                         <div id="firma-error-alert" class="alert alert-danger d-none py-2 px-3 small mb-0" role="alert">
@@ -581,6 +591,36 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL DE FIRMA A PANTALLA COMPLETA         -->
+    <!-- ========================================== -->
+    <div id="modal-firma-pantalla-completa" class="d-none"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #f8f9fa; z-index: 10050; display: flex; flex-direction: column;">
+
+        <!-- Encabezado -->
+        <div class="p-2 px-3 bg-dark text-white d-flex justify-content-between align-items-center shadow"
+            style="flex-shrink: 0;">
+            <h6 class="m-0"><i class="fas fa-mobile-alt me-2"></i> Gire su dispositivo para firmar cómodamente</h6>
+            <button type="button" id="btn-cerrar-pizarra-firma" class="btn btn-danger btn-sm">Cancelar</button>
+        </div>
+
+        <!-- Área del Canvas de Firma -->
+        <div style="flex: 1; position: relative; margin: 10px; border: 2px dashed #198754; background: white; border-radius: 10px; min-height: 0;">
+            <canvas id="pizarra-firma-usuario" style="width: 100%; height: 100%; touch-action: none;"></canvas>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="p-2 d-flex justify-content-around bg-light border-top shadow-lg"
+            style="flex-shrink: 0; padding-bottom: max(10px, env(safe-area-inset-bottom));">
+            <button type="button" id="btn-borrar-pizarra-firma" class="btn btn-warning fw-bold shadow-sm">
+                <i class="fas fa-eraser me-1"></i> Borrar
+            </button>
+            <button type="button" id="btn-aplicar-pizarra-firma" class="btn btn-success fw-bold shadow-sm">
+                <i class="fas fa-check-circle me-1"></i> Aplicar Firma
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- SCRIPTS                                    -->
     <!-- ========================================== -->
     <script>
@@ -597,8 +637,8 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../config.js?v=24"></script>
-    <script src="panelprincipal.js?v=24"></script>
+    <script src="../config.js?v=27"></script>
+    <script src="panelprincipal.js?v=27"></script>
 
 </body>
 
