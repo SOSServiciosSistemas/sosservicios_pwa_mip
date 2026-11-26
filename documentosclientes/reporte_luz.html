@@ -119,7 +119,7 @@
                     <i class="fa fa-print me-1"></i> Imprimir Reporte
                 </button>
                 <button id="btn-top-firmar" class="btn btn-success btn-sm fw-bold">
-                    <i class="fas fa-pen me-1"></i> ✍️ Firmar con Cliente
+                    <i class="fas fa-pen me-1"></i> Firmar con Cliente
                 </button>
             </div>
         </div>
@@ -377,7 +377,7 @@
         <!-- BOTÓN INFERIOR FLOTANTE PARA FIRMA CON CLIENTE -->
         <div class="no-imprimir text-center" style="position: sticky; bottom: 15px; width: 820px; margin: 15px auto; z-index: 99;" id="zona-boton-firmar">
             <button id="btn-abrir-firma" class="btn btn-success btn-lg px-5 shadow-lg rounded-pill fw-bold" style="font-size: 1.05rem; border: 2px solid #fff;">
-                <i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente
+                <i class="fas fa-pen me-2"></i> Firmar Reporte con Cliente
             </button>
         </div>
 
@@ -929,7 +929,7 @@
                     console.error("Error al guardar firma:", err);
                     alert("Ocurrió un error al guardar la firma: " + err.message);
                     if (btnAbrirFirma) {
-                        btnAbrirFirma.innerHTML = `<i class="fas fa-pen me-2"></i> ✍️ Firmar Reporte con Cliente`;
+                        btnAbrirFirma.innerHTML = `<i class="fas fa-pen me-2"></i> Firmar Reporte con Cliente`;
                         btnAbrirFirma.disabled = false;
                     }
                     if (btnTopFirmar) btnTopFirmar.disabled = false;
