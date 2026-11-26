@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sos-servicios-v28';
+const CACHE_NAME = 'sos-servicios-v29';
 
 // Archivos estáticos principales que queremos que funcionen sin conexión (Offline)
 const urlsToCache = [
@@ -6,7 +6,7 @@ const urlsToCache = [
   './index.html',
   './offline.html',
   './manifest.json',
-  './config.js?v=28',
+  './config.js?v=29',
   './img/logo-SOS-Plagas.webp',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'
 ];
