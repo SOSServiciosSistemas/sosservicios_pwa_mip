@@ -99,8 +99,6 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-cliente').innerText = (orden.nombre_cliente || 'N/A').toUpperCase();
             const domParts = [orden.direccion_completa, orden.colonia].filter(Boolean);
             document.getElementById('rep-domicilio').innerText = (domParts.join(', ') || '---').toUpperCase();
-            const telStr = Array.isArray(orden.telefono) ? orden.telefono.filter(Boolean).join(', ') : (orden.telefono || '---');
-            document.getElementById('rep-telefonos').innerText = telStr.toUpperCase();
             document.getElementById('rep-giro').innerText = (orden.giro_comercial || 'Comercial').toUpperCase();
             document.getElementById('rep-ciudad').innerText = (orden.ciudad || 'León, GTO').toUpperCase();
             document.getElementById('rep-contacto').innerText = (orden.persona_contacto || orden.nombre_cliente || 'N/A').toUpperCase();
