@@ -157,27 +157,42 @@
             <div><span class="caja-check text-center fw-bold" id="chk-serv-garantia" style="line-height: 10px;"></span> Garantía</div>
         </div>
 
-        <!-- Datos del Cliente -->
-        <div class="seccion-datos">
-            <div class="campo" style="width: 100%;"><span class="campo-label">Nombre del Cliente:</span><span
-                    class="campo-valor" id="rep-cliente"></span></div>
-            <div class="campo" style="width: 60%; padding-right: 5px;"><span class="campo-label">Domicilio:</span><span
-                    class="campo-valor" id="rep-domicilio"></span></div>
-            <div class="campo" style="width: 40%;"><span class="campo-label">Teléfonos:</span><span class="campo-valor"
-                    id="rep-telefonos"></span></div>
-            <div class="campo" style="width: 36%; padding-right: 5px;"><span class="campo-label">Giro del
-                    Cliente:</span><span class="campo-valor" id="rep-giro"></span></div>
-            <div class="campo" style="width: 22%; padding-right: 5px;"><span class="campo-label">Ciudad:</span><span
-                    class="campo-valor" id="rep-ciudad"></span></div>
-            <div class="campo" style="width: 21%; padding-right: 5px;"><span class="campo-label">Hora de
-                    Entrada:</span><span class="campo-valor text-center" id="rep-hora-ent"></span></div>
-            <div class="campo" style="width: 21%;"><span class="campo-label">Hora de Salida:</span><span
-                    class="campo-valor text-center" id="rep-hora-sal"></span></div>
-            <div class="campo" style="width: 55%; padding-right: 5px;"><span class="campo-label">Contacto:</span><span
-                    class="campo-valor" id="rep-contacto"></span></div>
-            <div class="campo" style="width: 45%;"><span class="campo-label">Hora de ingreso a áreas
-                    tratadas:</span><span class="campo-valor text-center" id="rep-hora-reingreso"></span></div>
-        </div>
+        <!-- Datos del Cliente (sin renglones subrayados, textos en negritas y distribución igual a monitoreo) -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.62rem; line-height: 1.45; margin-bottom: 6px;">
+            <tr>
+                <td style="width: 64%; padding: 1px 0;">
+                    <span>Nombre del Cliente:</span> <strong class="ms-1" id="rep-cliente">---</strong>
+                </td>
+                <td style="width: 36%; padding: 1px 0;">
+                    <span>Teléfonos:</span> <strong class="ms-1" id="rep-telefonos">---</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 1px 0;">
+                    <span>Domicilio:</span> <strong class="ms-1" id="rep-domicilio">---</strong>
+                </td>
+                <td style="padding: 1px 0;">
+                    <span>Hora de Entrada:</span> <strong class="ms-1" id="rep-hora-ent">--:--</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 1px 0;">
+                    <span>Giro del Cliente:</span> <strong class="ms-1" id="rep-giro">---</strong>
+                    <span style="margin-left: 25px;">Ciudad:</span> <strong class="ms-1" id="rep-ciudad">---</strong>
+                </td>
+                <td style="padding: 1px 0;">
+                    <span>Hora de Salida:</span> <strong class="ms-1" id="rep-hora-sal">--:--</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 1px 0;">
+                    <span>Contacto:</span> <strong class="ms-1" id="rep-contacto">---</strong>
+                </td>
+                <td style="padding: 1px 0;">
+                    <span>Hora de ingreso a áreas tratadas:</span> <strong class="ms-1" id="rep-hora-reingreso">--:--</strong>
+                </td>
+            </tr>
+        </table>
 
         <!-- Detalle de Producto a Utilizar (Ancho 100%) -->
         <table class="tabla-oficial w-100">
@@ -329,7 +344,7 @@
     </div>
 
     <!-- Referenciamos config.js un nivel arriba -->
-    <script src="../config.js?v=24"></script>
-    <script src="reportecliente.js"></script>
+    <script src="../config.js?v=28"></script>
+    <script src="reportecliente.js?v=28"></script>
 </body>
 </html>
