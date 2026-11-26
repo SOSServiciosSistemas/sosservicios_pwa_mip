@@ -190,9 +190,11 @@ async function cargarDatosReporte(id) {
             if(grado === 'BAJO') document.getElementById('chk-bajo').innerText = 'X';
 
             // 2. Factura
-            if (orden.requiere_factura === true) {
+            if (orden.requiere_factura === true || jsonDetalles.requiere_factura === true) {
                 document.getElementById('chk-factura-si').innerText = 'X';
-            } else if (orden.requiere_factura === false) {
+                document.getElementById('chk-factura-no').innerText = '';
+            } else {
+                document.getElementById('chk-factura-si').innerText = '';
                 document.getElementById('chk-factura-no').innerText = 'X';
             }
 
@@ -236,13 +238,16 @@ async function cargarDatosReporte(id) {
             }
 
             let costoNum = parseFloat(costoMostrar) || 0;
-            if (costoNum > 0) {
-                document.getElementById('rep-costo').innerText = costoNum.toFixed(2);
-                document.getElementById('rep-costo-letra').innerText = numeroALetras(costoNum) + " M.N.";
-            } else {
-                document.getElementById('rep-costo').innerText = '0.00';
-                document.getElementById('rep-costo-letra').innerText = 'CERO PESOS 00/100 M.N.';
-            }
+            document.getElementById('rep-costo').innerText = `$${costoNum.toFixed(2)}`;
+            document.getElementById('rep-costo-letra').innerText = `Importe con letra: (${numeroALetras(costoNum)} M.N.)`;
+
+            // Pago Recibido en Sitio y Tipo / Forma de Pago
+            const pagoRecibidoVal = parseFloat(orden.ingresos_cobrados) || parseFloat(jsonDetalles.monto_cobrado) || 0;
+            document.getElementById('rep-pago-recibido').innerText = `$${pagoRecibidoVal.toFixed(2)}`;
+            document.getElementById('rep-pago-letra').innerText = `Importe con letra: (${numeroALetras(pagoRecibidoVal)} M.N.)`;
+
+            const tipoPagoTexto = jsonDetalles.tipo_pago || jsonDetalles.metodo_pago || (pagoRecibidoVal > 0 ? 'Efectivo' : 'Sin Cobro / Pendiente');
+            document.getElementById('rep-tipo-pago').innerText = tipoPagoTexto;
 
             // 4. Acciones y Seguimiento (Áreas de Oportunidad)
             document.getElementById('rep-acciones').innerText = orden.acciones_realizadas || jsonDetalles.acciones_correctivas || '';

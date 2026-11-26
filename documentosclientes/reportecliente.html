@@ -252,24 +252,37 @@
             </tr>
         </table>
 
-        <!-- Tratamiento y Firmas -->
-        <div class="d-flex" style="border: 1px solid #000; margin-top: 5px;">
-            <div style="width: 65%; border-right: 1px solid #000;">
+        <!-- Tratamiento y Costo / Pago Recibido -->
+        <div class="d-flex" style="border: 1px solid #000; margin-top: 5px; margin-bottom: 4px;">
+            <div style="width: 58%; border-right: 1px solid #000; display: flex; flex-direction: column;">
                 <div class="bg-gris p-1" style="border-bottom: 1px solid #000;">TRATAMIENTO</div>
-                <!-- Redujimos el height a 35px para ahorrar espacio vertical -->
                 <div id="rep-tratamiento-contenedor"
-                    style="height: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; padding: 6px;">
                     TRATAMIENTO: <strong class="mx-2" id="rep-tratamiento-actual"></strong> DE <strong class="ms-2" id="rep-tratamiento-total"></strong>
                 </div>
             </div>
-            <div style="width: 35%; padding: 5px; font-size: 0.65rem;">
-                <div class="mb-1">COSTO DEL SERVICIO: $<span class="borde-inferior text-center fw-bold"
-                        style="width: 50%;" id="rep-costo"></span></div>
-                <div class="mb-1">Importe con letra: ( <span class="borde-inferior text-center fw-bold"
-                        style="width: 70%; font-size: 0.55rem;" id="rep-costo-letra"></span> )</div>
-                <div class="mb-1">REQUIERE FACTURA: SI <span class="caja-check text-center fw-bold" id="chk-factura-si"
-                        style="line-height: 10px;"></span> NO <span class="caja-check text-center fw-bold"
-                        id="chk-factura-no" style="line-height: 10px;"></span></div>
+            <div style="width: 42%; padding: 0; font-size: 0.62rem;">
+                <!-- Costo del Servicio -->
+                <div style="padding: 3px 5px;" class="fw-bold">
+                    COSTO DEL SERVICIO: <span class="float-end text-primary" id="rep-costo">$0.00</span>
+                    <div style="font-size: 0.56rem; font-weight: normal;" id="rep-costo-letra">Importe con letra: (CERO PESOS 00/100 M.N.)</div>
+                </div>
+                <!-- Pago Recibido en Sitio -->
+                <div style="padding: 3px 5px;" class="border-top border-dark">
+                    <div class="fw-bold">
+                        PAGO RECIBIDO: <span class="float-end text-success" id="rep-pago-recibido">$0.00</span>
+                        <div style="font-size: 0.56rem; font-weight: normal;" id="rep-pago-letra">Importe con letra: (CERO PESOS 00/100 M.N.)</div>
+                    </div>
+                    <div style="font-size: 0.58rem; margin-top: 2px;">
+                        <strong>TIPO / FORMA DE PAGO:</strong> <span class="fw-bold ms-1" id="rep-tipo-pago">Efectivo</span>
+                    </div>
+                </div>
+                <!-- Requiere Factura -->
+                <div style="padding: 3px 5px;" class="border-top border-dark">
+                    <strong>REQUIERE FACTURA:</strong>
+                    <span class="ms-1">SI <span class="caja-check text-center fw-bold" id="chk-factura-si" style="line-height: 10px; font-size: 9px;"></span></span>
+                    <span class="ms-1">NO <span class="caja-check text-center fw-bold" id="chk-factura-no" style="line-height: 10px; font-size: 9px;"></span></span>
+                </div>
             </div>
         </div>
 
@@ -332,7 +345,7 @@
     </div>
 
     <!-- Referenciamos config.js un nivel arriba -->
-    <script src="../config.js?v=32"></script>
-    <script src="reportecliente.js?v=32"></script>
+    <script src="../config.js?v=33"></script>
+    <script src="reportecliente.js?v=33"></script>
 </body>
 </html>
