@@ -83,15 +83,11 @@ async function cargarDatosReporte(id) {
             document.getElementById('rep-folio').innerText = orden.id_orden.toString().padStart(5, '0');
             document.getElementById('rep-fecha').innerText = new Date(orden.fecha_servicio).toLocaleDateString('es-MX');
 
-            // Título dinámico según Tipo de Servicio (Aplicación o Garantía)
+            // Título fijo para Aplicación y Garantía
             const tipoServicioNorm = (orden.tipo_servicio || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const elTituloServicio = document.getElementById('rep-titulo-servicio');
             if (elTituloServicio) {
-                if (tipoServicioNorm.includes('garant')) {
-                    elTituloServicio.innerText = 'REPORTE DE SERVICIO GARANTÍA';
-                } else {
-                    elTituloServicio.innerText = 'REPORTE DE SERVICIO APLICACIÓN';
-                }
+                elTituloServicio.innerText = 'REPORTE DE SERVICIO APLICACIÓN';
             }
 
             document.getElementById('rep-cliente').innerText = (orden.nombre_cliente || 'N/A').toUpperCase();
@@ -204,8 +200,17 @@ async function cargarDatosReporte(id) {
             const numTrat = parseInt(orden.num_tratamiento) || 1;
             const totTrat = parseInt(orden.total_tratamientos) || 1;
 
-            document.getElementById('rep-tratamiento-actual').innerText = orden.num_tratamiento || '';
-            document.getElementById('rep-tratamiento-total').innerText = orden.total_tratamientos || '';
+            const contTratamiento = document.getElementById('rep-tratamiento-contenedor');
+            if (tipoServicioNorm.includes('garant')) {
+                if (contTratamiento) {
+                    contTratamiento.innerHTML = '<strong>TRATAMIENTO DE REFUERZO</strong>';
+                }
+            } else {
+                const elActual = document.getElementById('rep-tratamiento-actual');
+                const elTotal = document.getElementById('rep-tratamiento-total');
+                if (elActual) elActual.innerText = orden.num_tratamiento || '1';
+                if (elTotal) elTotal.innerText = orden.total_tratamientos || '1';
+            }
             
             let costoMostrar = 0;
 
